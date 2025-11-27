@@ -18,7 +18,7 @@ osascript -e 'tell application "Terminal" to do script "npm run watch:css" in fr
 osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down'
 osascript -e 'tell application "Terminal" to do script "npm run build:css" in front window'
 
-# Open up VS code Text and Start Mailhog
+# Open up VS code Text
 osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down'
 osascript -e 'tell application "Terminal" to do script "code ." in front window'
 

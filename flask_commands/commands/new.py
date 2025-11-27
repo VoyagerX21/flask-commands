@@ -1,7 +1,6 @@
 import os
 import click
-import subprocess
-from flask_commands.utils import create_venv, read_template, write_file
+from flask_commands.utils import create_venv, copy_templates
 
 @click.command()
 @click.argument("project_name")
@@ -15,35 +14,15 @@ def new(project_name):
     os.makedirs(project_name)
 
     # Create a Virtual Enviroment and install dependancies and generate a requirments file
-    dependencies = ["flask"]
+    dependencies = [
+        "Flask",
+        "python-dotenv",
+        "python-slugify"
+    ]
     create_venv(project_name, packages=dependencies, freeze_requirements=True)
 
-    # Create Folder Structure
-    folders = [
-        f"{project_name}/app",
-        f"{project_name}/app/controllers",
-        f"{project_name}/app/forms",
-        f"{project_name}/app/middleware",
-        f"{project_name}/app/models",
-        f"{project_name}/app/routes",
-        f"{project_name}/app/static",
-        f"{project_name}/app/templates",
-        f"{project_name}/config",
-    ]
-
-    for folder in folders:
-        os.makedirs(folder, exist_ok=True)
-
-    # Create Boiler Plate Files
-    dot_env_file_string = read_template(".env")\
-        .replace('project_name', project_name)
-    write_file(f"{project_name}/app/__init__.py", read_template("__init__.py"))
-    write_file(f"{project_name}/run.py", read_template("run.py"))
-    write_file(f"{project_name}/.env.example", read_template(".env.example"))
-    write_file(f"{project_name}/.env", dot_env_file_string)
-    write_file(f"{project_name}/run.sh", read_template("run.sh"))
+    copy_templates(project_name, replacements={"project_name": project_name})
 
     # Make run.sh executable
-    if os.name == "posix":
-        run_sh_path = os.path.join(project_name, "run.sh")
-        os.chmod(run_sh_path, 0o755)
+    run_sh_path = os.path.join(project_name, "run.sh")
+    os.chmod(run_sh_path, 0o755)

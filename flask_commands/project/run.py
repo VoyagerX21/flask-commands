@@ -1,16 +1,11 @@
 import os
 import logging
-from app import create_app, db
-from app.models import User
+from slugify import slugify
+from logging.handlers import SMTPHandler, RotatingFileHandler
+from app import create_app
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'development')
 
-@app.shell_context_processor
-def make_shell_context():
-    return {
-        'db': db,
-        'User': User
-    }
 
 with app.app_context():
     if not os.path.exists('logs'):
@@ -58,23 +53,5 @@ with app.app_context():
 
         file_handler.setLevel(logging.INFO)
         sql_file_handler.setLevel(logging.WARNING)
-
-        # in production send an email if the application errors
-        username = app.config['MAIL_APP_ERROR_USERNAME']
-        password = app.config['MAIL_APP_ERROR_PASSWORD']
-        secure = None
-        if app.config['MAIL_APP_ERROR_USE_TLS']:
-            secure = ()
-        mail_handler= SMTPHandler(
-            mailhost=(app.config['MAIL_APP_ERROR_SERVER'], app.config['MAIL_APP_ERROR_PORT']),
-            fromaddr=app.config['MAIL_APP_ERROR_SENDER'],
-            toaddrs=app.config['ADMINISTRATOR_EMAILS'],
-            subject=app.config['MAIL_SUBJECT_PREFIX'] + ' Application Error Occured',
-            credentials=(username, password),
-            secure=secure)
-        mail_handler.setFormatter(logging.Formatter(
-            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'))
-        mail_handler.setLevel(logging.ERROR)
-        app.logger.addHandler(mail_handler)
 
     app.logger.info(f"{app.config['APP_NAME']} started up in {app.config['FLASK_CONFIG']} mode")
