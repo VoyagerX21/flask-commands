@@ -52,6 +52,7 @@ def _read_template(file_path):
         return f.read()
 
 def _write_file(path: str, contents: str):
+    """Writes the contents to the path"""
     # Split directory and filename
     directory = os.path.dirname(path)
 
@@ -68,9 +69,9 @@ def _write_file(path: str, contents: str):
         f.write(contents)
 
 def _pip_install_in_venv(venv_dir: str, packages):
-    # Use the venv's pip executable. On Windows it's under Scripts, else bin.
+    print("Installing Python Dependencies")
     pip_path = os.path.join(venv_dir, "bin", "pip")
-    subprocess.check_call([pip_path, "install", *packages])
+    subprocess.run([pip_path, "install", *packages], check=True, capture_output=True, text=True)
 
 def _write_requirements_from_venv(venv_dir: str, project_path: str):
     """
@@ -80,8 +81,9 @@ def _write_requirements_from_venv(venv_dir: str, project_path: str):
     pip_path = os.path.join(venv_dir, "bin", "pip")
 
     # Capture pip freeze output
-    output = subprocess.check_output([pip_path, "freeze"], text=True)
+    requirements_content = \
+        subprocess.check_output([pip_path, "freeze"], text=True)
 
-    reqs_path = os.path.join(project_path, "requirements.txt")
-    with open(reqs_path, "w", encoding="utf-8") as f:
-        f.write(output)
+    requirements_path = os.path.join(project_path, "requirements.txt")
+
+    _write_file(requirements_path, requirements_content)

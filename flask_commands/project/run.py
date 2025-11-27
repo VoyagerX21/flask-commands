@@ -1,4 +1,5 @@
 import os
+import time
 import logging
 from slugify import slugify
 from logging.handlers import SMTPHandler, RotatingFileHandler
@@ -6,6 +7,11 @@ from app import create_app
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'development')
 
+# These are global variable for your jinja2 templates
+@app.context_processor
+def inject_globals():
+    return {
+        'time': time}
 
 with app.app_context():
     if not os.path.exists('logs'):
