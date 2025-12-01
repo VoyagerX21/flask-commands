@@ -89,10 +89,10 @@ def controller_add_method(controller_name: str, method_name: str) -> Tuple[bool,
         "in file {controller_file_path}." )
     return False, message
 
-
-
 def controller_make_file():
-    pass
+    # 1) Make the controller file
+    # 2) add the import statement to the controllers __init__.py file
+    # 3) call controller_add_method
 
 def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = None) -> None:
     """
