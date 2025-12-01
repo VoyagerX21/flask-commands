@@ -89,10 +89,21 @@ def controller_add_method(controller_name: str, method_name: str) -> Tuple[bool,
         "in file {controller_file_path}." )
     return False, message
 
-def controller_make_file():
+def controller_make_file(controller_name: str, method_name: str) -> Tuple[bool, str]:
+    pass
     # 1) Make the controller file
     # 2) add the import statement to the controllers __init__.py file
     # 3) call controller_add_method
+    # os.makedirs(os.path.dirname(controller_file), exist_ok=True)
+    # content = (
+    #     f"class {controller_name}:\n"
+    #     "    \"\"\"Auto-generated controller.\"\"\"\n\n"
+    #     "    @staticmethod\n"
+    #     f"    def {method_name}():\n"
+    #     "        pass\n"
+    # )
+    # write_file(controller_file, content)
+    # click.echo(f"✅ Created controller {controller_name} with method '{method_name}()' at {controller_file}")
 
 def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = None) -> None:
     """
