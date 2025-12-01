@@ -1,8 +1,12 @@
 import os
+import re
 import sys
 import subprocess
-from typing import Optional, Iterable, Dict
+from typing import Dict, Iterable, Optional, Tuple
 
+def camel_to_snake(name: str) -> str:
+    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower
 
 def create_venv(project_path: str, packages: Optional[Iterable[str]] = None, freeze_requirements: bool = False) -> str:
     """
@@ -24,6 +28,72 @@ def create_venv(project_path: str, packages: Optional[Iterable[str]] = None, fre
 
     return venv_dir
 
+def controller_add_method(controller_name: str, method_name: str) -> Tuple[bool, str]:
+    controller_file_path = os.path.join(
+        "app", "controllers", f"{camel_to_snake(controller_name)}.py")
+    # Read existing controller and check for method
+    with open(controller_file_path, "r", encoding="utf-8") as f:
+        source = f.read()
+
+    method_pattern = rf"def\s+{re.escape('index')}\s*\(\)\s*(?:->\s*[^:]+)?\s*:"
+    # If method already exists, do nothing and warn user
+    if re.search(method_pattern, source):
+        message = (
+            f"⚠️ Warning: Controller {controller_name} already "
+            "contains method '{method_name}'.")
+        return False, message
+
+    # Try to find class definition to insert method into
+    class_pattern = rf"^class\s+{re.escape(controller_name)}\b.*:\\s*$"
+    lines = source.splitlines()
+    insert_index = None
+    # 1. Find the class
+    for i, line in enumerate(lines):
+        if re.match(class_pattern, line):
+            # 2. find end of class (next top-level def/class or EOF)
+            j = i + 1
+            while j < len(lines):
+                # skip blank lines inside the class
+                if lines[j].strip() == "":
+                    j += 1
+                    continue
+                # top-level (no indent)
+                if len(lines[j]) - len(lines[j].lstrip()) == 0 and \
+                        re.match(r"^(class|def)\b", lines[j]):
+                    break
+                j += 1
+            insert_index = j
+            break
+
+    # 3. Build the new static method block
+    method_block = [
+        "",
+        "    @staticmethod\n",
+        f"    def {method_name}():",
+        "        pass\n"
+    ]
+
+    # 4. Insert new static method block
+    if insert_index is not None:
+        for line in reversed(method_block):
+            lines.insert(insert_index, line)
+
+        new_source = "\n".join(lines)
+        with open(controller_file_path, "w", encoding="utf-8") as f:
+            f.write(new_source)
+        message = f"✅ Added method '{method_name}()' to {controller_name}"
+        return True, message
+
+    message =  (
+        f"⚠️ Warning: Could not find class {controller_name} "
+        "in file {controller_file_path}." )
+    return False, message
+
+
+
+def controller_make_file():
+    pass
+
 def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = None) -> None:
     """
     Copy everything under the package 'templates' directory into the target
@@ -44,7 +114,23 @@ def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = N
                 for key, value in replacements.items():
                     content = content.replace(key, value)
 
-            _write_file(destination_path, content)
+            write_file(destination_path, content)
+
+def view_make_file(destination_path: str, filename: str) -> None:
+    destination_path = os.path.join("app", "templates", relative_path, f"{filename}.html")
+    content = ''
+    _write_file(destination_path, content)
+
+def parse_dots(dotted_path_with_name: str) -> Tuple[str, str]:
+    parts = dotted_path_with_name.lower().split(".")
+    relative_path = '' if len(parts) == 1 else '/'.join(parts[:-1])
+    return relative_path, parts[-1]
+
+
+def _pip_install_in_venv(venv_dir: str, packages):
+    print("Installing Python Dependencies")
+    pip_path = os.path.join(venv_dir, "bin", "pip")
+    subprocess.run([pip_path, "install", *packages], check=True, capture_output=True, text=True)
 
 def _read_template(file_path):
     """Read a template file and return its content as a string."""
@@ -68,11 +154,6 @@ def _write_file(path: str, contents: str):
     with open(path, "w", encoding="utf-8") as f:
         f.write(contents)
 
-def _pip_install_in_venv(venv_dir: str, packages):
-    print("Installing Python Dependencies")
-    pip_path = os.path.join(venv_dir, "bin", "pip")
-    subprocess.run([pip_path, "install", *packages], check=True, capture_output=True, text=True)
-
 def _write_requirements_from_venv(venv_dir: str, project_path: str):
     """
     Run `pip freeze` inside the venv and write the output to
@@ -86,4 +167,5 @@ def _write_requirements_from_venv(venv_dir: str, project_path: str):
 
     requirements_path = os.path.join(project_path, "requirements.txt")
 
-    _write_file(requirements_path, requirements_content)
+    write_file(requirements_path, requirements_content)
+
