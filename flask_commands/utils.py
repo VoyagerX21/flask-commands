@@ -28,7 +28,7 @@ def create_venv(project_path: str, packages: Optional[Iterable[str]] = None, fre
 
     return venv_dir
 
-def controller_add_method(controller_name: str, method_name: str) -> Tuple[bool, str]:
+def controller_add_method(controller_name: str, method_name: str, relative_view_file_path: str) -> Tuple[bool, str]:
     controller_file_path = os.path.join(
         "app", "controllers", f"{camel_to_snake(controller_name)}.py")
     # Read existing controller and check for method
@@ -67,10 +67,10 @@ def controller_add_method(controller_name: str, method_name: str) -> Tuple[bool,
 
     # 3. Build the new static method block
     method_block = [
-        "",
-        "    @staticmethod\n",
-        f"    def {method_name}():",
-        "        pass\n"
+         "",
+         "    @staticmethod",
+        f"    def {method_name}() -> str:",
+        f"        return render_template('{relative_view_file_path}')"
     ]
 
     # 4. Insert new static method block
@@ -81,7 +81,7 @@ def controller_add_method(controller_name: str, method_name: str) -> Tuple[bool,
         new_source = "\n".join(lines)
         with open(controller_file_path, "w", encoding="utf-8") as f:
             f.write(new_source)
-        message = f"✅ Added method '{method_name}()' to {controller_name}"
+        message = f"✅ Added method '{method_name}' to {controller_name}"
         return True, message
 
     message =  (
@@ -89,21 +89,29 @@ def controller_add_method(controller_name: str, method_name: str) -> Tuple[bool,
         "in file {controller_file_path}." )
     return False, message
 
-def controller_make_file(controller_name: str, method_name: str) -> Tuple[bool, str]:
-    pass
-    # 1) Make the controller file
-    # 2) add the import statement to the controllers __init__.py file
-    # 3) call controller_add_method
-    # os.makedirs(os.path.dirname(controller_file), exist_ok=True)
-    # content = (
-    #     f"class {controller_name}:\n"
-    #     "    \"\"\"Auto-generated controller.\"\"\"\n\n"
-    #     "    @staticmethod\n"
-    #     f"    def {method_name}():\n"
-    #     "        pass\n"
-    # )
-    # write_file(controller_file, content)
-    # click.echo(f"✅ Created controller {controller_name} with method '{method_name}()' at {controller_file}")
+def controller_make_file(controller_name: str, method_name: str, relative_view_file_path: str) -> Tuple[bool, str]:
+    controller_file_path = os.path.join(
+        "app", "controllers", f"{camel_to_snake(controller_name)}.py")
+    contents = [
+         "from flask import render_template",
+         "",
+        f"class {controller_name}(object):"
+         "    @staticmethod"
+        f"    def {method_name}() -> str:"
+        f"        return render_template('{relative_view_file_path}')"
+    ]
+    _write_file(controller_file_path, contents)
+
+    controller_init_path = os.path.join("app", "controllers", "__init__.py")
+    with open(controller_init_path, "a", encoding="utf-8") as f:
+        f.write("\n")
+        f.write(f"from .{camel_to_snake(controller_name)} import {controller_name}")
+
+    message = (
+        f"✅ Created controller {controller_name} with method "
+        f"'{method_name}' at {controller_file_path}")
+
+    return True, message
 
 def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = None) -> None:
     """
@@ -125,18 +133,16 @@ def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = N
                 for key, value in replacements.items():
                     content = content.replace(key, value)
 
-            write_file(destination_path, content)
+            _write_file(destination_path, content)
 
-def view_make_file(destination_path: str, filename: str) -> None:
-    destination_path = os.path.join("app", "templates", relative_path, f"{filename}.html")
+def view_make_file(destination_file_path: str, filename: str) -> None:
     content = ''
-    _write_file(destination_path, content)
+    _write_file(destination_file_path, content)
 
 def parse_dots(dotted_path_with_name: str) -> Tuple[str, str]:
     parts = dotted_path_with_name.lower().split(".")
     relative_path = '' if len(parts) == 1 else '/'.join(parts[:-1])
     return relative_path, parts[-1]
-
 
 def _pip_install_in_venv(venv_dir: str, packages):
     print("Installing Python Dependencies")
@@ -148,22 +154,24 @@ def _read_template(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
-def _write_file(path: str, contents: str):
-    """Writes the contents to the path"""
+def _write_file(file_path: str, contents: list):
+    """Writes the contents to the file_path for a new file.  Raises a File
+    Exists error if the file already exists at the given path directory."""
     # Split directory and filename
-    directory = os.path.dirname(path)
+    directory = os.path.dirname(file_path)
 
     # Create the directory (and parents) if needed
     if directory:
         os.makedirs(directory, exist_ok=True)
 
     # Check existence
-    if os.path.exists(path):
-        raise FileExistsError(f"{path} already exists")
+    if os.path.exists(file_path):
+        raise FileExistsError(f"{file_path} already exists")
 
     # Write text with UTF-8 encoding
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(contents)
+    if len(contents) > 0:
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(contents) + "\n")
 
 def _write_requirements_from_venv(venv_dir: str, project_path: str):
     """
