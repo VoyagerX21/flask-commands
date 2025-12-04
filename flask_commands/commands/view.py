@@ -9,7 +9,15 @@ from flask_commands.utils import controller_add_method, controller_make_file, \
 @click.argument("dotted_path_with_name")
 @click.option("--controller", "controller_name", default=None,
               help="Optional controller class name to update (e.g. PostController)")
-def make_view(dotted_path_with_name: str, controller_name: str | None) -> None:
+@click.option("--route", "route_name", default=None,
+              help="Optional route class name to update (e.g. post)")
+@click.option("--route", "route_prefix", required=False, default=None,
+    help="Optional route prefix. If provided without value, it will be inferred from the dotted path."
+)
+def make_view(
+    dotted_path_with_name: str,
+    controller_name: str | None,
+    route_name: str | None) -> None:
     """
     Create a template view file under app/templates/<folder>/<name>.html
 
@@ -45,3 +53,7 @@ def make_view(dotted_path_with_name: str, controller_name: str | None) -> None:
             click.echo(message)
         except Exception as exception:
             click.echo(f"💣 Error: {exception}")
+
+    # If a route was provided, ensure it has a matching url
+    if route_name:
+        route_file_path = os.path.join("app", "")
