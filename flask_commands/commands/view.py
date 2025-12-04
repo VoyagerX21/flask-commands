@@ -16,6 +16,7 @@ def make_view(dotted_path_with_name: str, controller_name: str | None) -> None:
     Usage:
         flask make:view posts.index
         flask make:view posts.index --controller PostController
+        flask make:view posts.index --controller PostController --route
     """
     relative_path, filename = parse_dots(dotted_path_with_name)
     relative_view_file_path = os.path.join(relative_path, f"{filename}.html")
@@ -26,8 +27,8 @@ def make_view(dotted_path_with_name: str, controller_name: str | None) -> None:
         click.echo(f"📄 File created at {click.style(destination_file_path, bold=True)}")
     except FileExistsError:
         click.echo(f"⚠️ Warning: A file already exist at {destination_file_path}.  Nothing happened.")
-    except Exception as exc:
-        click.echo(f"💣 Error: {exc}")
+    except Exception as exception:
+        click.echo(f"💣 Error: {exception}")
 
     # If a controller was provided, ensure it has a matching static method
     if controller_name:
@@ -43,4 +44,4 @@ def make_view(dotted_path_with_name: str, controller_name: str | None) -> None:
                     controller_name, filename, relative_view_file_path)
             click.echo(message)
         except Exception as exception:
-            click.echo(f"💣 Error: {exc}")
+            click.echo(f"💣 Error: {exception}")

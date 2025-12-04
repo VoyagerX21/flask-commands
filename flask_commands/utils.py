@@ -2,11 +2,12 @@ import os
 import re
 import sys
 import subprocess
+import click
 from typing import Dict, Iterable, Optional, Tuple
 
 def camel_to_snake(name: str) -> str:
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
 
 def create_venv(project_path: str, packages: Optional[Iterable[str]] = None, freeze_requirements: bool = False) -> str:
     """
@@ -35,7 +36,7 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
     with open(controller_file_path, "r", encoding="utf-8") as f:
         source = f.read()
 
-    method_pattern = rf"def\s+{re.escape('index')}\s*\(\)\s*(?:->\s*[^:]+)?\s*:"
+    method_pattern = rf"def\s+{re.escape(method_name)}\s*\(\)\s*(?:->\s*[^:]+)?\s*:"
     # If method already exists, do nothing and warn user
     if re.search(method_pattern, source):
         message = (
@@ -86,7 +87,7 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
 
     message =  (
         f"⚠️ Warning: Could not find class {controller_name} "
-        "in file {controller_file_path}." )
+        f"in file {controller_file_path}." )
     return False, message
 
 def controller_make_file(controller_name: str, method_name: str, relative_view_file_path: str) -> Tuple[bool, str]:
@@ -95,21 +96,20 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
     contents = [
          "from flask import render_template",
          "",
-        f"class {controller_name}(object):"
-         "    @staticmethod"
-        f"    def {method_name}() -> str:"
+        f"class {controller_name}(object):",
+         "    @staticmethod",
+        f"    def {method_name}() -> str:",
         f"        return render_template('{relative_view_file_path}')"
     ]
     _write_file(controller_file_path, contents)
 
     controller_init_path = os.path.join("app", "controllers", "__init__.py")
     with open(controller_init_path, "a", encoding="utf-8") as f:
-        f.write("\n")
         f.write(f"from .{camel_to_snake(controller_name)} import {controller_name}")
 
     message = (
         f"✅ Created controller {controller_name} with method "
-        f"'{method_name}' at {controller_file_path}")
+        f"'{method_name}' at {click.style(controller_file_path, bold=True)}")
 
     return True, message
 
@@ -169,9 +169,8 @@ def _write_file(file_path: str, contents: list):
         raise FileExistsError(f"{file_path} already exists")
 
     # Write text with UTF-8 encoding
-    if len(contents) > 0:
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write("\n".join(contents) + "\n")
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write("\n".join(contents) + "\n")
 
 def _write_requirements_from_venv(venv_dir: str, project_path: str):
     """
