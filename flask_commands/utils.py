@@ -41,7 +41,7 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
     if re.search(method_pattern, source):
         message = (
             f"⚠️ Warning: Controller {controller_name} already "
-            "contains method '{method_name}'.")
+            f"contains method '{method_name}'.")
         return False, message
 
     # Try to find class definition to insert method into
@@ -135,14 +135,24 @@ def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = N
 
             _write_file(destination_path, content)
 
-def view_make_file(destination_file_path: str, filename: str) -> None:
-    content = ''
-    _write_file(destination_file_path, content)
-
 def parse_dots(dotted_path_with_name: str) -> Tuple[str, str]:
     parts = dotted_path_with_name.lower().split(".")
     relative_path = '' if len(parts) == 1 else '/'.join(parts[:-1])
     return relative_path, parts[-1]
+
+def singularize(name: str) -> str:
+    name = name.lower()
+    if name.endswith("ies"):
+        return name[:-3] + "y"  # categories -> category
+    if name.endswith("ses"):
+        return name[:-2]        # classes -> class
+    if name.endswith("s") and len(name) > 1:
+        return name[:-1]        # posts -> post
+    return name
+
+def view_make_file(destination_file_path: str, filename: str) -> None:
+    content = ''
+    _write_file(destination_file_path, content)
 
 def _pip_install_in_venv(venv_dir: str, packages):
     print("Installing Python Dependencies")
