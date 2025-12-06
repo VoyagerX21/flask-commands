@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import subprocess
+from turtle import dot
 import click
 from typing import Dict, Iterable, Optional, Tuple
 
@@ -135,6 +136,24 @@ def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = N
 
             _write_file(destination_path, content)
 
+def generate_controller_name_from(relative_path: str) -> str:
+    return ''.join([singularize(part).title()
+                    for part in relative_path.split('/')]) + "Controller"
+
+def generate_route_name_from(dotted_path_with_name: str) -> str:
+    if "." not in dotted_path_with_name:
+        return '/' + dotted_path_with_name
+    resource, action = dotted_path_with_name.rsplit(".", 1)
+    if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destory', 'delete']:
+        return '/' + dotted_path_with_name.replace('.', '/')
+    if "." in resource:
+        relations, object = resource.rsplit(".", 1)
+        object = singularize(object)
+    else:
+        object = singularize(resource)
+    resource = resource.replace('.', '/')
+    return _crud_mapping_route(action, resource, object)
+
 def parse_dots(dotted_path_with_name: str) -> Tuple[str, str]:
     parts = dotted_path_with_name.lower().split(".")
     relative_path = '' if len(parts) == 1 else '/'.join(parts[:-1])
@@ -153,6 +172,19 @@ def singularize(name: str) -> str:
 def view_make_file(destination_file_path: str, filename: str) -> None:
     content = ''
     _write_file(destination_file_path, content)
+
+def _crud_mapping_route(action: str, resource: str, object: str) -> str:
+    mapping = {
+        "index":    lambda resource, object: f"/{resource}",
+        "create":   lambda resource, object: f"/{resource}/create",
+        "store":    lambda resource, object: f"/{resource}",
+        "show":     lambda resource, object: f"/{resource}/<int:{object}_id>",
+        "edit":     lambda resource, object: f"/{resource}/<int:{object}_id>/edit",
+        "update":   lambda resource, object: f"/{resource}/<int:{object}_id>",
+        "destroy":  lambda resource, object: f"/{resource}/<int:{object}_id>/delete",
+        "delete":   lambda resource, object: f"/{resource}/<int:{object}_id>/delete",
+    }
+    return mapping[action](resource, object)
 
 def _pip_install_in_venv(venv_dir: str, packages):
     print("Installing Python Dependencies")
