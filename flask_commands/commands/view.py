@@ -3,7 +3,7 @@ import click
 from flask_commands.utils import camel_to_snake, controller_add_method, \
     controller_make_file, generate_controller_name_from, \
     generate_route_name_from, parse_dots, singularize, \
-    view_make_file
+    view_make_file, _write_file
 
 
 @click.command(name="make:view")
@@ -54,12 +54,12 @@ def make_view(
         flask make:view posts.index -rm
         flask make:view posts.index --route /posts --model Post
     """
-    relative_path, filename = parse_dots(dotted_path_with_name)
-    relative_view_file_path = os.path.join(relative_path, f"{filename}.html")
+    relative_path, action = parse_dots(dotted_path_with_name)
+    relative_view_file_path = os.path.join(relative_path, f"{action}.html")
     destination_file_path = \
         os.path.join("app", "templates", relative_view_file_path)
     try:
-        view_make_file(destination_file_path, filename)
+        view_make_file(destination_file_path, action)
         click.echo(f"📄 File created at {click.style(destination_file_path, bold=True)}")
     except FileExistsError:
         click.echo(f"⚠️ Warning: A file already exist at {destination_file_path}.  Nothing happened.")
@@ -85,15 +85,57 @@ def make_view(
             # if controller exist just add the method
             if os.path.exists(controller_file_path):
                 completed, message = controller_add_method(
-                    controller_name, filename, relative_view_file_path)
+                    controller_name, action, relative_view_file_path)
             # else create the controller and the method
             else:
                 completed, message = controller_make_file(
-                    controller_name, filename, relative_view_file_path)
+                    controller_name, action, relative_view_file_path)
             click.echo(message)
         except Exception as exception:
             click.echo(f"💣 Error: {exception}")
 
     # If a route was provided, ensure it has a matching url
     if route_name:
-        route_file_path = os.path.join("app", "")
+        if "." not in dotted_path_with_name:
+            route_file_path = os.path.join("app", "routes", "mains")
+            blueprint_name = 'mains'
+        else:
+            route_file_path = os.path.join("app", "routes", relative_path)
+            blueprint_name = relative_path.replace("/", "_")
+        if os.path.exists(route_file_path):
+            # The route folder is already there so we
+            # just need to add to the routes.py file
+            app_init_path = os.path.join("app", "__init__.py")
+        else:
+            # The route folder is not there so we need to create everything:
+            #   1) create routes folder - check
+            os.makedirs(route_file_path)
+            #   2) __init__.py file - check
+            route_init_path = os.path.join(route_file_path, "__init__.py")
+            route_init_content = [
+                 "from flask import Blueprint",
+                 "",
+                f"bp = Blueprint('{blueprint_name}', __name__)",
+                 "",
+                f"from app.routes.{blueprint_name.replace("_", ".")} import routes"
+            ]
+            _write_file(route_init_path, route_init_content)
+            #   3) routes.py file - check
+            route_file_path = os.path.join(route_file_path, "routes.py")
+            using_controller_name = controller_name if controller_name else 'MainController'
+            method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+            route_content = [
+                f"from app.controllers import {using_controller_name}",
+                "",
+                f"from app.routes.{blueprint_name.replace("_", ".")} import bp"
+                "",
+                f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
+                f"def {action}():"
+                f"    return {using_controller_name}.{action}()"
+            ]
+            _write_file(route_file_path, route_content)
+           #   4) update the __init__.py in app directory to include the new blueprint
+            app_init_path = os.path.join("app", "__init__.py")
+
+
+

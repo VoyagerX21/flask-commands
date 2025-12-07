@@ -170,7 +170,7 @@ def singularize(name: str) -> str:
     return name
 
 def view_make_file(destination_file_path: str, filename: str) -> None:
-    content = ''
+    content = []
     _write_file(destination_file_path, content)
 
 def _crud_mapping_route(action: str, resource: str, object: str) -> str:
@@ -196,7 +196,7 @@ def _read_template(file_path):
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
-def _write_file(file_path: str, contents: list):
+def _write_file(file_path: str, contents: list) -> None:
     """Writes the contents to the file_path for a new file.  Raises a File
     Exists error if the file already exists at the given path directory."""
     # Split directory and filename
