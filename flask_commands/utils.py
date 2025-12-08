@@ -102,7 +102,7 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
         f"    def {method_name}() -> str:",
         f"        return render_template('{relative_view_file_path}')"
     ]
-    _write_file(controller_file_path, contents)
+    _file_write(controller_file_path, contents)
 
     controller_init_path = os.path.join("app", "controllers", "__init__.py")
     with open(controller_init_path, "a", encoding="utf-8") as f:
@@ -134,7 +134,7 @@ def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = N
                 for key, value in replacements.items():
                     content = content.replace(key, value)
 
-            _write_file(destination_path, content)
+            _file_write(destination_path, content)
 
 def generate_controller_name_from(relative_path: str) -> str:
     return ''.join([singularize(part).title()
@@ -171,7 +171,7 @@ def singularize(name: str) -> str:
 
 def view_make_file(destination_file_path: str, filename: str) -> None:
     content = []
-    _write_file(destination_file_path, content)
+    _file_write(destination_file_path, content)
 
 def _crud_mapping_route(action: str, resource: str, object: str) -> str:
     mapping = {
@@ -186,17 +186,23 @@ def _crud_mapping_route(action: str, resource: str, object: str) -> str:
     }
     return mapping[action](resource, object)
 
-def _pip_install_in_venv(venv_dir: str, packages):
-    print("Installing Python Dependencies")
-    pip_path = os.path.join(venv_dir, "bin", "pip")
-    subprocess.run([pip_path, "install", *packages], check=True, capture_output=True, text=True)
+def _file_append(file_path: str, contents: list[str]) -> None:
+    """Appends a list of lines from contents to the file_path.  Rasises a File
+    Not Found Error if the file does not exist.
+    """
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"No file exists at : {file_path}")
 
-def _read_template(file_path):
-    """Read a template file and return its content as a string."""
-    with open(file_path, "r", encoding="utf-8") as f:
-        return f.read()
+    normalized_content = [
+        line if line.endswith("\n") else line + "\n"
+        for line in contents
+    ]
 
-def _write_file(file_path: str, contents: list) -> None:
+    with open(file_path, "a") as f:
+        for line in normalized_content:
+            f.write(line)
+
+def _file_write(file_path: str, contents: list[str]) -> None:
     """Writes the contents to the file_path for a new file.  Raises a File
     Exists error if the file already exists at the given path directory."""
     # Split directory and filename
@@ -210,9 +216,24 @@ def _write_file(file_path: str, contents: list) -> None:
     if os.path.exists(file_path):
         raise FileExistsError(f"{file_path} already exists")
 
+    normalized_content = [
+        line if line.endswith("\n") else line + "\n"
+        for line in contents
+    ]
+
     # Write text with UTF-8 encoding
     with open(file_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(contents) + "\n")
+        f.writelines(normalized_content)
+
+def _pip_install_in_venv(venv_dir: str, packages):
+    print("Installing Python Dependencies")
+    pip_path = os.path.join(venv_dir, "bin", "pip")
+    subprocess.run([pip_path, "install", *packages], check=True, capture_output=True, text=True)
+
+def _read_template(file_path):
+    """Read a template file and return its content as a string."""
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
 
 def _write_requirements_from_venv(venv_dir: str, project_path: str):
     """
