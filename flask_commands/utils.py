@@ -41,8 +41,10 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
     # If method already exists, do nothing and warn user
     if re.search(method_pattern, source):
         message = (
-            f"⚠️ Warning: Controller {controller_name} already "
-            f"contains method '{method_name}'.")
+            click.style("⚠️ Warning: Method Already Exists\n", fg="yellow", bold=True) +
+            click.style(f"Controller '{controller_name}' already has a method named '{method_name}'.\n", fg="yellow") +
+            click.style("No changes were made.", fg="cyan")
+        )
         return False, message
 
     # Try to find class definition to insert method into
@@ -83,12 +85,19 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
         new_source = "\n".join(lines)
         with open(controller_file_path, "w", encoding="utf-8") as f:
             f.write(new_source)
-        message = f"✅ Added method '{method_name}' to {controller_name}"
+        message = (
+            click.style("✅ Method Added Successfully\n", fg="green", bold=True) +
+            click.style(f"Added method '{method_name}' to controller '{controller_name}'.\n", fg="green") +
+            click.style(f"View: {relative_view_file_path}", fg="cyan")
+        )
         return True, message
 
-    message =  (
-        f"⚠️ Warning: Could not find class {controller_name} "
-        f"in file {controller_file_path}." )
+    message = (
+        click.style("⚠️ Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
+        click.style(f"Could not locate class '{controller_name}' inside:\n", fg="yellow") +
+        click.style(f"  - {controller_file_path}\n", fg="cyan") +
+        click.style("No method was added.", fg="yellow")
+    )
     return False, message
 
 def controller_make_file(controller_name: str, method_name: str, relative_view_file_path: str) -> Tuple[bool, str]:
@@ -137,8 +146,13 @@ def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = N
             _file_write(destination_path, content)
 
 def generate_controller_name_from(relative_path: str) -> str:
-    return ''.join([singularize(part).title()
+    return ''.join([_singularize(part).title()
                     for part in relative_path.split('/')]) + "Controller"
+
+def generate_route_file_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
+    if "." not in dotted_path_with_name:
+        return os.path.join("app", "routes", "mains"), 'mains'
+    return  os.path.join("app", "routes", relative_path), relative_path.replace("/", "_")
 
 def generate_route_name_from(dotted_path_with_name: str) -> str:
     if "." not in dotted_path_with_name:
@@ -148,9 +162,9 @@ def generate_route_name_from(dotted_path_with_name: str) -> str:
         return '/' + dotted_path_with_name.replace('.', '/')
     if "." in resource:
         relations, object = resource.rsplit(".", 1)
-        object = singularize(object)
+        object = _singularize(object)
     else:
-        object = singularize(resource)
+        object = _singularize(resource)
     resource = resource.replace('.', '/')
     return _crud_mapping_route(action, resource, object)
 
@@ -159,15 +173,74 @@ def parse_dots(dotted_path_with_name: str) -> Tuple[str, str]:
     relative_path = '' if len(parts) == 1 else '/'.join(parts[:-1])
     return relative_path, parts[-1]
 
-def singularize(name: str) -> str:
-    name = name.lower()
-    if name.endswith("ies"):
-        return name[:-3] + "y"  # categories -> category
-    if name.endswith("ses"):
-        return name[:-2]        # classes -> class
-    if name.endswith("s") and len(name) > 1:
-        return name[:-1]        # posts -> post
-    return name
+def route_add_method(route_name: str, action: str, relative_path: str, controller_name: str | None) -> Tuple[bool, str]:
+    # The route folder is already there so we just need to add to routes.py
+    route_file_path = os.path.join(route_file_path, "routes.py")
+    using_controller_name = controller_name if controller_name else 'MainController'
+    method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+    route_content = [
+        ""
+        f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
+        f"def {action}():"
+        f"    return {using_controller_name}.{action}()"
+    ]
+    _file_append(route_file_path, route_content)
+    message = (
+        click.style(f"✅ Added {method} route '{action}' to '{route_name}'.", fg="green") + "\n" +
+        click.style(f"🔗 Use url_for('{route_name}.{action}') to reference it.", fg="yellow")
+    )
+    return True, message
+
+def route_make_directory_and_register_blueprint(route_name: str,  action: str, relative_path: str, blueprint_name: str, controller_name: str | None) -> Tuple[bool, str]:
+    # The route folder is not there so we need to create everything:
+    #   1) create routes folder - check
+    os.makedirs(route_file_path)
+    #   2) __init__.py file - check
+    route_init_path = os.path.join(route_file_path, "__init__.py")
+    route_init_content = [
+            "from flask import Blueprint",
+            "",
+        f"bp = Blueprint('{blueprint_name}', __name__)",
+            "",
+        f"from app.routes.{blueprint_name.replace("_", ".")} import routes"
+    ]
+    _file_write(route_init_path, route_init_content)
+    #   3) routes.py file - check
+    route_file_path = os.path.join(route_file_path, "routes.py")
+    using_controller_name = controller_name if controller_name else 'MainController'
+    method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+    route_content = [
+        f"from app.controllers import {using_controller_name}",
+        "",
+        f"from app.routes.{blueprint_name.replace("_", ".")} import bp"
+        "",
+        f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
+        f"def {action}():"
+        f"    return {using_controller_name}.{action}()"
+    ]
+    _file_write(route_file_path, route_content)
+    #  4) update the __init__.py in app directory to include the new blueprint
+    app_init_path = os.path.join("app", "__init__.py")
+    with open(app_init_path, "r", encoding="utf-8") as f:
+        source = f.read()
+
+    match = re.search(r"^\s*return app\b", source, flags=re.MULTILINE)
+    insert_index = match.start()
+    new_blueprint = [
+        f"    from {route_file_path.replace('/', '.')} import bp as {blueprint_name}_blueprint"
+        f"    app.register_blueprint({blueprint_name}_blueprint)"
+    ]
+    new_blueprint = "\n".join(new_blueprint)
+    new_content = source[:insert_index] + new_blueprint + "\n" + source[insert_index:]
+    with open(app_init_path, "w") as f:
+        f.write(new_content)
+    message = (
+        click.style(f"📁 Created new route directory for '{blueprint_name}'.", fg="green") + "\n" +
+        click.style(f"🧩 Registered the '{blueprint_name}' blueprint and added it to app.__init__.", fg="cyan") + "\n" +
+        click.style(f"🛠️ Generated routes.py with the initial {method} action '{action}'.", fg="magenta") + "\n" +
+        click.style(f"🔗 Reference using url_for('{route_name}.{action}').", fg="yellow")
+    )
+    return True, message
 
 def view_make_file(destination_file_path: str, filename: str) -> None:
     content = []
@@ -234,6 +307,16 @@ def _read_template(file_path):
     """Read a template file and return its content as a string."""
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
+
+def _singularize(name: str) -> str:
+    name = name.lower()
+    if name.endswith("ies"):
+        return name[:-3] + "y"  # categories -> category
+    if name.endswith("ses"):
+        return name[:-2]        # classes -> class
+    if name.endswith("s") and len(name) > 1:
+        return name[:-1]        # posts -> post
+    return name
 
 def _write_requirements_from_venv(venv_dir: str, project_path: str):
     """
