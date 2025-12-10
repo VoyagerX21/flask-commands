@@ -79,12 +79,20 @@ def make_view(
             click.echo(f"⚠️ Warning: Could not infer the controller name "
                        f"from {dotted_path_with_name}")
 
+    # Infer route name if not provided
     if generate_route and route_name is None:
         route_name = generate_route_name_from(dotted_path_with_name)
         click.echo(f"Inferred the route name as "
                    f"{click.style(route_name, bold=True)}")
 
-    # If a controller was provided, ensure it has a matching static method
+
+    # Infer model name if not provided
+    if generate_model and model_name is None:
+        message, model_name, table_name = \
+            generate_model_name_from(relative_path, dotted_path_with_name)
+        click.echo(message)
+
+    # If a controller_name was provided or inferred
     if controller_name:
         controller_file_path = \
             os.path.join(
@@ -104,7 +112,7 @@ def make_view(
         except Exception as exception:
             click.echo(f"💣 Error: {exception}")
 
-    # If a route was provided, ensure it has a matching url
+    # If a controller_name was provided or inferred
     if route_name:
         route_file_path, blueprint_name = \
             generate_route_file_path_and_blueprint_name(
@@ -125,3 +133,42 @@ def make_view(
             click.echo(message)
         except Exception as exception:
             click.echo(f"💣 Error: {exception}")
+
+    # If a model_name was provided or inferred
+    if model_name:
+        model_file_path = os.path.join("app", "models", f"{model_name.lower()}.py")
+        model_init_path = os.path.join("app", "models", "__init__.py")
+        try:
+            init_contents = [f"from .{model_name.lower()} import {model_name}"]
+            _file_append(model_init_path, init_contents)
+            file_contents = [
+                "from app import db",
+                "from datetime import datetime, timezone",
+                "",
+                f"class {model_name}(db.Model):",
+                f"    __tablename__ = '{generate_table_name_from_model_name(model_name)}'",
+                "    # Columns",
+                "    id = db.Column(db.Integer, primary_key=True)",
+                "    created_at = db.Column(db.DateTime(timezone=True),",
+                "                           index=True, ",
+                "                           default=lambda: datetime.now(timezone.utc))",
+                "    updated_at = db.Column(db.DateTime(timezone=True),",
+                "                           default=lambda: datetime.now(timezone.utc), ",
+                "                           onupdate=lambda: datetime.now(timezone.utc))",
+                "",
+                "    def store_in_database(self):",
+                "        db.session.add(self)",
+                "        db.session.commit()",
+                "",
+                "    def delete_from_database(self):",
+                "        db.session.delete(self)",
+                "        db.session.commit()",
+                "",
+                "    def __repr__(self):",
+                '        """Model representation for Code Debugging"""',
+                f"        return f'<{model_name} id:{{self.id}}>'",
+            ]
+            _file_write(model_file_path, file_contents)
+        except Exception as exception:
+            click.echo(f"💣 Error: {exception}")
+

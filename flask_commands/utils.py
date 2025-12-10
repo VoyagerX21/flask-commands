@@ -149,6 +149,19 @@ def generate_controller_name_from(relative_path: str) -> str:
     return ''.join([_singularize(part).title()
                     for part in relative_path.split('/')]) + "Controller"
 
+def generate_model_name_from(relative_path: str, dotted_path_with_name: str) -> Tuple[str, str]:
+    if relative_path != "":
+        model_name = _singularize(relative_path.split('/')[-1]).title()
+    else:
+        model_name = _singularize(dotted_path_with_name).title()
+    message = (
+        f"Infered the model name as ",
+        f"{click.style(model_name, bold=True)}")
+    return message, model_name
+
+def generate_table_name_from_model_name(model_name: str) -> str:
+    return _pluralize(model_name.lower())
+
 def generate_route_file_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
     if "." not in dotted_path_with_name:
         return os.path.join("app", "routes", "mains"), 'mains'
@@ -167,6 +180,9 @@ def generate_route_name_from(dotted_path_with_name: str) -> str:
         object = _singularize(resource)
     resource = resource.replace('.', '/')
     return _crud_mapping_route(action, resource, object)
+
+def model_make_file():
+    pass
 
 def parse_dots(dotted_path_with_name: str) -> Tuple[str, str]:
     parts = dotted_path_with_name.lower().split(".")
@@ -297,6 +313,20 @@ def _file_write(file_path: str, contents: list[str]) -> None:
     # Write text with UTF-8 encoding
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(normalized_content)
+
+def _pluralize(name: str) -> str:
+    name = name.lower()
+
+    # category -> categories
+    if name.endswith("y") and len(name) > 1 and name[-2] not in "aeiou":
+        return name[:-1] + "ies"
+
+    # class -> classes (handles most “s”, “x”, “z”, “ch”, “sh” endings)
+    if name.endswith(("s", "x", "z", "ch", "sh")):
+        return name + "es"
+
+    # default: post -> posts
+    return name + "s"
 
 def _pip_install_in_venv(venv_dir: str, packages):
     print("Installing Python Dependencies")
