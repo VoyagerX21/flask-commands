@@ -2,7 +2,6 @@ import os
 import re
 import sys
 import subprocess
-from turtle import dot
 import click
 from typing import Dict, Iterable, Optional, Tuple
 
@@ -145,20 +144,6 @@ def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = N
 
             _file_write(destination_path, content)
 
-def generate_controller_name_from(relative_path: str) -> str:
-    return ''.join([_singularize(part).title()
-                    for part in relative_path.split('/')]) + "Controller"
-
-def generate_model_name_from(relative_path: str, dotted_path_with_name: str) -> Tuple[str, str]:
-    if relative_path != "":
-        model_name = _singularize(relative_path.split('/')[-1]).title()
-    else:
-        model_name = _singularize(dotted_path_with_name).title()
-    message = (
-        f"Infered the model name as ",
-        f"{click.style(model_name, bold=True)}")
-    return message, model_name
-
 def generate_table_name_from_model_name(model_name: str) -> str:
     return _pluralize(model_name.lower())
 
@@ -167,11 +152,25 @@ def generate_route_file_path_and_blueprint_name(dotted_path_with_name: str, rela
         return os.path.join("app", "routes", "mains"), 'mains'
     return  os.path.join("app", "routes", relative_path), relative_path.replace("/", "_")
 
-def generate_route_name_from(dotted_path_with_name: str) -> str:
+def infer_controller_name_from(relative_path: str) -> str:
+    return ''.join([_singularize(part).title()
+                    for part in relative_path.split('/')]) + "Controller"
+
+def infer_model_name_from(relative_path: str, dotted_path_with_name: str) -> Tuple[str, str]:
+    if relative_path != "":
+        model_name = _singularize(relative_path.split('/')[-1]).title()
+    else:
+        model_name = _singularize(dotted_path_with_name).title()
+    message = (
+        f"Infered the model name as "
+        f"{click.style(model_name, bold=True)}")
+    return message, model_name
+
+def infer_route_name_from(dotted_path_with_name: str) -> str:
     if "." not in dotted_path_with_name:
         return '/' + dotted_path_with_name
     resource, action = dotted_path_with_name.rsplit(".", 1)
-    if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destory', 'delete']:
+    if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
         return '/' + dotted_path_with_name.replace('.', '/')
     if "." in resource:
         relations, object = resource.rsplit(".", 1)
@@ -181,17 +180,48 @@ def generate_route_name_from(dotted_path_with_name: str) -> str:
     resource = resource.replace('.', '/')
     return _crud_mapping_route(action, resource, object)
 
-def model_make_file():
-    pass
+def model_make_file(model_name: str, model_init_path: str, model_file_path: str) -> Tuple[bool, str]:
+    init_contents = [f"from .{model_name.lower()} import {model_name}"]
+    _file_append(model_init_path, init_contents)
+    file_contents = [
+        "from app import db",
+        "from datetime import datetime, timezone",
+        "",
+        f"class {model_name}(db.Model):",
+        f"    __tablename__ = '{generate_table_name_from_model_name(model_name)}'",
+        "    # Columns",
+        "    id = db.Column(db.Integer, primary_key=True)",
+        "    created_at = db.Column(db.DateTime(timezone=True),",
+        "                           index=True, ",
+        "                           default=lambda: datetime.now(timezone.utc))",
+        "    updated_at = db.Column(db.DateTime(timezone=True),",
+        "                           default=lambda: datetime.now(timezone.utc), ",
+        "                           onupdate=lambda: datetime.now(timezone.utc))",
+        "",
+        "    def store_in_database(self):",
+        "        db.session.add(self)",
+        "        db.session.commit()",
+        "",
+        "    def delete_from_database(self):",
+        "        db.session.delete(self)",
+        "        db.session.commit()",
+        "",
+        "    def __repr__(self):",
+        '        """Model representation for Code Debugging"""',
+        f"        return f'<{model_name} id:{{self.id}}>'",
+    ]
+    _file_write(model_file_path, file_contents)
+    message = (
+        click.style("✅ Model Created Successfully\n", fg="green", bold=True) +
+        click.style(f"Model '{model_name}' generated at ", fg="green") +
+        click.style(model_file_path, fg="green", bold=True) + "\n" +
+        click.style(f"📦 Registered in {model_init_path}", fg="cyan")
+    )
+    return True, message
 
-def parse_dots(dotted_path_with_name: str) -> Tuple[str, str]:
-    parts = dotted_path_with_name.lower().split(".")
-    relative_path = '' if len(parts) == 1 else '/'.join(parts[:-1])
-    return relative_path, parts[-1]
-
-def route_add_method(route_name: str, action: str, relative_path: str, controller_name: str | None) -> Tuple[bool, str]:
+def route_add_method(route_name: str, action: str, route_folder_path:str, relative_path: str, controller_name: str | None) -> Tuple[bool, str]:
     # The route folder is already there so we just need to add to routes.py
-    route_file_path = os.path.join(route_file_path, "routes.py")
+    route_file_path = os.path.join(route_folder_path, "routes.py")
     using_controller_name = controller_name if controller_name else 'MainController'
     method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
     route_content = [
@@ -207,12 +237,12 @@ def route_add_method(route_name: str, action: str, relative_path: str, controlle
     )
     return True, message
 
-def route_make_directory_and_register_blueprint(route_name: str,  action: str, relative_path: str, blueprint_name: str, controller_name: str | None) -> Tuple[bool, str]:
+def route_make_directory_and_register_blueprint(route_name: str,  action: str, route_folder_path: str, relative_path: str, blueprint_name: str, controller_name: str | None) -> Tuple[bool, str]:
     # The route folder is not there so we need to create everything:
     #   1) create routes folder - check
-    os.makedirs(route_file_path)
+    os.makedirs(route_folder_path)
     #   2) __init__.py file - check
-    route_init_path = os.path.join(route_file_path, "__init__.py")
+    route_init_path = os.path.join(route_folder_path, "__init__.py")
     route_init_content = [
             "from flask import Blueprint",
             "",
@@ -222,7 +252,7 @@ def route_make_directory_and_register_blueprint(route_name: str,  action: str, r
     ]
     _file_write(route_init_path, route_init_content)
     #   3) routes.py file - check
-    route_file_path = os.path.join(route_file_path, "routes.py")
+    route_file_path = os.path.join(route_folder_path, "routes.py")
     using_controller_name = controller_name if controller_name else 'MainController'
     method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
     route_content = [
@@ -257,6 +287,11 @@ def route_make_directory_and_register_blueprint(route_name: str,  action: str, r
         click.style(f"🔗 Reference using url_for('{route_name}.{action}').", fg="yellow")
     )
     return True, message
+
+def split_dotted_path(dotted_path_with_name: str) -> Tuple[str, str]:
+    parts = dotted_path_with_name.lower().split(".")
+    relative_path = '' if len(parts) == 1 else '/'.join(parts[:-1])
+    return relative_path, parts[-1]
 
 def view_make_file(destination_file_path: str, filename: str) -> None:
     content = []
