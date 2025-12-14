@@ -1,0 +1,35 @@
+from typing import Tuple
+
+def crud_mapping_route(action: str, resource: str, object: str) -> str:
+    """
+    Map a CRUD action to a URL pattern for a given resource/object name.
+    - `action`: one of 'index','create','store','show','edit','update','destroy','delete'
+    - `resource`: path-like resource (e.g. 'posts' or 'admin/posts')
+    - `obj`: singular object name used in path variable (e.g. 'post')
+    """
+    mapping = {
+        "index":    lambda resource, object: f"/{resource}",
+        "create":   lambda resource, object: f"/{resource}/create",
+        "store":    lambda resource, object: f"/{resource}",
+        "show":     lambda resource, object: f"/{resource}/<int:{object}_id>",
+        "edit":     lambda resource, object: f"/{resource}/<int:{object}_id>/edit",
+        "update":   lambda resource, object: f"/{resource}/<int:{object}_id>",
+        "destroy":  lambda resource, object: f"/{resource}/<int:{object}_id>/delete",
+        "delete":   lambda resource, object: f"/{resource}/<int:{object}_id>/delete",
+    }
+    return mapping[action](resource, object)
+
+def split_dotted_path(dotted_path_with_name: str) -> Tuple[str, str]:
+    """
+    Split a dotted path like 'posts.index' -> (relative_path, action).
+    Examples:
+      'posts.index' -> ('posts', 'index')
+      'admin.posts.show' -> ('admin/posts', 'show')
+      'index' -> ('', 'index')
+    The action is always the last segment; the rest form a relative path.
+    """
+    parts = dotted_path_with_name.lower().split(".")
+    action = parts[-1]
+    relative_path = '' if len(parts) == 1 else '/'.join(parts[:-1])
+    return relative_path, action
+

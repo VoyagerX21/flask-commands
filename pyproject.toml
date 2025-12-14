@@ -11,6 +11,10 @@ requires-python = ">=3.10"
 dependencies = [
     "click (>=8.3.1,<9.0.0)"
 ]
+include = [
+    { path = "flask_commands/project", format = "sdist" },
+    { path = "flask_commands/project", format = "wheel" }
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

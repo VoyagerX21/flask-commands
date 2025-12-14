@@ -1,0 +1,98 @@
+# model_make_file, generate_table_name_from_model_name,  model_infer_name_from
+import click
+from typing import Tuple
+from .files import append_file, write_file
+from .naming import pluralize, singularize
+
+def generate_table_name_from_model_name(model_name: str) -> str:
+    return pluralize(model_name.lower())
+
+def model_infer_name_from(relative_path: str, dotted_path_with_name: str) -> Tuple[str, str]:
+    """
+    Infer a model name from either a relative file path or a dotted path.
+
+    Extracts the last component from the relative path (or uses the dotted path as fallback),
+    singularizes it, and converts it to title case.
+
+    Args:
+        relative_path (str): The relative file path to the model. If empty, dotted_path_with_name is used.
+        dotted_path_with_name (str): The dotted module path or name to use as fallback.
+
+    Returns:
+        A tuple containing:
+            - str: A formatted message indicating the inferred model name with bold styling.
+            - str: The inferred model name in title case.
+
+    Example:
+        >>> message, name = model_infer_name_from("posts", "posts.index")
+        >>> name
+        'Post'
+        >>> message, name = model_infer_name_from("", "posts")
+        >>> name
+        'Posts'
+    """
+    if relative_path != "":
+        model_name = singularize(relative_path.split('/')[-1]).title()
+    else:
+        model_name = singularize(dotted_path_with_name).title()
+    message = (
+        f"Infered the model name as "
+        f"{click.style(model_name, bold=True)}")
+    return message, model_name
+
+def model_make_file(model_name: str, model_init_path: str, model_file_path: str) -> Tuple[bool, str]:
+    """
+    Create a new SQLAlchemy model file with standard boilerplate code.
+
+    This function generates a model class file with common attributes (id, created_at, updated_at)
+    and database operations (store_in_database, delete_from_database). It also registers the model
+    in the __init__.py file by adding an import statement.
+
+    Args:
+        model_name (str): The name of the model class to create (example, 'User', 'Post').
+        model_init_path (str): The file path to the models __init__.py file where the import
+                               statement will be appended.
+        model_file_path (str): The file path where the new model file will be created.
+
+    Returns:
+        Tuple[bool, str]: A tuple containing:
+            - bool: True if the model was created successfully.
+            - str: A formatted success message with file paths and status indicators.
+    """
+    init_contents = [f"from .{model_name.lower()} import {model_name}"]
+    append_file(model_init_path, init_contents)
+    file_contents = [
+        "from app import db",
+        "from datetime import datetime, timezone",
+        "",
+        f"class {model_name}(db.Model):",
+        f"    __tablename__ = '{generate_table_name_from_model_name(model_name)}'",
+        "    # Columns",
+        "    id = db.Column(db.Integer, primary_key=True)",
+        "    created_at = db.Column(db.DateTime(timezone=True),",
+        "                           index=True, ",
+        "                           default=lambda: datetime.now(timezone.utc))",
+        "    updated_at = db.Column(db.DateTime(timezone=True),",
+        "                           default=lambda: datetime.now(timezone.utc), ",
+        "                           onupdate=lambda: datetime.now(timezone.utc))",
+        "",
+        "    def store_in_database(self):",
+        "        db.session.add(self)",
+        "        db.session.commit()",
+        "",
+        "    def delete_from_database(self):",
+        "        db.session.delete(self)",
+        "        db.session.commit()",
+        "",
+        "    def __repr__(self):",
+        '        """Model representation for Code Debugging"""',
+        f"        return f'<{model_name} id:{{self.id}}>'",
+    ]
+    write_file(model_file_path, file_contents)
+    message = (
+        click.style("✅ Model Created Successfully\n", fg="green", bold=True) +
+        click.style(f"Model '{model_name}' generated at ", fg="green") +
+        click.style(model_file_path, fg="green", bold=True) + "\n" +
+        click.style(f"📦 Registered in {model_init_path}", fg="cyan")
+    )
+    return True, message

@@ -1,0 +1,104 @@
+import os
+import re
+import click
+from typing import Tuple
+from .files import write_file
+from .naming import camel_to_snake, singularize
+
+
+def controller_add_method(controller_name: str, method_name: str, relative_view_file_path: str) -> Tuple[bool, str]:
+    controller_file_path = os.path.join(
+        "app", "controllers", f"{camel_to_snake(controller_name)}.py")
+    # Read existing controller and check for method
+    with open(controller_file_path, "r", encoding="utf-8") as f:
+        source = f.read()
+
+    method_pattern = rf"def\s+{re.escape(method_name)}\s*\(\)\s*(?:->\s*[^:]+)?\s*:"
+    # If method already exists, do nothing and warn user
+    if re.search(method_pattern, source):
+        message = (
+            click.style("⚠️ Warning: Method Already Exists\n", fg="yellow", bold=True) +
+            click.style(f"Controller '{controller_name}' already has a method named '{method_name}'.\n", fg="yellow") +
+            click.style("No changes were made.", fg="cyan")
+        )
+        return False, message
+
+    # Try to find class definition to insert method into
+    class_pattern = rf"^class\s+{re.escape(controller_name)}\b.*:\\s*$"
+    lines = source.splitlines()
+    insert_index = None
+    # 1. Find the class
+    for i, line in enumerate(lines):
+        if re.match(class_pattern, line):
+            # 2. find end of class (next top-level def/class or EOF)
+            j = i + 1
+            while j < len(lines):
+                # skip blank lines inside the class
+                if lines[j].strip() == "":
+                    j += 1
+                    continue
+                # top-level (no indent)
+                if len(lines[j]) - len(lines[j].lstrip()) == 0 and \
+                        re.match(r"^(class|def)\b", lines[j]):
+                    break
+                j += 1
+            insert_index = j
+            break
+
+    # 3. Build the new static method block
+    method_block = [
+         "",
+         "    @staticmethod",
+        f"    def {method_name}() -> str:",
+        f"        return render_template('{relative_view_file_path}')"
+    ]
+
+    # 4. Insert new static method block
+    if insert_index is not None:
+        for line in reversed(method_block):
+            lines.insert(insert_index, line)
+
+        new_source = "\n".join(lines)
+        with open(controller_file_path, "w", encoding="utf-8") as f:
+            f.write(new_source)
+        message = (
+            click.style("✅ Method Added Successfully\n", fg="green", bold=True) +
+            click.style(f"Added method '{method_name}' to controller '{controller_name}'.\n", fg="green") +
+            click.style(f"View: {relative_view_file_path}", fg="cyan")
+        )
+        return True, message
+
+    message = (
+        click.style("⚠️ Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
+        click.style(f"Could not locate class '{controller_name}' inside:\n", fg="yellow") +
+        click.style(f"  - {controller_file_path}\n", fg="cyan") +
+        click.style("No method was added.", fg="yellow")
+    )
+    return False, message
+
+def controller_infer_name_from(relative_path: str) -> str:
+    return ''.join([singularize(part).title()
+                    for part in relative_path.split('/')]) + "Controller"
+
+def controller_make_file(controller_name: str, method_name: str, relative_view_file_path: str) -> Tuple[bool, str]:
+    controller_file_path = os.path.join(
+        "app", "controllers", f"{camel_to_snake(controller_name)}.py")
+    contents = [
+         "from flask import render_template",
+         "",
+        f"class {controller_name}(object):",
+         "    @staticmethod",
+        f"    def {method_name}() -> str:",
+        f"        return render_template('{relative_view_file_path}')"
+    ]
+    write_file(controller_file_path, contents)
+
+    controller_init_path = os.path.join("app", "controllers", "__init__.py")
+    with open(controller_init_path, "a", encoding="utf-8") as f:
+        f.write(f"from .{camel_to_snake(controller_name)} import {controller_name}")
+
+    message = (
+        f"✅ Created controller {controller_name} with method "
+        f"'{method_name}' at {click.style(controller_file_path, bold=True)}")
+
+    return True, message

@@ -2,7 +2,7 @@ import os
 import click
 from flask_commands.utils import camel_to_snake, controller_add_method, \
     controller_make_file, generate_route_file_path_and_blueprint_name, \
-    infer_controller_name_from, infer_model_name_from, infer_route_name_from, \
+    controller_infer_name_from, model_infer_name_from, route_infer_name_from, \
     model_make_file, route_add_method, \
     route_make_directory_and_register_blueprint, split_dotted_path, \
     view_make_file
@@ -12,7 +12,7 @@ from flask_commands.utils import camel_to_snake, controller_add_method, \
 @click.argument("dotted_path_with_name")
 @click.option("--controller", "controller_name", default=None,
               help="Optional controller class name (example PostController).")
-@click.option("-c", "--generate-controller", if_flag=True,
+@click.option("-c", "--generate-controller", is_flag=True,
               help="Optional controller flag to generate an inferred controller from the dotted path name.")
 @click.option("--route", "route_name", default=None,
               help="Optional route class name (example post).")
@@ -65,15 +65,15 @@ def make_view(
         click.echo(f"📄 File created at "
                    f"{click.style(destination_file_path, bold=True)}")
     except FileExistsError:
-        click.echo(f"⚠️ Warning: A file already exist at
-                   {destination_file_path}.  Nothing happened.")
+        click.echo(f"⚠️ Warning: A file already exist at"
+                   f"{destination_file_path}.  Nothing happened.")
     except Exception as exception:
         click.echo(f"💣 Error: {exception}")
 
     # Infer controller name if not provided
     if generate_controller and controller_name is None:
         if relative_path != '':
-            controller_name = infer_controller_name_from(relative_path)
+            controller_name = controller_infer_name_from(relative_path)
             click.echo(f"Inferred the controller name as "
                        f"{click.style(controller_name, bold=True)}")
         else:
@@ -82,7 +82,7 @@ def make_view(
 
     # Infer route name if not provided
     if generate_route and route_name is None:
-        route_name = infer_route_name_from(dotted_path_with_name)
+        route_name = oute_infer_name_from(dotted_path_with_name)
         click.echo(f"Inferred the route name as "
                    f"{click.style(route_name, bold=True)}")
 
@@ -90,7 +90,7 @@ def make_view(
     # Infer model name if not provided
     if generate_model and model_name is None:
         message, model_name = \
-            infer_model_name_from(relative_path, dotted_path_with_name)
+            model_infer_name_from(relative_path, dotted_path_with_name)
         click.echo(message)
 
     # If a controller_name was provided or inferred
@@ -132,7 +132,7 @@ def make_view(
                     route_make_directory_and_register_blueprint(
                         route_name,
                         action,
-                        route_folder_path
+                        route_folder_path,
                         relative_path,
                         blueprint_name,
                         controller_name)
@@ -150,4 +150,3 @@ def make_view(
             click.echo(message)
         except Exception as exception:
             click.echo(f"💣 Error: {exception}")
-
