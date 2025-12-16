@@ -3,7 +3,7 @@ name = "flask-commands"
 version = "0.1.0"
 description = "A set of command line tools that help you scaffold out your flask application quickly."
 authors = [
-    {name = "Drew Butcher"}
+    {name = "Drew Butcher",email = "drewlbutcher@gmail.com"}
 ]
 license = {text = "MIT"}
 readme = "README.md"
