@@ -82,11 +82,11 @@ def route_make_directory_and_register_blueprint(route_name: str, action: str, ro
     #   2) __init__.py file - check
     route_init_path = os.path.join(route_folder_path, "__init__.py")
     route_init_content = [
-            "from flask import Blueprint",
-            "",
+         "from flask import Blueprint",
+         "",
         f"bp = Blueprint('{blueprint_name}', __name__)",
-            "",
-        f"from app.routes.{blueprint_name.replace("_", ".")} import routes"
+         "",
+        f"from app.routes.{blueprint_name.replace('_', '.')} import routes"
     ]
     write_file(route_init_path, route_init_content)
     #   3) routes.py file - check
