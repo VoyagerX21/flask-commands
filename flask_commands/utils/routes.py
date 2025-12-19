@@ -96,7 +96,7 @@ def route_make_directory_and_register_blueprint(route_name: str, action: str, ro
     route_content = [
         f"from app.controllers import {using_controller_name}",
         "",
-        f"from app.routes.{blueprint_name.replace("_", ".")} import bp"
+        f"from app.routes.{blueprint_name.replace('_', '.')} import bp"
         "",
         f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
         f"def {action}():"
