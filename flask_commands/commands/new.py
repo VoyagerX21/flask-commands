@@ -3,7 +3,8 @@ import shutil
 import subprocess
 import json
 import click
-from flask_commands.utils import create_venv, copy_templates
+from flask_commands.utils.venv import create_venv
+from flask_commands.utils.files import copy_templates
 
 @click.command()
 @click.argument("project_name")

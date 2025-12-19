@@ -1,11 +1,25 @@
 import os
 import click
-from flask_commands.utils import camel_to_snake, controller_add_method, \
-    controller_make_file, generate_route_file_path_and_blueprint_name, \
-    controller_infer_name_from, model_infer_name_from, route_infer_name_from, \
-    model_make_file, route_add_method, \
-    route_make_directory_and_register_blueprint, split_dotted_path, \
-    view_make_file
+
+from flask_commands.utils.controllers import (
+    controller_add_method,
+    controller_infer_name_from,
+    controller_make_file
+)
+from flask_commands.utils.models import (
+    model_infer_name_from,
+    model_make_file
+)
+from flask_commands.utils.naming import camel_to_snake
+from flask_commands.utils.routes import (
+    route_add_method,
+    route_infer_name_from,
+    route_make_directory_and_register_blueprint,
+    generate_route_file_path_and_blueprint_name
+)
+
+from flask_commands.utils.scaffold import split_dotted_path
+from flask_commands.utils.views import view_make_file
 
 
 @click.command(name="make:view")
@@ -82,7 +96,7 @@ def make_view(
 
     # Infer route name if not provided
     if generate_route and route_name is None:
-        route_name = oute_infer_name_from(dotted_path_with_name)
+        route_name = route_infer_name_from(dotted_path_with_name)
         click.echo(f"Inferred the route name as "
                    f"{click.style(route_name, bold=True)}")
 

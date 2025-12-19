@@ -1,6 +1,51 @@
 __pycache__/
 */__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
 
+# OS
+.DS_Store
+Thumbs.db
 *.DS_Store
 
+# Virtualenvs (already present but keep both forms)
+venv/
+.venv/
+ENV/
+env/
+.env/
+.env
 
+*.egg-info/
+dist/
+build/
+
+# Test / caching
+.coverage
+htmlcov/
+.cache/
+.pytest_cache/
+coverage.xml
+
+# Type checker caches
+.mypy_cache/
+.pytype/
+
+# Editors / IDEs
+.vscode/
+.idea/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Pip / wheel metadata
+pip-wheel-metadata/
+
+# Misc
+*.log
+*.tmp

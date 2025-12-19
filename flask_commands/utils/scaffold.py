@@ -2,10 +2,10 @@ from typing import Tuple
 
 def crud_mapping_route(action: str, resource: str, object: str) -> str:
     """
-    Map a CRUD action to a URL pattern for a given resource/object name.
+    Map a CRUD action to a URL pattern for a given resource with object name.
     - `action`: one of 'index','create','store','show','edit','update','destroy','delete'
-    - `resource`: path-like resource (e.g. 'posts' or 'admin/posts')
-    - `obj`: singular object name used in path variable (e.g. 'post')
+    - `resource`: path-like resource (e.g. 'posts' or 'admin/posts' or 'admin/posts/comments')
+    - `obj`: singular object name used in resource variable ideally at the end (e.g. 'post', 'comment')
     """
     mapping = {
         "index":    lambda resource, object: f"/{resource}",

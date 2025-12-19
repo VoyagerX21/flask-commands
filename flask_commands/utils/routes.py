@@ -160,16 +160,14 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
     """
     if "." not in dotted_path_with_name:
         return '/' + dotted_path_with_name
-    resource, action = dotted_path_with_name.rsplit(".", 1)
+    relative_path, action = dotted_path_with_name.rsplit(".", 1)
     if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
         return '/' + dotted_path_with_name.replace('.', '/')
-    if "." in resource:
-        relations, object = resource.rsplit(".", 1)
-        object = singularize(object)
+    if "/" in relative_path:
+        object = singularize(relative_path.rsplit("/", 1)[-1])
     else:
-        object = resource
-    resource = resource.replace('.', '/')
-    return crud_mapping_route(action, resource, object)
+        object = relative_path
+    return crud_mapping_route(action, relative_path, object)
 
 def generate_route_file_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
     """
