@@ -34,6 +34,7 @@ def new(project_name):
     # Install Tailwind CSS via npm in the project directory (dev dependency)
     if shutil.which("npm") is None:
         click.echo("npm not found on PATH; skipping Tailwind installation.")
+        click.echo("You will need to install npm on your system first and then you can follow these directions to install tailwind")
         click.echo(f"To install later: cd {project_name} && npm install tailwindcss @tailwindcss/cli")
     else:
         try:
