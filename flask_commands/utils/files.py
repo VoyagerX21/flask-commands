@@ -12,6 +12,7 @@ def append_file(file_path: str, contents: list[str]) -> None:
         line if line.endswith("\n") else line + "\n"
         for line in contents
     ]
+    normalized_content.insert(0, '\n')
 
     with open(file_path, "a") as f:
         for line in normalized_content:
