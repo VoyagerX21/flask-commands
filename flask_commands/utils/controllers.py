@@ -24,7 +24,7 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
         return False, message
 
     # Try to find class definition to insert method into
-    class_pattern = rf"^class\s+{re.escape(controller_name)}\b.*:\\s*$"
+    class_pattern = rf"^class\s+{re.escape(controller_name)}\b.*:\s*$"
     lines = source.splitlines()
     insert_index = None
     # 1. Find the class
@@ -53,28 +53,32 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
         f"        return render_template('{relative_view_file_path}')"
     ]
 
-    # 4. Insert new static method block
-    if insert_index is not None:
-        for line in reversed(method_block):
-            lines.insert(insert_index, line)
-
-        new_source = "\n".join(lines)
-        with open(controller_file_path, "w", encoding="utf-8") as f:
-            f.write(new_source)
+    # If the controller class isn’t found do nothing and warn user
+    if insert_index is None:
         message = (
-            click.style("✅ Method Added Successfully\n", fg="green", bold=True) +
-            click.style(f"Added method '{method_name}' to controller '{controller_name}'.\n", fg="green") +
-            click.style(f"View: {relative_view_file_path}", fg="cyan")
+            click.style("⚠️ Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
+            click.style(f"Could not locate class '{controller_name}' inside:\n", fg="yellow") +
+            click.style(f"  - {controller_file_path}\n", fg="cyan") +
+            click.style("No method was added.", fg="yellow")
         )
-        return True, message
+        return False, message
 
+
+    # 4. Insert new static method block
+    for line in reversed(method_block):
+        lines.insert(insert_index, line)
+
+    new_source = "\n".join(lines)
+    with open(controller_file_path, "w", encoding="utf-8") as f:
+        f.write(new_source)
     message = (
-        click.style("⚠️ Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
-        click.style(f"Could not locate class '{controller_name}' inside:\n", fg="yellow") +
-        click.style(f"  - {controller_file_path}\n", fg="cyan") +
-        click.style("No method was added.", fg="yellow")
+        click.style("✅ Method Added Successfully\n", fg="green", bold=True) +
+        click.style(f"Added method '{method_name}' to controller '{controller_name}'.\n", fg="green") +
+        click.style(f"View: {relative_view_file_path}", fg="cyan")
     )
-    return False, message
+    return True, message
+
+
 
 def controller_infer_name_from(relative_path: str) -> str:
     return ''.join([singularize(part).title()
