@@ -96,3 +96,18 @@ def test_controller_add_method_success(controller_project):
     assert "def index()" in updated_source
     assert "return render_template('posts/index.html')" in updated_source
 
+def test_controller_infer_name_from():
+    assert controller_infer_name_from('posts') == 'PostController'
+    assert controller_infer_name_from('admin/posts') == 'AdminPostController'
+    assert controller_infer_name_from('posts/comments') == 'PostCommentController'
+
+def test_controller_make_file_success(controller_project):
+
+    success, message = controller_make_file(
+        controller_name="PostController",
+        method_name="index",
+        relative_view_file_path="posts/index.html"
+    )
+
+    assert success == True
+    assert "Created controller" in message

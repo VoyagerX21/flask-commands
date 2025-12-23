@@ -29,7 +29,7 @@ def model_infer_name_from(relative_path: str, dotted_path_with_name: str) -> Tup
         'Post'
         >>> message, name = model_infer_name_from("", "posts")
         >>> name
-        'Posts'
+        'Post'
     """
     if relative_path != "":
         model_name = singularize(relative_path.split('/')[-1]).title()

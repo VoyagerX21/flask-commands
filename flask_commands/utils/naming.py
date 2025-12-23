@@ -1,4 +1,3 @@
-#  _pluralize, _singularize, split_dotted_path
 import re
 
 def camel_to_snake(name: str) -> str:
