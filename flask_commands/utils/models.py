@@ -59,36 +59,65 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
             - bool: True if the model was created successfully.
             - str: A formatted success message with file paths and status indicators.
     """
-    init_contents = [f"from .{model_name.lower()} import {model_name}"]
-    append_file(model_init_path, init_contents)
-    file_contents = [
-        "from app import db",
-        "from datetime import datetime, timezone",
-        "",
-        f"class {model_name}(db.Model):",
-        f"    __tablename__ = '{generate_table_name_from_model_name(model_name)}'",
-        "    # Columns",
-        "    id = db.Column(db.Integer, primary_key=True)",
-        "    created_at = db.Column(db.DateTime(timezone=True),",
-        "                           index=True, ",
-        "                           default=lambda: datetime.now(timezone.utc))",
-        "    updated_at = db.Column(db.DateTime(timezone=True),",
-        "                           default=lambda: datetime.now(timezone.utc), ",
-        "                           onupdate=lambda: datetime.now(timezone.utc))",
-        "",
-        "    def store_in_database(self):",
-        "        db.session.add(self)",
-        "        db.session.commit()",
-        "",
-        "    def delete_from_database(self):",
-        "        db.session.delete(self)",
-        "        db.session.commit()",
-        "",
-        "    def __repr__(self):",
-        '        """Model representation for Code Debugging"""',
-        f"        return f'<{model_name} id:{{self.id}}>'",
-    ]
-    write_file(model_file_path, file_contents)
+    try:
+        file_contents = [
+            "from app import db",
+            "from datetime import datetime, timezone",
+            "",
+            f"class {model_name}(db.Model):",
+            f"    __tablename__ = '{generate_table_name_from_model_name(model_name)}'",
+            "    # Columns",
+            "    id = db.Column(db.Integer, primary_key=True)",
+            "    created_at = db.Column(db.DateTime(timezone=True),",
+            "                           index=True, ",
+            "                           default=lambda: datetime.now(timezone.utc))",
+            "    updated_at = db.Column(db.DateTime(timezone=True),",
+            "                           default=lambda: datetime.now(timezone.utc), ",
+            "                           onupdate=lambda: datetime.now(timezone.utc))",
+            "",
+            "    def store_in_database(self):",
+            "        db.session.add(self)",
+            "        db.session.commit()",
+            "",
+            "    def delete_from_database(self):",
+            "        db.session.delete(self)",
+            "        db.session.commit()",
+            "",
+            "    def __repr__(self):",
+            '        """Model representation for Code Debugging"""',
+            f"        return f'<{model_name} id:{{self.id}}>'",
+        ]
+        write_file(model_file_path, file_contents)
+    except FileExistsError:
+        message = (
+            click.style("⚠️ Warning: Model Already Exists\n", fg="yellow", bold=True) +
+            click.style(f"Model '{model_name}' already exists.\n", fg="yellow" ) +
+            click.style("No changes were made.", fg="cyan")
+        )
+        return False, message
+    except Exception as exception:
+        return False, click.style(
+            f"💣 Error: Failed to create model:\n{exception}", fg="red")
+
+    try:
+        init_contents = [f"from .{model_name.lower()} import {model_name}"]
+        append_file(model_init_path, init_contents)
+    except FileNotFoundError:
+        message = (
+            click.style("⚠️ Warning: __init__.py Missing\n", fg="yellow", bold=True) +
+            click.style(
+                f"Model '{model_name}' was created, "
+                f"but __init__.py does not exist.\n",
+                fg="yellow"
+            ) +
+            click.style("You may need to register it manually.", fg="cyan")
+        )
+        return False, message
+    except Exception as exception:
+        return False, click.style(
+            f"💣 Error: Failed to update __init__.py:\n{exception}", fg="red")
+
+
     message = (
         click.style("✅ Model Created Successfully\n", fg="green", bold=True) +
         click.style(f"Model '{model_name}' generated at ", fg="green") +

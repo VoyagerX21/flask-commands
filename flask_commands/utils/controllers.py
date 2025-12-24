@@ -2,7 +2,7 @@ import os
 import re
 import click
 from typing import Tuple
-from .files import write_file
+from .files import append_file, write_file
 from .naming import camel_to_snake, singularize
 
 
@@ -78,28 +78,53 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
     )
     return True, message
 
-
-
 def controller_infer_name_from(relative_path: str) -> str:
     return ''.join([singularize(part).title()
                     for part in relative_path.split('/')]) + "Controller"
 
 def controller_make_file(controller_name: str, method_name: str, relative_view_file_path: str) -> Tuple[bool, str]:
-    controller_file_path = os.path.join(
-        "app", "controllers", f"{camel_to_snake(controller_name)}.py")
-    contents = [
-         "from flask import render_template",
-         "",
-        f"class {controller_name}(object):",
-         "    @staticmethod",
-        f"    def {method_name}() -> str:",
-        f"        return render_template('{relative_view_file_path}')"
-    ]
-    write_file(controller_file_path, contents)
+    try:
+        controller_file_path = os.path.join(
+            "app", "controllers", f"{camel_to_snake(controller_name)}.py")
+        contents = [
+            "from flask import render_template",
+            "",
+            f"class {controller_name}(object):",
+            "    @staticmethod",
+            f"    def {method_name}() -> str:",
+            f"        return render_template('{relative_view_file_path}')"
+        ]
+        write_file(controller_file_path, contents)
+    except FileExistsError:
+        message = (
+            click.style("⚠️ Warning: Controller Already Exists\n", fg="yellow", bold=True) +
+            click.style(f"Controller '{controller_name}' already exists.\n", fg="yellow" ) +
+            click.style("No changes were made.", fg="cyan")
+        )
+        return False, message
+    except Exception as exception:
+        return False, click.style(
+            f"💣 Error: Failed to create controller:\n{exception}", fg="red")
 
-    controller_init_path = os.path.join("app", "controllers", "__init__.py")
-    with open(controller_init_path, "a", encoding="utf-8") as f:
-        f.write(f"from .{camel_to_snake(controller_name)} import {controller_name}")
+    try:
+        controller_init_path = os.path.join("app", "controllers", "__init__.py")
+        init_contents = [f"from .{camel_to_snake(controller_name)} import {controller_name}"]
+
+        append_file(controller_init_path, init_contents)
+    except FileNotFoundError:
+        message = (
+            click.style("⚠️ Warning: __init__.py Missing\n", fg="yellow", bold=True) +
+            click.style(
+                f"Controller '{controller_name}' was created, "
+                f"but __init__.py does not exist.\n",
+                fg="yellow"
+            ) +
+            click.style("You may need to register it manually.", fg="cyan")
+        )
+        return False, message
+    except Exception as exception:
+        return False, click.style(
+            f"💣 Error: Failed to update __init__.py:\n{exception}", fg="red")
 
     message = (
         f"✅ Created controller {controller_name} with method "
