@@ -78,31 +78,38 @@ def route_make_directory_and_register_blueprint(route_name: str, action: str, ro
     """
     # The route folder is not there so we need to create everything:
     #   1) create routes folder - check
-    os.makedirs(route_folder_path)
+    try:
+        os.makedirs(route_folder_path)
     #   2) __init__.py file - check
-    route_init_path = os.path.join(route_folder_path, "__init__.py")
-    route_init_content = [
-         "from flask import Blueprint",
-         "",
-        f"bp = Blueprint('{blueprint_name}', __name__)",
-         "",
-        f"from app.routes.{blueprint_name.replace('_', '.')} import routes"
-    ]
-    write_file(route_init_path, route_init_content)
+        route_init_path = os.path.join(route_folder_path, "__init__.py")
+        route_init_content = [
+            "from flask import Blueprint",
+            "",
+            f"bp = Blueprint('{blueprint_name}', __name__)",
+            "",
+            f"from app.routes.{blueprint_name.replace('_', '.')} import routes"
+        ]
+        write_file(route_init_path, route_init_content)
     #   3) routes.py file - check
-    route_file_path = os.path.join(route_folder_path, "routes.py")
-    using_controller_name = controller_name if controller_name else 'MainController'
-    method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
-    route_content = [
-        f"from app.controllers import {using_controller_name}",
-        "",
-        f"from app.routes.{blueprint_name.replace('_', '.')} import bp"
-        "",
-        f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
-        f"def {action}():"
-        f"    return {using_controller_name}.{action}()"
-    ]
-    write_file(route_file_path, route_content)
+        route_file_path = os.path.join(route_folder_path, "routes.py")
+        using_controller_name = controller_name if controller_name else 'MainController'
+        method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+        route_content = [
+            f"from app.controllers import {using_controller_name}",
+            "",
+            f"from app.routes.{blueprint_name.replace('_', '.')} import bp"
+            "",
+            f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
+            f"def {action}():"
+            f"    return {using_controller_name}.{action}()"
+        ]
+        write_file(route_file_path, route_content)
+    except FileExistsError:
+        message = (
+            click.style("⚠️ Warning: Route Already Exists\n", fg="yellow", bold=True) +
+            click.style(f"Route ")
+        )
+        return False, message
     #  4) update the __init__.py in app directory to include the new blueprint
     app_init_path = os.path.join("app", "__init__.py")
     with open(app_init_path, "r", encoding="utf-8") as f:
@@ -146,7 +153,7 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
         >>> route_infer_name_from('posts')
         '/posts'
         >>> route_infer_name_from('posts.show')
-        '/posts/{id}'
+        '/posts/<int:post_id>'
         >>> route_infer_name_from('admin.posts.comments.index')
         '/admin/posts/comments'
         >>> route_infer_name_from('admin.posts.comments.show')
@@ -163,10 +170,11 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
     relative_path, action = dotted_path_with_name.rsplit(".", 1)
     if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
         return '/' + dotted_path_with_name.replace('.', '/')
-    if "/" in relative_path:
+    if "." in relative_path:
+        relative_path = relative_path.replace(".", "/")
         object = singularize(relative_path.rsplit("/", 1)[-1])
     else:
-        object = relative_path
+        object = singularize(relative_path)
     return crud_mapping_route(action, relative_path, object)
 
 def generate_route_file_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:

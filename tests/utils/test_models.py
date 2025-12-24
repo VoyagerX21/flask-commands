@@ -26,7 +26,6 @@ def test_generate_table_name_from_model_name():
     assert generate_table_name_from_model_name('Category') == "categories"
     assert generate_table_name_from_model_name('Class') == "classes"
 
-
 def test_model_infer_name_from_reative_path():
     message, model_name = model_infer_name_from("posts", "posts.index")
     assert "Infered the model name" in message
@@ -66,3 +65,71 @@ def test_model_make_file_success(model_project):
     # --- Content assertions (__init__.py) ---
     init_contents = init_file.read_text(encoding="utf-8")
     assert "from .post import Post" in init_contents
+
+def test_model_make_file_file_already_exists(model_project):
+    model_file = model_project / "app" / "models" / "post.py"
+    model_file.write_text("")
+
+    success, message = model_make_file(
+        model_name="Post",
+        model_init_path=os.path.join("app", "models", "__init__.py"),
+        model_file_path=os.path.join("app", "models", "post.py"),
+    )
+
+    assert success is False
+    assert "Model Already Exists" in message
+
+def test_model_make_file_write_file_exception(model_project, monkeypatch):
+    def boom(*args, **kwargs):
+        raise Exception("screen failure")
+
+    # Patch write_file to fail
+    monkeypatch.setattr(
+        "flask_commands.utils.models.write_file",
+        boom
+    )
+
+    success, message = model_make_file(
+        model_name="Post",
+        model_init_path=os.path.join("app", "models", "__init__.py"),
+        model_file_path=os.path.join("app", "models", "post.py"),
+    )
+
+    assert success is False
+    assert "Failed to create model" in message
+
+def test_model_make_file_init_missing(tmp_path, monkeypatch):
+    project_root = tmp_path
+    model_dir = project_root / "app" / "models"
+    model_dir.mkdir(parents=True)
+
+    monkeypatch.chdir(project_root)
+
+    success, message = model_make_file(
+        model_name="Post",
+        model_init_path=os.path.join("app", "models", "__init__.py"),
+        model_file_path=os.path.join("app", "models", "post.py"),
+    )
+
+    assert success is False
+    assert " __init__.py Missing" in message
+
+
+def test_model_make_file_append_file_exception(model_project, monkeypatch):
+    def boom(*args, **kwargs):
+        raise Exception("screen failure")
+
+    # Patch write_file to fail
+    monkeypatch.setattr(
+        "flask_commands.utils.models.append_file",
+        boom
+    )
+
+    success, message = model_make_file(
+        model_name="Post",
+        model_init_path=os.path.join("app", "models", "__init__.py"),
+        model_file_path=os.path.join("app", "models", "post.py"),
+    )
+
+    assert success is False
+    assert "Failed to update __init__.py" in message
