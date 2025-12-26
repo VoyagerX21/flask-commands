@@ -15,7 +15,7 @@ from flask_commands.utils.routes import (
     route_add_method,
     route_infer_name_from,
     route_make_directory_and_register_blueprint,
-    generate_route_file_path_and_blueprint_name
+    generate_route_folder_path_and_blueprint_name
 )
 
 from flask_commands.utils.scaffold import split_dotted_path
@@ -130,26 +130,26 @@ def make_view(
     # If a controller_name was provided or inferred
     if route_name:
         route_folder_path, blueprint_name = \
-            generate_route_file_path_and_blueprint_name(
+            generate_route_folder_path_and_blueprint_name(
                 dotted_path_with_name, relative_path)
         try:
             if os.path.exists(route_folder_path):
                 is_successful, message = \
                     route_add_method(
-                        route_name,
-                        action,
-                        route_folder_path,
-                        relative_path,
-                        controller_name)
+                        relative_path,      # this is everything before the last part of dotted_path_with_name replacing . with /
+                        action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_name
+                        route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
+                        route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
+                        controller_name)    # contoller_name is like post_controller
             else:
                 is_successful, message = \
                     route_make_directory_and_register_blueprint(
-                        route_name,
-                        action,
-                        route_folder_path,
-                        relative_path,
-                        blueprint_name,
-                        controller_name)
+                        relative_path,      # this is everything before the last part of dotted_path_with_name replacing . with /
+                        action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_name
+                        route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
+                        blueprint_name,     # posts or mains or posts_comments
+                        route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
+                        controller_name)    # contoller_name is like post_controller
             click.echo(message)
         except Exception as exception:
             click.echo(f"💣 Error:\n {exception}", fg="red")

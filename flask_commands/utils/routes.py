@@ -4,7 +4,7 @@ import click
 from typing import Tuple
 from .files import append_file, write_file
 from .naming import singularize
-from .scaffold import crud_mapping_route
+from .scaffold import crud_mapping_route, split_dotted_path
 
 def route_add_method(route_name: str, action: str, route_folder_path:str, relative_path: str, controller_name: str | None) -> Tuple[bool, str]:
     """
@@ -12,36 +12,62 @@ def route_add_method(route_name: str, action: str, route_folder_path:str, relati
     Determines the HTTP method based on the action type (POST for store,
     update, destroy, delete; GET for others) and appends a new route
     definition with the corresponding controller method call.
+
     Args:
-        route_name (str): The full name/path of the route.
+        relative_path (str): The relative path to strip from route_name for the decorator.
         action (str): The action name (e.g., 'store', 'update', 'show', 'destroy'). Determines HTTP method.
         route_folder_path (str): The absolute path to the routes folder containing routes.py.
-        relative_path (str): The relative path to strip from route_name for the decorator.
+        route_name (str): The full name/path of the route.
         controller_name (str | None): The name of the controller class. Defaults to 'MainController' if None.
+
     Returns:
         Tuple[bool, str]: A tuple containing:
             - bool: True indicating the route was successfully added.
             - str: A formatted message with success notification and usage instructions.
+
+    Example:
+        >>> success, message = route_add_method(
+        ...     route_name='users.index',
+        ...     action='index',
+        ...     route_folder_path='app/routes/users',
+        ...     relative_path='users',
+        ...     controller_name='UserController'
+        ... )
     """
 
     # The route folder is already there so we just need to add to routes.py
-    route_file_path = os.path.join(route_folder_path, "routes.py")
-    using_controller_name = controller_name if controller_name else 'MainController'
-    method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
-    route_content = [
-        ""
-        f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
-        f"def {action}():"
-        f"    return {using_controller_name}.{action}()"
-    ]
-    append_file(route_file_path, route_content)
+
+    try:
+        route_file_path = os.path.join(route_folder_path, "routes.py")
+        using_controller_name = controller_name if controller_name else 'MainController'
+        method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+        route_content = [
+            ""
+            f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
+            f"def {action}():"
+            f"    return {using_controller_name}.{action}()"
+        ]
+        # TODO: before appending we need to check that the action is not already part of the route_file_path
+        append_file(route_file_path, route_content)
+    except FileNotFoundError:
+        message = (
+            click.style("⚠️ Warning: routes.py Missing\n", fg="yellow", bold=True) +
+            click.style(
+                f"Could not find routes.py file in folder {route_folder_path} ",
+                fg="yellow"
+            ) +
+            click.style("No changes were made.", fg="cyan")
+        )
+        return False, message
+    except Exception as exception:
+        return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
     message = (
-        click.style(f"✅ Added {method} route '{action}' to '{route_name}'.", fg="green") + "\n" +
-        click.style(f"🔗 Use url_for('{route_name}.{action}') to reference it.", fg="yellow")
+        click.style(f"✅ Added {method} route '{action}' to '{relative_path}'.", fg="green") + "\n" +
+        click.style(f"🔗 Use url_for('{relative_path}.{action}') to reference it.", fg="yellow")
     )
     return True, message
 
-def route_make_directory_and_register_blueprint(route_name: str, action: str, route_folder_path: str, relative_path: str, blueprint_name: str, controller_name: str | None) -> Tuple[bool, str]:
+def route_make_directory_and_register_blueprint(relative_path: str, action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
     Creates a new Flask route directory structure and registers a blueprint in the Flask app.
 
@@ -70,9 +96,9 @@ def route_make_directory_and_register_blueprint(route_name: str, action: str, ro
         >>> success, message = route_make_directory_and_register_blueprint(
         ...     route_name='users.index',
         ...     action='index',
-        ...     route_folder_path='/app/routes/users',
-        ...     relative_path='/',
-        ...     blueprint_name='users',
+        ...     route_folder_path='app/routes/users',
+        ...     relative_path='users',
+        ...     blueprint_name='/users',
         ...     controller_name='UserController'
         ... )
     """
@@ -107,9 +133,13 @@ def route_make_directory_and_register_blueprint(route_name: str, action: str, ro
     except FileExistsError:
         message = (
             click.style("⚠️ Warning: Route Already Exists\n", fg="yellow", bold=True) +
-            click.style(f"Route ")
+            click.style(f"Route Directory for '{blueprint_name}' already exists.\n", fg="yellow") +
+            click.style("No changes were made.", fg="cyan")
         )
         return False, message
+    except Exception as exception:
+        return False, click.style(f"💣 Error: Failed to create route:\n{exception}", fg="red")
+
     #  4) update the __init__.py in app directory to include the new blueprint
     app_init_path = os.path.join("app", "__init__.py")
     with open(app_init_path, "r", encoding="utf-8") as f:
@@ -125,11 +155,12 @@ def route_make_directory_and_register_blueprint(route_name: str, action: str, ro
     new_content = source[:insert_index] + new_blueprint + "\n" + source[insert_index:]
     with open(app_init_path, "w") as f:
         f.write(new_content)
+
     message = (
         click.style(f"📁 Created new route directory for '{blueprint_name}'.", fg="green") + "\n" +
         click.style(f"🧩 Registered the '{blueprint_name}' blueprint and added it to app.__init__.", fg="cyan") + "\n" +
         click.style(f"🛠️ Generated routes.py with the initial {method} action '{action}'.", fg="magenta") + "\n" +
-        click.style(f"🔗 Reference using url_for('{route_name}.{action}').", fg="yellow")
+        click.style(f"🔗 Reference using url_for('{blueprint_name}.{action}').", fg="yellow")
     )
     return True, message
 
@@ -167,17 +198,16 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
     """
     if "." not in dotted_path_with_name:
         return '/' + dotted_path_with_name
-    relative_path, action = dotted_path_with_name.rsplit(".", 1)
+    relative_path, action = split_dotted_path(dotted_path_with_name)
     if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
         return '/' + dotted_path_with_name.replace('.', '/')
-    if "." in relative_path:
-        relative_path = relative_path.replace(".", "/")
+    if "/" in relative_path:
         object = singularize(relative_path.rsplit("/", 1)[-1])
     else:
         object = singularize(relative_path)
     return crud_mapping_route(action, relative_path, object)
 
-def generate_route_file_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
+def generate_route_folder_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
     """
     Generate a file path and blueprint name for a Flask route module.
 
@@ -194,13 +224,13 @@ def generate_route_file_path_and_blueprint_name(dotted_path_with_name: str, rela
                 replaced by underscores.
 
     Example:
-        >>> generate_route_file_path_and_blueprint_name('posts.index', 'posts')
+        >>> generate_route_folder_path_and_blueprint_name('posts.index', 'posts')
         ('app/routes/posts', 'posts')
 
-        >>> generate_route_file_path_and_blueprint_name('posts.comments.index', 'posts/comments')
+        >>> generate_route_folder_path_and_blueprint_name('posts.comments.index', 'posts/comments')
         ('app/routes/posts/comments', 'posts_comments')
 
-        >>> generate_route_file_path_and_blueprint_name('dashboard', 'mains')
+        >>> generate_route_folder_path_and_blueprint_name('dashboard', 'mains')
         ('app/routes/mains', 'mains')
     """
     if "." not in dotted_path_with_name:

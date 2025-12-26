@@ -26,6 +26,7 @@ def split_dotted_path(dotted_path_with_name: str) -> Tuple[str, str]:
       'posts.index' -> ('posts', 'index')
       'admin.posts.show' -> ('admin/posts', 'show')
       'index' -> ('', 'index')
+      'admin.posts.comments' -> ('admin/posts', 'comments')
     The action is always the last segment; the rest form a relative path.
     """
     parts = dotted_path_with_name.lower().split(".")

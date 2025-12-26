@@ -189,7 +189,6 @@ def test_controller_make_file_init_missing(monkeypatch, tmp_path):
     assert "You may need to register it manually" in message
 
 def test_controller_make_file_init_exception(controller_project, monkeypatch):
-
     def boom(*args, **kwargs):
         raise Exception("permission denied")
 
