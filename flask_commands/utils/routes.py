@@ -47,6 +47,19 @@ def route_add_method(route_name: str, action: str, route_folder_path:str, relati
             f"def {action}():"
             f"    return {using_controller_name}.{action}()"
         ]
+        with open(route_file_path, "r", encoding="utf-8") as file:
+            existing_file_content = file.read()
+
+        func_pattern = rf"^\s*def\s+{re.escape(action)}\s*\("
+        if re.search(func_pattern, existing_file_content, re.MULTILINE):
+            message = (
+                click.style(f"⚠️ Warning: Route function already exists\n",
+                            fg="yellow", bold=True) +
+                click.style(f"Route function '{action}' already exists "
+                            f"at {route_folder_path}/routes.py", fg="yellow") +
+                click.style(f"No changes were made.", fg="cyan")
+            )
+            return False, message
         # TODO: before appending we need to check that the action is not already part of the route_file_path
         append_file(route_file_path, route_content)
     except FileNotFoundError:

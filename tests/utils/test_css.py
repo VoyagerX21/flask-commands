@@ -14,7 +14,7 @@ def test_install_tailwind_skip_when_npm_missing(tmp_path, monkeypatch, capsys):
     assert "npm not found on PATH" in captured.out
 
 
-def test_install_tailwind_handles_npm_failure(monkeypatch, tmp_path, capsys):
+def test_install_tailwind_handles_npm_failure(tmp_path, monkeypatch, capsys):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr("shutil.which", lambda _: "/usr/bin/npm")
 

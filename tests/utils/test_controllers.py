@@ -144,7 +144,7 @@ def test_controller_make_file_file_already_exists(controller_project):
 
     assert contents == "class PostController:\n    pass\n"
 
-def test_controller_make_file_write_file_exception(monkeypatch, tmp_path):
+def test_controller_make_file_write_file_exception(tmp_path, monkeypatch):
     def boom(*args, **kwargs):
         raise Exception("disk exploded")
 
@@ -171,7 +171,7 @@ def test_controller_make_file_write_file_exception(monkeypatch, tmp_path):
     assert success is False
     assert "Failed to create controller" in message
 
-def test_controller_make_file_init_missing(monkeypatch, tmp_path):
+def test_controller_make_file_init_missing(tmp_path, monkeypatch):
     project_root = tmp_path
     controller_dir = project_root / "app" / "controllers"
     controller_dir.mkdir(parents=True)

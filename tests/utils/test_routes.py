@@ -150,6 +150,34 @@ def test_route_add_method_success(tmp_path, monkeypatch):
     assert f"Added GET route 'index' to 'users'" in message
     assert f"Use url_for('users.index') to reference it." in message
 
+def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
+    project_root = tmp_path
+    route_dir = project_root / "app" / "routes" / "users"
+    route_dir.mkdir(parents=True)
+
+    route_file = route_dir / "routes.py"
+    monkeypatch.chdir(project_root)
+
+    route_file.write_text(
+        "from app.controllers import UserController\n"
+        "from app.routes.users import bp\n"
+        "\n"
+        "@bp.route('/', methods=['GET'])\n"
+        "def index():\n"
+        "    return UserController.index()"
+        , encoding="utf-8")
+
+    success, message = route_add_method(
+        route_name='users.index',
+        action='index',
+        route_folder_path='app/routes/users',
+        relative_path='users',
+        controller_name='UserController')
+
+    assert success is False
+    assert f"Route function already exists" in message
+
+
 def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
     project_root = tmp_path
     route_dir = project_root / "app" / "routes" / "users"
