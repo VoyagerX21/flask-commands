@@ -7,8 +7,8 @@ def test_view_make_file_success(tmp_path, monkeypatch):
     post_template_dir.mkdir(parents=True)
     monkeypatch.chdir(project_root)
 
-    success, message = view_make_file("app/templates/posts/index.html")
-    assert success is True
+    is_successfull, message = view_make_file("app/templates/posts/index.html")
+    assert is_successfull is True
     assert "New view created" in message
 
 def test_view_make_file_file_exists(tmp_path, monkeypatch):
@@ -20,9 +20,9 @@ def test_view_make_file_file_exists(tmp_path, monkeypatch):
 
     monkeypatch.chdir(project_root)
     # posts.index
-    success, message = view_make_file("app/templates/posts/index.html")
+    is_successfull, message = view_make_file("app/templates/posts/index.html")
 
-    assert success is False
+    assert is_successfull is False
     assert "View Already Exists" in message
 
 def test_view_make_file_exception(tmp_path, monkeypatch):
@@ -34,6 +34,6 @@ def test_view_make_file_exception(tmp_path, monkeypatch):
         boom
     )
 
-    success, message = view_make_file("app/templates/posts/index.html")
-    assert success is False
+    is_successfull, message = view_make_file("app/templates/posts/index.html")
+    assert is_successfull is False
     assert "Failed to create view" in message

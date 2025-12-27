@@ -70,7 +70,7 @@ def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypat
 
     monkeypatch.chdir(project_root)
     # dotted_path_with_name = users.index
-    success, message = route_make_directory_and_register_blueprint(
+    is_successfull, message = route_make_directory_and_register_blueprint(
         relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
@@ -78,7 +78,7 @@ def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypat
         route_name='/users',
         controller_name='UserController')
 
-    assert success is True
+    assert is_successfull is True
     assert "Created new route directory" in message
 
 def test_route_make_directory_and_register_blueprint_route_already_exists(tmp_path, monkeypatch):
@@ -88,7 +88,7 @@ def test_route_make_directory_and_register_blueprint_route_already_exists(tmp_pa
     monkeypatch.chdir(project_root)
 
     # dotted_path_with_name = users.index
-    success, message = route_make_directory_and_register_blueprint(
+    is_successfull, message = route_make_directory_and_register_blueprint(
         relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
@@ -96,7 +96,7 @@ def test_route_make_directory_and_register_blueprint_route_already_exists(tmp_pa
         route_name='/users',
         controller_name='UserController')
 
-    assert success is False
+    assert is_successfull is False
     assert "Route Already Exists" in message
 
 def test_route_make_directory_and_register_blueprint_exception(tmp_path, monkeypatch):
@@ -111,7 +111,7 @@ def test_route_make_directory_and_register_blueprint_exception(tmp_path, monkeyp
     project_root = tmp_path
     monkeypatch.chdir(project_root)
     # dotted_path_with_name = users.index
-    success, message = route_make_directory_and_register_blueprint(
+    is_successfull, message = route_make_directory_and_register_blueprint(
         relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
@@ -119,7 +119,7 @@ def test_route_make_directory_and_register_blueprint_exception(tmp_path, monkeyp
         route_name='/users',
         controller_name='UserController')
 
-    assert success is False
+    assert is_successfull is False
     assert "Failed to create route" in message
 
 def test_route_add_method_success(tmp_path, monkeypatch):
@@ -139,14 +139,14 @@ def test_route_add_method_success(tmp_path, monkeypatch):
         "    return UserController.show()"
         , encoding="utf-8")
 
-    success, message = route_add_method(
+    is_successfull, message = route_add_method(
         route_name='users.index',
         action='index',
         route_folder_path='app/routes/users',
         relative_path='users',
         controller_name='UserController')
 
-    assert success is True
+    assert is_successfull is True
     assert f"Added GET route 'index' to 'users'" in message
     assert f"Use url_for('users.index') to reference it." in message
 
@@ -167,14 +167,14 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
         "    return UserController.index()"
         , encoding="utf-8")
 
-    success, message = route_add_method(
+    is_successfull, message = route_add_method(
         route_name='users.index',
         action='index',
         route_folder_path='app/routes/users',
         relative_path='users',
         controller_name='UserController')
 
-    assert success is False
+    assert is_successfull is False
     assert f"Route function already exists" in message
 
 
@@ -184,14 +184,14 @@ def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
     route_dir.mkdir(parents=True)
     monkeypatch.chdir(project_root)
 
-    success, message = route_add_method(
+    is_successfull, message = route_add_method(
         route_name='users.index',
         action='index',
         route_folder_path='app/routes/users',
         relative_path='users',
         controller_name='UserController')
 
-    assert success is False
+    assert is_successfull is False
     assert f"routes.py Missing" in message
 
 def test_route_method_exception(tmp_path, monkeypatch):
@@ -219,12 +219,12 @@ def test_route_method_exception(tmp_path, monkeypatch):
         "    return UserController.show()"
         , encoding="utf-8")
 
-    success, message = route_add_method(
+    is_successfull, message = route_add_method(
         route_name='users.index',
         action='index',
         route_folder_path='app/routes/users',
         relative_path='users',
         controller_name='UserController')
 
-    assert success is False
+    assert is_successfull is False
     assert "Failed to add method to route" in message

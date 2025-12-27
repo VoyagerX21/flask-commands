@@ -24,7 +24,7 @@ def view_make_file(destination_file_path: str) -> Tuple[bool, str]:
             - bool: True indicating the route was successfully added.
             - str: A formatted message with success notification and usage instructions.
     Example:
-        >>> success, message = view_make_file(
+        >>> is_successfull, message = view_make_file(
         ...     route_name='users.index')
 
     """

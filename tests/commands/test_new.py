@@ -1,5 +1,3 @@
-import os
-import subprocess
 from click.testing import CliRunner
 from flask_commands.commands.new import new
 

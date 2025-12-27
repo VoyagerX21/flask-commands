@@ -49,3 +49,5 @@ pip-wheel-metadata/
 # Misc
 *.log
 *.tmp
+
+build_zip.py

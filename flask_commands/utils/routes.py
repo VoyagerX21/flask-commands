@@ -26,7 +26,7 @@ def route_add_method(route_name: str, action: str, route_folder_path:str, relati
             - str: A formatted message with success notification and usage instructions.
 
     Example:
-        >>> success, message = route_add_method(
+        >>> is_successful, message = route_add_method(
         ...     route_name='users.index',
         ...     action='index',
         ...     route_folder_path='app/routes/users',
@@ -106,7 +106,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
                    blueprint registration, generated route action, and url_for reference.
 
     Example:
-        >>> success, message = route_make_directory_and_register_blueprint(
+        >>> is_successful, message = route_make_directory_and_register_blueprint(
         ...     route_name='users.index',
         ...     action='index',
         ...     route_folder_path='app/routes/users',
@@ -138,7 +138,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
             "",
             f"from app.routes.{blueprint_name.replace('_', '.')} import bp"
             "",
-            f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
+            f"@bp.route('{route_name}', methods=['{method}'])"
             f"def {action}():"
             f"    return {using_controller_name}.{action}()"
         ]
@@ -172,8 +172,8 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
     message = (
         click.style(f"📁 Created new route directory for '{blueprint_name}'.", fg="green") + "\n" +
         click.style(f"🧩 Registered the '{blueprint_name}' blueprint and added it to app.__init__.", fg="cyan") + "\n" +
-        click.style(f"🛠️ Generated routes.py with the initial {method} action '{action}'.", fg="magenta") + "\n" +
-        click.style(f"🔗 Reference using url_for('{blueprint_name}.{action}').", fg="yellow")
+        click.style(f"🛠️  Generated routes.py with the initial {method} action '{action}'.", fg="magenta") + "\n" +
+        click.style(f"🔗 Reference using url_for('{blueprint_name}.{action}').", fg="yellow", bold=True)
     )
     return True, message
 
