@@ -7,74 +7,79 @@ from .naming import camel_to_snake, singularize
 
 
 def controller_add_method(controller_name: str, method_name: str, relative_view_file_path: str) -> Tuple[bool, str]:
-    controller_file_path = os.path.join(
-        "app", "controllers", f"{camel_to_snake(controller_name)}.py")
-    # Read existing controller and check for method
-    with open(controller_file_path, "r", encoding="utf-8") as f:
-        source = f.read()
+    try:
+        controller_file_path = os.path.join(
+            "app", "controllers", f"{camel_to_snake(controller_name)}.py")
+        # Read existing controller and check for method
+        with open(controller_file_path, "r", encoding="utf-8") as f:
+            source = f.read()
 
-    method_pattern = rf"def\s+{re.escape(method_name)}\s*\(\)\s*(?:->\s*[^:]+)?\s*:"
-    # If method already exists, do nothing and warn user
-    if re.search(method_pattern, source):
-        message = (
-            click.style("⚠️  Warning: Method Already Exists\n", fg="yellow", bold=True) +
-            click.style(f"    - Controller '{controller_name}' already has a method named '{method_name}'.\n", fg="yellow") +
-            click.style("    - No changes were made.", fg="cyan")
-        )
-        return False, message
+        method_pattern = rf"def\s+{re.escape(method_name)}\s*\(\)\s*(?:->\s*[^:]+)?\s*:"
+        # If method already exists, do nothing and warn user
+        if re.search(method_pattern, source):
+            message = (
+                click.style("⚠️  Warning: Method Already Exists\n", fg="yellow", bold=True) +
+                click.style(f"    - Controller '{controller_name}' already has a method named '{method_name}'.\n", fg="yellow") +
+                click.style("    - No changes were made.", fg="cyan")
+            )
+            return False, message
 
-    # Try to find class definition to insert method into
-    class_pattern = rf"^class\s+{re.escape(controller_name)}\b.*:\s*$"
-    lines = source.splitlines()
-    insert_index = None
-    # 1. Find the class
-    for i, line in enumerate(lines):
-        if re.match(class_pattern, line):
-            # 2. find end of class (next top-level def/class or EOF)
-            j = i + 1
-            while j < len(lines):
-                # skip blank lines inside the class
-                if lines[j].strip() == "":
+        # Try to find class definition to insert method into
+        class_pattern = rf"^class\s+{re.escape(controller_name)}\b.*:\s*$"
+        lines = source.splitlines()
+        insert_index = None
+        # 1. Find the class
+        for i, line in enumerate(lines):
+            if re.match(class_pattern, line):
+                # 2. find end of class (next top-level def/class or EOF)
+                j = i + 1
+                while j < len(lines):
+                    # skip blank lines inside the class
+                    if lines[j].strip() == "":
+                        j += 1
+                        continue
+                    # top-level (no indent)
+                    if len(lines[j]) - len(lines[j].lstrip()) == 0 and \
+                            re.match(r"^(class|def)\b", lines[j]):
+                        break
                     j += 1
-                    continue
-                # top-level (no indent)
-                if len(lines[j]) - len(lines[j].lstrip()) == 0 and \
-                        re.match(r"^(class|def)\b", lines[j]):
-                    break
-                j += 1
-            insert_index = j
-            break
+                insert_index = j
+                break
 
-    # 3. Build the new static method block
-    method_block = [
-         "",
-         "    @staticmethod",
-        f"    def {method_name}() -> str:",
-        f"        return render_template('{relative_view_file_path}')"
-    ]
+        # 3. Build the new static method block
+        method_block = [
+            "",
+            "    @staticmethod",
+            f"    def {method_name}() -> str:",
+            f"        return render_template('{relative_view_file_path}')"
+        ]
 
-    # If the controller class isn’t found do nothing and warn user
-    if insert_index is None:
-        message = (
-            click.style("⚠️  Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
-            click.style(f"    - Could not locate class '{controller_name}' inside {controller_file_path}\n", fg="yellow") +
-            click.style("    - No method was added.", fg="cyan")
-        )
+        # If the controller class isn’t found do nothing and warn user
+        if insert_index is None:
+            message = (
+                click.style("⚠️  Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
+                click.style(f"    - Could not locate class '{controller_name}' inside {controller_file_path}\n", fg="yellow") +
+                click.style("    - No method was added.", fg="cyan")
+            )
+            return False, message
+
+
+        # 4. Insert new static method block
+        for line in reversed(method_block):
+            lines.insert(insert_index, line)
+
+        new_source = "\n".join(lines)
+        with open(controller_file_path, "w", encoding="utf-8") as f:
+            f.write(new_source)
+    except Exception as exception:
+        message = click.style(f"💣 Error: Failed to add Controller Method\n {exception}", fg="red")
         return False, message
-
-
-    # 4. Insert new static method block
-    for line in reversed(method_block):
-        lines.insert(insert_index, line)
-
-    new_source = "\n".join(lines)
-    with open(controller_file_path, "w", encoding="utf-8") as f:
-        f.write(new_source)
     message = (
         click.style("✅  Method Added Successfully\n", fg="green", bold=True) +
         click.style(f"    - Added method '{method_name}' to controller '{controller_name}'.\n", fg="green")
     )
     return True, message
+
 
 def controller_infer_name_from(relative_path: str) -> str:
     return ''.join([singularize(part).title()
@@ -125,7 +130,10 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
             f"💣 Error: Failed to update __init__.py:\n{exception}", fg="red")
 
     message = (
-        f"✅ Created controller {controller_name} with method "
-        f"'{method_name}' at {click.style(controller_file_path, bold=True)}")
+        click.style(f"✅ Created Controller Method", fg="green") +
+        click.style(f"    - Controller = {controller_name}", fg="cyan") +
+        click.style(f"    - method = {method_name}", fg="cyan") +
+        click.style(f"    - path = {click.style(controller_file_path, bold=True)}", fg="cyan")
+        )
 
     return True, message

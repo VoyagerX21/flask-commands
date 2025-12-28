@@ -107,24 +107,24 @@ def make_view(
                 "app",
                 "controllers",
                 f"{camel_to_snake(controller_name)}.py")
-        try:
-            # if controller exist just add the method
-            if os.path.exists(controller_file_path):
-                is_successful, message = controller_add_method(
-                    controller_name, action, relative_view_file_path)
-            # else create the controller and the method
-            else:
-                is_successful, message = controller_make_file(
-                    controller_name, action, relative_view_file_path)
-            click.echo(message)
-        except Exception as exception:
-            click.echo(click.style(f"💣 Error:\n {exception}", fg="red"))
+
+        # if controller exist just add the method
+        if os.path.exists(controller_file_path):
+            is_successful, message = controller_add_method(
+                controller_name, action, relative_view_file_path)
+        # else create the controller and the method
+        else:
+            is_successful, message = controller_make_file(
+                controller_name, action, relative_view_file_path)
+        click.echo(message)
 
     # If a controller_name was provided or inferred
     if route_name:
+        click.echo(f"Test 1) dotted_path_with_name = {dotted_path_with_name}, relative_path = {relative_path}")
         route_folder_path, blueprint_name = \
             generate_route_folder_path_and_blueprint_name(
                 dotted_path_with_name, relative_path)
+        click.echo(f"Test 2) route_folder_path={route_folder_path}, blueprint_name={blueprint_name}")
         try:
             if os.path.exists(route_folder_path):
                 is_successful, message = \

@@ -57,4 +57,10 @@ def view_make_file(destination_file_path: str) -> Tuple[bool, str]:
         return False, message
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to create view:\n{exception}", fg="red")
-    return True, click.style(f"📄 New view created at {click.style(destination_file_path, bold=True)}")
+
+    message = (
+        click.style(f"✅ Created View\n", fg="green") +
+        click.style(f"    - view = {destination_file_path.split('/')[-1]}\n", fg="cyan") +
+        click.style(f"    - path = {click.style(destination_file_path, bold=True)}\n", fg="cyan")
+    )
+    return True, message

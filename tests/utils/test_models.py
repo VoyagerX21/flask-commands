@@ -14,7 +14,7 @@ def model_project(tmp_path, monkeypatch):
 
     # __init__.py must exist for append_file
     init_file = model_dir / "__init__.py"
-    init_file.write_text("", encoding="utf-8")
+    init_file.write_text("\n", encoding="utf-8")
 
     monkeypatch.chdir(project_root)
 
@@ -62,7 +62,7 @@ def test_model_make_file_success(model_project):
 
 def test_model_make_file_file_already_exists(model_project):
     model_file = model_project / "app" / "models" / "post.py"
-    model_file.write_text("")
+    model_file.write_text("\n")
 
     is_successfull, message = model_make_file(
         model_name="Post",

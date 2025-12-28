@@ -63,7 +63,7 @@ def test_make_view_component_only(project):
     assert template_file.exists()
 
     # Output should mention file created
-    assert "New view created" in result.output
+    assert "Created View" in result.output
 
 def test_make_view_with_generated_controller(project):
     """
@@ -150,13 +150,17 @@ def test_make_view_controller_exist(project):
     controller_file.write_text(
         "from flask import render_template\n"
         "\n"
-        "class PostController(object):"
-        "    @staticmethod"
-        "    def index() -> str:"
+        "class PostController(object):\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
         "        return render_template('posts/index.html')"
     )
     runner = CliRunner()
-    result = runner.invoke(make_view, ["posts.show"])
+    result = runner.invoke(make_view, ["posts.show", '-c'])
+
     click.echo(result.output)
+
+
+
     assert "Method Added Successfully" in result.output
     assert "def show" in controller_file.read_text()

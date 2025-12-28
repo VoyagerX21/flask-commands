@@ -161,7 +161,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
     match = re.search(r"^\s*return app\b", source, flags=re.MULTILINE)
     insert_index = match.start()
     new_blueprint = [
-        f"    from {route_file_path.replace('/', '.')} import bp as {blueprint_name}_blueprint"
+        f"    from {route_folder_path.replace('/', '.')} import bp as {blueprint_name}_blueprint",
         f"    app.register_blueprint({blueprint_name}_blueprint)"
     ]
     new_blueprint = "\n".join(new_blueprint)

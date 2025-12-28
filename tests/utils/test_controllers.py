@@ -1,5 +1,6 @@
 import os
 import pytest
+import builtins
 from pathlib import Path
 from flask_commands.utils.controllers import (
     controller_add_method,
@@ -17,7 +18,7 @@ def controller_project(tmp_path, monkeypatch):
 
     # __init__.py must exist for ...
     init_file = controller_dir / "__init__.py"
-    init_file.write_text("", encoding="utf-8")
+    init_file.write_text("\n", encoding="utf-8")
 
     monkeypatch.chdir(project_root)
 
@@ -101,6 +102,40 @@ def test_controller_add_method_success(controller_project):
     assert "def index()" in updated_source
     assert "return render_template('posts/index.html')" in updated_source
 
+def test_controller_add_method_exception(controller_project, monkeypatch):
+    controller_file = controller_project(
+        "post_controller.py",
+        "class PostController:\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def create():\n"
+        "        pass\n"
+        "\n"
+        "def helper_function(input):\n"
+        "    pass"
+    )
+
+    real_open = builtins.open
+
+    # Patch open() so that ONLY write mode fails
+    def boom_open(*args, **kwargs):
+        if len(args) >= 2 and "w" in args[1]:
+            raise RuntimeError("kaboom")
+        return real_open(*args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", boom_open)
+
+    # Act
+    is_successfull, message = controller_add_method(
+        controller_name="PostController",
+        method_name="index",
+        relative_view_file_path="posts/index.html"
+    )
+
+    assert is_successfull is False
+    assert "Failed to add Controller Method" in message
+
+
 def test_controller_infer_name_from():
     assert controller_infer_name_from('posts') == 'PostController'
     assert controller_infer_name_from('admin/posts') == 'AdminPostController'
@@ -115,7 +150,7 @@ def test_controller_make_file_success(controller_project):
     )
 
     assert is_successfull == True
-    assert "Created controller" in message
+    assert "Created Controller" in message
 
 def test_controller_make_file_file_already_exists(controller_project):
     # Arrange
@@ -158,7 +193,7 @@ def test_controller_make_file_write_file_exception(tmp_path, monkeypatch):
     controller_dir = tmp_path / "app" / "controllers"
     controller_dir.mkdir(parents=True)
     controller_file = controller_dir / "post_controller.py"
-    controller_file.write_text("")
+    controller_file.write_text("\n")
 
     monkeypatch.chdir(tmp_path)
 

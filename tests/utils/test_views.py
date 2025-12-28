@@ -9,14 +9,14 @@ def test_view_make_file_success(tmp_path, monkeypatch):
 
     is_successfull, message = view_make_file("app/templates/posts/index.html")
     assert is_successfull is True
-    assert "New view created" in message
+    assert "Created View" in message
 
 def test_view_make_file_file_exists(tmp_path, monkeypatch):
     project_root = tmp_path
     post_template_dir = project_root / "app" / "templates" / "posts"
     post_template_dir.mkdir(parents=True)
     index_file = post_template_dir / "index.html"
-    index_file.write_text("", encoding="utf-8")
+    index_file.write_text("\n", encoding="utf-8")
 
     monkeypatch.chdir(project_root)
     # posts.index
