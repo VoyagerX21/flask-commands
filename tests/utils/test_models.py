@@ -2,7 +2,6 @@ import os
 import pytest
 from pathlib import Path
 from flask_commands.utils.models import (
-    generate_table_name_from_model_name,
     model_infer_name_from,
     model_make_file
 )
@@ -20,11 +19,6 @@ def model_project(tmp_path, monkeypatch):
     monkeypatch.chdir(project_root)
 
     return project_root
-
-def test_generate_table_name_from_model_name():
-    assert generate_table_name_from_model_name('Post') == "posts"
-    assert generate_table_name_from_model_name('Category') == "categories"
-    assert generate_table_name_from_model_name('Class') == "classes"
 
 def test_model_infer_name_from_reative_path():
     message, model_name = model_infer_name_from("posts", "posts.index")

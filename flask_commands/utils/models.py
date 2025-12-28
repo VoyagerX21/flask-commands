@@ -1,11 +1,7 @@
-# model_make_file, generate_table_name_from_model_name,  model_infer_name_from
 import click
 from typing import Tuple
 from .files import append_file, write_file
 from .naming import pluralize, singularize
-
-def generate_table_name_from_model_name(model_name: str) -> str:
-    return pluralize(model_name.lower())
 
 def model_infer_name_from(relative_path: str, dotted_path_with_name: str) -> Tuple[str, str]:
     """
@@ -65,7 +61,7 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
             "from datetime import datetime, timezone",
             "",
             f"class {model_name}(db.Model):",
-            f"    __tablename__ = '{generate_table_name_from_model_name(model_name)}'",
+            f"    __tablename__ = '{pluralize(model_name.lower())}'",
             "    # Columns",
             "    id = db.Column(db.Integer, primary_key=True)",
             "    created_at = db.Column(db.DateTime(timezone=True),",

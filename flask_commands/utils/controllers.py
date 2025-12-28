@@ -17,9 +17,9 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
     # If method already exists, do nothing and warn user
     if re.search(method_pattern, source):
         message = (
-            click.style("⚠️ Warning: Method Already Exists\n", fg="yellow", bold=True) +
-            click.style(f"Controller '{controller_name}' already has a method named '{method_name}'.\n", fg="yellow") +
-            click.style("No changes were made.", fg="cyan")
+            click.style("⚠️  Warning: Method Already Exists\n", fg="yellow", bold=True) +
+            click.style(f"    - Controller '{controller_name}' already has a method named '{method_name}'.\n", fg="yellow") +
+            click.style("    - No changes were made.", fg="cyan")
         )
         return False, message
 
@@ -56,10 +56,9 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
     # If the controller class isn’t found do nothing and warn user
     if insert_index is None:
         message = (
-            click.style("⚠️ Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
-            click.style(f"Could not locate class '{controller_name}' inside:\n", fg="yellow") +
-            click.style(f"  - {controller_file_path}\n", fg="cyan") +
-            click.style("No method was added.", fg="yellow")
+            click.style("⚠️  Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
+            click.style(f"    - Could not locate class '{controller_name}' inside {controller_file_path}\n", fg="yellow") +
+            click.style("    - No method was added.", fg="cyan")
         )
         return False, message
 
@@ -72,9 +71,8 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
     with open(controller_file_path, "w", encoding="utf-8") as f:
         f.write(new_source)
     message = (
-        click.style("✅ Method Added Successfully\n", fg="green", bold=True) +
-        click.style(f"Added method '{method_name}' to controller '{controller_name}'.\n", fg="green") +
-        click.style(f"View: {relative_view_file_path}", fg="cyan")
+        click.style("✅  Method Added Successfully\n", fg="green", bold=True) +
+        click.style(f"    - Added method '{method_name}' to controller '{controller_name}'.\n", fg="green")
     )
     return True, message
 

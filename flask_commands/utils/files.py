@@ -2,8 +2,9 @@ import os
 from typing import Dict, Optional
 
 def append_file(file_path: str, contents: list[str]) -> None:
-    """Appends a list of lines from contents to the file_path.  Rasises a File
-    Not Found Error if the file does not exist.
+    """Appends a list of lines from contents to the file_path.  Insert a
+    leading newline only if the file doesn't already end with one. Rasises
+    a File Not Found Error if the file does not exist.
     """
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"No file exists at : {file_path}")
@@ -12,7 +13,13 @@ def append_file(file_path: str, contents: list[str]) -> None:
         line if line.endswith("\n") else line + "\n"
         for line in contents
     ]
-    normalized_content.insert(0, '\n')
+
+    # if the file doesn't end with a new line character then add one
+    with open(file_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    if not lines[-1].endswith("\n"):
+        normalized_content.insert(0, '\n')
 
     with open(file_path, "a") as f:
         for line in normalized_content:

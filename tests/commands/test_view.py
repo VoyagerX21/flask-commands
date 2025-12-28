@@ -1,3 +1,4 @@
+import click
 import pytest
 from click.testing import CliRunner
 from flask_commands.commands.view import make_view
@@ -53,7 +54,6 @@ def test_make_view_component_only(project):
     """
 
     runner = CliRunner()
-
     result = runner.invoke(make_view, ["card"])
 
     assert result.exit_code == 0
@@ -63,8 +63,7 @@ def test_make_view_component_only(project):
     assert template_file.exists()
 
     # Output should mention file created
-    assert "File created" in result.output
-
+    assert "New view created" in result.output
 
 def test_make_view_with_generated_controller(project):
     """
@@ -90,6 +89,12 @@ def test_make_view_with_generated_controller(project):
     assert "class PostController" in controller_text
     assert "def index" in controller_text
 
+def test_make_view_with_generated_controller_not_able_to_infer(project):
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["card", "-c"])
+
+    assert result.exit_code == 0
+    assert "ould not infer the controller name" in result.output
 
 def test_make_view_with_generated_route(project):
     """
@@ -101,8 +106,6 @@ def test_make_view_with_generated_route(project):
     result = runner.invoke(make_view, ["posts.index", "-r"])
 
     assert result.exit_code == 0
-
-    print(result.output)
 
     template_file = project / "app" / "templates" / "posts" / "index.html"
     assert template_file.exists()
@@ -116,3 +119,44 @@ def test_make_view_with_generated_route(project):
     assert routes_file.exists()
 
     assert "/posts" in routes_file.read_text()
+
+def test_make_view_with_generated_model(project):
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["posts.index", "-m"])
+
+    assert result.exit_code == 0
+
+    model_file = project / "app" / "models" / "post.py"
+    assert model_file.exists()
+
+    model_file_content = model_file.read_text()
+    assert "class Post(db.Model)" in model_file_content
+    assert "__tablename__ = 'posts'" in model_file_content
+
+def test_make_view_file_exists(project):
+    # Pre-create
+    template_file = project / "app" / "templates" / "card.html"
+    template_file.write_text("hi")
+
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["card"])
+
+    assert "View Already Exist" in result.output
+    assert "hi" == template_file.read_text()
+
+def test_make_view_controller_exist(project):
+    # Pre-create
+    controller_file = project / "app" / "controllers" / "post_controller.py"
+    controller_file.write_text(
+        "from flask import render_template\n"
+        "\n"
+        "class PostController(object):"
+        "    @staticmethod"
+        "    def index() -> str:"
+        "        return render_template('posts/index.html')"
+    )
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["posts.show"])
+    click.echo(result.output)
+    assert "Method Added Successfully" in result.output
+    assert "def show" in controller_file.read_text()

@@ -50,11 +50,11 @@ def view_make_file(destination_file_path: str) -> Tuple[bool, str]:
         write_file(destination_file_path, content)
     except FileExistsError:
         message = (
-            click.style("⚠️ Warning: View Already Exists\n", fg="yellow", bold=True) +
-            click.style(f"View file at '{destination_file_path}' already exists.\n", fg="yellow") +
-            click.style("No changes were made.", fg="cyan")
+            click.style("⚠️  Warning: View Already Exists\n", fg="yellow", bold=True) +
+            click.style(f"    - View file at '{destination_file_path}' already exists.\n", fg="yellow") +
+            click.style("    - No changes were made.", fg="cyan")
         )
         return False, message
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to create view:\n{exception}", fg="red")
-    return True, click.style(f"✅ New view created at {destination_file_path}")
+    return True, click.style(f"📄 New view created at {click.style(destination_file_path, bold=True)}")

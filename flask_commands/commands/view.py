@@ -74,25 +74,18 @@ def make_view(
     relative_view_file_path = os.path.join(relative_path, f"{action}.html")
     destination_file_path = \
         os.path.join("app", "templates", relative_view_file_path)
-    try:
-        view_make_file(destination_file_path)
-        click.echo(f"📄 File created at "
-                   f"{click.style(destination_file_path, bold=True)}")
-    except FileExistsError:
-        click.echo(f"⚠️ Warning: A file already exist at"
-                   f"{destination_file_path}.  Nothing happened.")
-    except Exception as exception:
-        click.echo(click.style(f"💣 Error:\n {exception}", fg="red"))
+
+    is_successful, message = view_make_file(destination_file_path)
+    click.echo(message)
 
     # Infer controller name if not provided
     if generate_controller and controller_name is None:
         if relative_path != '':
             controller_name = controller_infer_name_from(relative_path)
-            click.echo(f"Inferred the controller name as "
-                       f"{click.style(controller_name, bold=True)}")
+            click.echo(click.style(f"    - Inferred the controller name as {click.style(controller_name, bold=True)}", fg="cyan"))
         else:
-            click.echo(f"⚠️ Warning: Could not infer the controller name "
-                       f"from {dotted_path_with_name}")
+            click.echo(click.style(f"⚠️  Warning: Could not infer the controller name "
+                       f"from {dotted_path_with_name}", fg="yellow", bold=True))
 
     # Infer route name if not provided
     if generate_route and route_name is None:
