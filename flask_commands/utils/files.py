@@ -18,7 +18,7 @@ def append_file(file_path: str, contents: list[str]) -> None:
     with open(file_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
-    if not lines[-1].endswith("\n"):
+    if lines and not lines[-1].endswith("\n"):
         normalized_content.insert(0, '\n')
 
     with open(file_path, "a") as f:
