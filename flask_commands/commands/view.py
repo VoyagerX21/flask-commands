@@ -151,9 +151,6 @@ def make_view(
     if model_name:
         model_init_path = os.path.join("app", "models", "__init__.py")
         model_file_path = os.path.join("app", "models", f"{model_name.lower()}.py")
-        try:
-            is_successful, message = model_make_file(
-                model_name, model_init_path, model_file_path)
-            click.echo(message)
-        except Exception as exception:
-            click.echo(f"💣 Error:\n {exception}", fg="red")
+        is_successful, message = model_make_file(
+            model_name, model_init_path, model_file_path)
+        click.echo(message)

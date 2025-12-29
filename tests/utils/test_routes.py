@@ -147,8 +147,9 @@ def test_route_add_method_success(tmp_path, monkeypatch):
         controller_name='UserController')
 
     assert is_successfull is True
-    assert f"Added GET route 'index' to 'users'" in message
-    assert f"Use url_for('users.index') to reference it." in message
+    assert "Added GET route 'index' to 'users'" in message
+    assert "To reference path use" in message
+    assert "url_for('users.index')" in message
 
 def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
     project_root = tmp_path

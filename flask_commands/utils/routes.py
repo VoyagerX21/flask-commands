@@ -42,9 +42,9 @@ def route_add_method(route_name: str, action: str, route_folder_path:str, relati
         using_controller_name = controller_name if controller_name else 'MainController'
         method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
         route_content = [
-            ""
-            f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])"
-            f"def {action}():"
+            "",
+            f"@bp.route('{route_name.replace(relative_path, '')}', methods=['{method}'])",
+            f"def {action}():",
             f"    return {using_controller_name}.{action}()"
         ]
         with open(route_file_path, "r", encoding="utf-8") as file:
@@ -60,7 +60,6 @@ def route_add_method(route_name: str, action: str, route_folder_path:str, relati
                 click.style(f"No changes were made.", fg="cyan")
             )
             return False, message
-        # TODO: before appending we need to check that the action is not already part of the route_file_path
         append_file(route_file_path, route_content)
     except FileNotFoundError:
         message = (
@@ -75,8 +74,9 @@ def route_add_method(route_name: str, action: str, route_folder_path:str, relati
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
     message = (
-        click.style(f"✅ Added {method} route '{action}' to '{relative_path}'.", fg="green") + "\n" +
-        click.style(f"🔗 Use url_for('{relative_path}.{action}') to reference it.", fg="yellow")
+        click.style(f"✅ Added Route\n") +
+        click.style(f"    - Added {method} route '{action}' to '{relative_path}'.\n", fg="cyan") +
+        click.style(f"    - To reference path use {click.style(f"url_for('{relative_path}.{action}')", bold=True)}", fg="cyan" )
     )
     return True, message
 

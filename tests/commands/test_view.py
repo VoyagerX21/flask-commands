@@ -1,4 +1,4 @@
-import click
+import os
 import pytest
 from click.testing import CliRunner
 from flask_commands.commands.view import make_view
@@ -120,6 +120,44 @@ def test_make_view_with_generated_route(project):
 
     assert "/posts" in routes_file.read_text()
 
+def test_make_view_with_generated_route_add_method(project):
+    route_file = project / "app" / "routes" / "posts" / "routes.py"
+    route_file.parent.mkdir(parents=True)
+    route_file.write_text(
+        "from app.controllers import MainController\n"
+        "\n"
+        "from app.routes.posts import bp\n"
+        "@bp.route('/posts', methods=['GET'])\n"
+        "def index():\n"
+        "    return PostController.index()"
+    )
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["posts.show", "-r"])
+
+    assert result.exit_code == 0
+
+    assert "Added Route" in result.output
+
+def test_make_view_with_generated_route_exception(project, monkeypatch):
+    # Keep the real function around
+    real_exists = os.path.exists
+
+    def boom(path):
+        # Raise only for our route folder lookup
+        if "app/routes" in str(path):
+            raise RuntimeError("boom boom boom")
+        return real_exists(path)
+
+    monkeypatch.setattr("os.path.exists", boom)
+
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["posts.index", "-r"])
+
+    assert result.exit_code == 0
+    assert "💣 Error:" in result.output
+    assert "boom boom boom" in result.output
+
+
 def test_make_view_with_generated_model(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.index", "-m"])
@@ -141,6 +179,8 @@ def test_make_view_file_exists(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["card"])
 
+    assert result.exit_code == 0
+
     assert "View Already Exist" in result.output
     assert "hi" == template_file.read_text()
 
@@ -158,9 +198,7 @@ def test_make_view_controller_exist(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.show", '-c'])
 
-    click.echo(result.output)
-
-
+    assert result.exit_code == 0
 
     assert "Method Added Successfully" in result.output
     assert "def show" in controller_file.read_text()
