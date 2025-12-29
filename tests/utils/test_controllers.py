@@ -221,7 +221,7 @@ def test_controller_make_file_init_missing(tmp_path, monkeypatch):
 
     assert is_successfull is False
     assert "__init__.py Missing" in message
-    assert "You may need to register it manually" in message
+    assert "You may need to register the controller manually" in message
 
 def test_controller_make_file_init_exception(controller_project, monkeypatch):
     def boom(*args, **kwargs):

@@ -118,11 +118,11 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
         message = (
             click.style("⚠️ Warning: __init__.py Missing\n", fg="yellow", bold=True) +
             click.style(
-                f"Controller '{controller_name}' was created, "
+                f"    - Controller '{controller_name}' was created, "
                 f"but __init__.py does not exist.\n",
                 fg="yellow"
             ) +
-            click.style("You may need to register it manually.", fg="cyan")
+            click.style("    - You may need to register the controller manually.", fg="yellow")
         )
         return False, message
     except Exception as exception:
@@ -130,10 +130,10 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
             f"💣 Error: Failed to update __init__.py:\n{exception}", fg="red")
 
     message = (
-        click.style(f"✅ Created Controller Method", fg="green") +
-        click.style(f"    - Controller = {controller_name}", fg="cyan") +
-        click.style(f"    - method = {method_name}", fg="cyan") +
-        click.style(f"    - path = {click.style(controller_file_path, bold=True)}", fg="cyan")
+        click.style(f"✅ Created Controller Class With Method\n", fg="green", bold=True) +
+        click.style(f"    - Controller = {controller_name}\n", fg="green") +
+        click.style(f"    - method = {method_name}\n", fg="green") +
+        click.style(f"    - path = {click.style(controller_file_path, bold=True)}\n", fg="green")
         )
 
     return True, message
