@@ -73,14 +73,15 @@ def route_add_method(route_name: str, action: str, route_folder_path:str, relati
         return False, message
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
+
+    supporting_message_inner = click.style(
+        f"url_for('{relative_path}.{action}')", bold=True)
+    supporting_message = \
+        f"    - To reference path use {supporting_message_inner}"
     message = (
         click.style(f"✅ Added Route\n") +
         click.style(f"    - Added {method} route '{action}' to '{relative_path}'.\n", fg="cyan") +
-        click.style(
-            f"    - To reference path use "
-            f"{click.style(f'url_for(\'{relative_path}.{action}\')', bold=True)}",
-            fg="cyan"
-        )
+        click.style(supporting_message, fg="cyan")
     )
     return True, message
 
