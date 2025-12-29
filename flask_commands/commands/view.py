@@ -29,13 +29,13 @@ from flask_commands.utils.views import view_make_file
 @click.option("-c", "--generate-controller", is_flag=True,
               help="Optional controller flag to generate an inferred controller from the dotted path name.")
 @click.option("--route", "route_name", default=None,
-              help="Optional route class name (example post).")
+              help="Optional route class name (example /posts).")
 @click.option("-r", "--generate-route", is_flag=True,
-              help="Optional route flag to generate an infered route from the dotted path name.")
+              help="Optional route flag to generate an inferred route from the dotted path name.")
 @click.option("--model", "model_name", default=None,
               help="Optional model name (example Post which makes the database table 'posts').")
 @click.option("-m", "--generate-model", is_flag=True,
-              help="Optional model flag to generate an infered model from the dotted path name.")
+              help="Optional model flag to generate an inferred model from the dotted path name.")
 def make_view(
     dotted_path_with_name: str,
     controller_name: str | None,
@@ -45,30 +45,43 @@ def make_view(
     model_name: str | None,
     generate_model: bool) -> None:
     """
-    Create a template view file under app/templates/<folder>/<name>.html
-
-    Designed Usage for components views:
-        flask make:view card
-
-    Designed Usage for initial CRUD parts:
+    \b
+    Create a template view file under app/templates/<folder>/<name>.html.
+    You can also optionally connect this view to a controller, route, and model.
+    \b
+    ─── Understanding DOTTED_PATH_WITH_NAME ───
+    The dotted path defines the folder and file name:
+        <folder>.<name> → app/templates/<folder>/<name>.html
+        Example: posts.index → app/templates/posts/index.html
+    \b
+    You can also nest folders for relationships:
+        admin.users.index → app/templates/admin/users/index.html
+        posts.images.index → app/templates/posts/images/index.html
+    \b
+    ─── Simple Component Views ───
+    For standalone components like a button:
+        flask make:view button
+    \b
+    ─── CRUD Views ───
+    For RESTful actions (index, show, create, store, edit, update, destroy/delete):
+    Initial CRUD setup (controller, route, and model):
         flask make:view posts.index -crm
         flask make:view posts.index --controller PostController --route /posts --model Post
-
-    Designed Usage for additional CRUD parts:
+    \b
+    Additional CRUD actions (e.g., show):
         flask make:view posts.show -cr
         flask make:view posts.show --controller PostController --route /posts/<int:post_id>
-
-    Additional Usage:
-        flask make:view posts.index -c
-        flask make:view posts.index --controller PostController
-        flask make:view posts.index -r
-        flask make:view posts.index --route /posts
-        flask make:view posts.index -m
-        flask make:view posts.index --model Post
-        flask make:view posts.index -cm
-        flask make:view posts.index --controller PostController --model Post
-        flask make:view posts.index -rm
-        flask make:view posts.index --route /posts --model Post
+    \b
+    ─── Flags ───
+    Optional flags can be combined as seen above:
+        -c / --generate-controller    generate inferred controller
+        -r / --generate-route         generate inferred route
+        -m / --generate-model         generate inferred model
+    \b
+    If you prefer explicit control:
+        --controller CONTROLLER_NAME  set a specific controller
+        --route ROUTE_NAME            set a specific route
+        --model MODEL_NAME            set a specific model
     """
     relative_path, action = split_dotted_path(dotted_path_with_name)
     relative_view_file_path = os.path.join(relative_path, f"{action}.html")
