@@ -76,7 +76,11 @@ def route_add_method(route_name: str, action: str, route_folder_path:str, relati
     message = (
         click.style(f"✅ Added Route\n") +
         click.style(f"    - Added {method} route '{action}' to '{relative_path}'.\n", fg="cyan") +
-        click.style(f"    - To reference path use {click.style(f"url_for('{relative_path}.{action}')", bold=True)}", fg="cyan" )
+        click.style(
+            f"    - To reference path use "
+            f"{click.style(f'url_for(\'{relative_path}.{action}\')', bold=True)}",
+            fg="cyan"
+        )
     )
     return True, message
 
