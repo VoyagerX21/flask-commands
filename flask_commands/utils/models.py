@@ -100,7 +100,7 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
         append_file(model_init_path, init_contents)
     except FileNotFoundError:
         message = (
-            click.style("⚠️ Warning: __init__.py Missing\n", fg="yellow", bold=True) +
+            click.style("⚠️  Warning: __init__.py Missing\n", fg="yellow", bold=True) +
             click.style(
                 f"Model '{model_name}' was created, "
                 f"but __init__.py does not exist.\n",

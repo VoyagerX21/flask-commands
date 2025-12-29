@@ -94,7 +94,7 @@ def test_controller_add_method_success(controller_project):
 
     # Assert
     assert is_successfull is True
-    assert "Method Added Successfully" in message
+    assert "Method Added" in message
 
     updated_source = controller_file.read_text(encoding="utf-8")
 

@@ -75,8 +75,9 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
         message = click.style(f"💣 Error: Failed to add Controller Method\n {exception}", fg="red")
         return False, message
     message = (
-        click.style("✅  Method Added Successfully\n", fg="green", bold=True) +
-        click.style(f"    - Added method '{method_name}' to controller '{controller_name}'.\n", fg="green")
+        click.style("✅ Success: Method Added\n", fg="green", bold=True) +
+        click.style(f"    - Added method '{method_name}' to controller '{controller_name}'.\n", fg="green") +
+        click.style(f"    - path = {click.style(controller_file_path, bold=True)}", fg="green")
     )
     return True, message
 
@@ -116,7 +117,7 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
         append_file(controller_init_path, init_contents)
     except FileNotFoundError:
         message = (
-            click.style("⚠️ Warning: __init__.py Missing\n", fg="yellow", bold=True) +
+            click.style("⚠️  Warning: __init__.py Missing\n", fg="yellow", bold=True) +
             click.style(
                 f"    - Controller '{controller_name}' was created, "
                 f"but __init__.py does not exist.\n",

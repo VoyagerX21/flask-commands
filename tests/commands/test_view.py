@@ -200,5 +200,5 @@ def test_make_view_controller_exist(project):
 
     assert result.exit_code == 0
 
-    assert "Method Added Successfully" in result.output
+    assert "Method Added" in result.output
     assert "def show" in controller_file.read_text()
