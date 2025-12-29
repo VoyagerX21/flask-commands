@@ -164,6 +164,19 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
         source = f.read()
 
     match = re.search(r"^\s*return app\b", source, flags=re.MULTILINE)
+    if match is None:
+        message = (
+            click.style("⚠️ Warning: Could not register blueprint\n", fg="yellow", bold=True) +
+            click.style(
+                "    - Failed to locate `return app` in app/__init__.py.\n",
+                fg="yellow"
+            ) +
+            click.style(
+                f"    - Please register '{blueprint_name}' manually.",
+                fg="cyan"
+            )
+        )
+        return False, message
     insert_index = match.start()
     new_blueprint = [
         f"    from {route_folder_path.replace('/', '.')} import bp as {blueprint_name}_blueprint",
