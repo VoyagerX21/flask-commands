@@ -29,6 +29,8 @@ def new(project_name):
     os.chmod(os.path.join(project_name, "run.sh"), 0o755)
 
     install_tailwind(project_name)
-    click.echo(click.style(f"{project_name.title()} is ready!!! Run the following:", bold=True, underline=True))
-    click.echo(f"{click.style(f"cd {project_name}", fg="cyan")}")
-    click.echo(f"{click.style("./run.sh", fg="cyan")}")
+    click.echo(click.style(
+        f"{project_name.title()} is ready!!! Run the following:",
+        bold=True, underline=True))
+    click.echo(click.style(f"cd {project_name}", fg="cyan"))
+    click.echo(click.style("./run.sh", fg="cyan"))
