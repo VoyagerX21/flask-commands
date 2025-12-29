@@ -1,5 +1,6 @@
 import os
 import sys
+import click
 import subprocess
 from typing import Optional, Iterable
 from .files import write_file
@@ -25,9 +26,10 @@ def create_venv(project_path: str, packages: Optional[Iterable[str]] = None, fre
     return venv_dir
 
 def _pip_install_in_venv(venv_dir: str, packages):
-    print("Installing Python Dependencies")
+    click.echo(click.style("Installing Python Dependencies...", bold=True))
     pip_path = os.path.join(venv_dir, "bin", "pip")
     subprocess.run([pip_path, "install", *packages], check=True, capture_output=True, text=True)
+    click.echo(click.style("    - ✅ Success: Python Dependencies Installed", fg="green"))
 
 def _write_requirements_from_venv(venv_dir: str, project_path: str):
     """

@@ -10,8 +10,8 @@ from flask_commands.utils.css import install_tailwind
 def new(project_name):
     """Create a new Flask project"""
     if os.path.exists(project_name):
-        click.echo(f"Error: '{project_name}' already exists in this directory. "
-                    "Please pick a new name.")
+        click.echo(click.style(f"💣 Error: '{project_name}' already exists in this directory. "
+                    "Please pick a new name.", fg="red"))
         return
 
     os.makedirs(project_name)
@@ -29,6 +29,6 @@ def new(project_name):
     os.chmod(os.path.join(project_name, "run.sh"), 0o755)
 
     install_tailwind(project_name)
-    click.echo("Your project is all ready!!! Run the following:")
-    click.echo(f"1) cd {project_name}")
-    click.echo(f"2) ./run.sh")
+    click.echo(click.style(f"{project_name.title()} is ready!!! Run the following:", bold=True, underline=True))
+    click.echo(f"{click.style(f"cd {project_name}", fg="cyan")}")
+    click.echo(f"{click.style("./run.sh", fg="cyan")}")

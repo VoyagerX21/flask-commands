@@ -6,14 +6,20 @@ import subprocess
 
 def install_tailwind(project_name):
     if shutil.which("npm") is None:
-        click.echo("npm not found on PATH; skipping Tailwind installation.")
-        click.echo("You will need to install npm on your system first and "
-                   "then you can follow these directions to install tailwind")
-        click.echo(f"To install later: cd {project_name} && npm install "
-                   "tailwindcss @tailwindcss/cli")
+        click.echo(click.style("⚠️  Warning: npm not found on PATH;",
+                               fg="yellow", bold=True))
+        click.echo(click.style("    - Skipping Tailwind installation.",
+                               fg="yellow"))
+        click.echo(click.style("    - You will need to install npm on your "
+                               " system first and then you can follow "
+                               "these directions to install tailwind",
+                               fg="cyan"))
+        click.echo(click.style(f"    - To install later: cd {project_name} "
+                               " && npm install tailwindcss @tailwindcss/cli",
+                               fg="cyan"))
         return
     try:
-        click.echo("Installing Tailwind CSS (tailwindcss @tailwindcss/cli) via npm...")
+        click.echo(click.style("Installing Tailwind CSS (tailwindcss @tailwindcss/cli) via npm...", bold=True))
         subprocess.run(
             ["npm", "install", "tailwindcss", "@tailwindcss/cli"],
             check=True,
@@ -22,9 +28,9 @@ def install_tailwind(project_name):
             text=True,
         )
         _append_tailwind_scripts(project_name)
-        click.echo("Tailwind installed.")
+        click.echo(click.style("    - ✅ Success: Tailwind installed.", fg="green"))
     except subprocess.CalledProcessError as exc:
-        click.echo(f"npm install failed: {exc}")
+        click.echo(click.style(f"💣 Error: npm install failed:\n{exc}", fg="red"))
 
 
 def _append_tailwind_scripts(project_name):
