@@ -133,11 +133,9 @@ def make_view(
 
     # If a controller_name was provided or inferred
     if route_name:
-        click.echo(f"Test 1) dotted_path_with_name = {dotted_path_with_name}, relative_path = {relative_path}")
         route_folder_path, blueprint_name = \
             generate_route_folder_path_and_blueprint_name(
                 dotted_path_with_name, relative_path)
-        click.echo(f"Test 2) route_folder_path={route_folder_path}, blueprint_name={blueprint_name}")
         try:
             if os.path.exists(route_folder_path):
                 is_successful, message = \

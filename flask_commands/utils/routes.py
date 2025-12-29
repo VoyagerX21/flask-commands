@@ -6,7 +6,7 @@ from .files import append_file, write_file
 from .naming import singularize
 from .scaffold import crud_mapping_route, split_dotted_path
 
-def route_add_method(route_name: str, action: str, route_folder_path:str, relative_path: str, controller_name: str | None) -> Tuple[bool, str]:
+def route_add_method(relative_path: str,  action: str, route_folder_path:str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
     Add a new route to the routes.py file in the specified route folder.
     Determines the HTTP method based on the action type (POST for store,
@@ -27,10 +27,10 @@ def route_add_method(route_name: str, action: str, route_folder_path:str, relati
 
     Example:
         >>> is_successful, message = route_add_method(
-        ...     route_name='users.index',
+        ...     relative_path='users',
         ...     action='index',
         ...     route_folder_path='app/routes/users',
-        ...     relative_path='users',
+        ...     route_name='users.index',
         ...     controller_name='UserController'
         ... )
     """
@@ -143,8 +143,8 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
             "",
             f"from app.routes.{blueprint_name.replace('_', '.')} import bp"
             "",
-            f"@bp.route('{route_name}', methods=['{method}'])"
-            f"def {action}():"
+            f"@bp.route('{route_name}', methods=['{method}'])",
+            f"def {action}():",
             f"    return {using_controller_name}.{action}()"
         ]
         write_file(route_file_path, route_content)
