@@ -84,18 +84,12 @@ def make_view(
         --model MODEL_NAME            set a specific model
     """
     relative_path, action = split_dotted_path(dotted_path_with_name)
-    relative_view_file_path = os.path.join(relative_path, f"{action}.html")
-    destination_file_path = \
-        os.path.join("app", "templates", relative_view_file_path)
-
-    is_successful, message = view_make_file(destination_file_path)
-    click.echo(message)
 
     # Infer controller name if not provided
     if generate_controller and controller_name is None:
         if relative_path != '':
             controller_name = controller_infer_name_from(relative_path)
-            click.secho(f"💡 Info: Inferred the controller name as {click.style(controller_name, bold=True)}", fg="cyan")
+            click.secho(f"💡 Info: Inferred controller name as {click.style(controller_name, bold=True)}", fg="cyan")
         else:
             click.secho(f"⚠️  Warning: Could not infer the controller name "
                        f"from {dotted_path_with_name}", fg="yellow", bold=True)
@@ -103,15 +97,24 @@ def make_view(
     # Infer route name if not provided
     if generate_route and route_name is None:
         route_name = route_infer_name_from(dotted_path_with_name)
-        click.secho("💡 Info: Inferred the route name as "
+        click.secho("💡 Info: Inferred route name as "
                    f"{click.style(route_name, bold=True)}", fg="cyan")
 
 
     # Infer model name if not provided
     if generate_model and model_name is None:
         model_name = model_infer_name_from(relative_path, dotted_path_with_name)
-        click.secho(f"💡 Info: Infered the model name as "
+        click.secho(f"💡 Info: Inferred model name as "
                    f"{click.style(model_name, bold=True)}", fg="cyan")
+
+    click.echo("\n")
+
+    relative_view_file_path = os.path.join(relative_path, f"{action}.html")
+    destination_file_path = \
+        os.path.join("app", "templates", relative_view_file_path)
+
+    is_successful, message = view_make_file(destination_file_path)
+    click.echo(message)
 
     # If a controller_name was provided or inferred
     if controller_name:
@@ -143,6 +146,7 @@ def make_view(
                         relative_path,      # this is everything before the last part of dotted_path_with_name replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_name
                         route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
+                        blueprint_name,     # posts or mains or posts_comments
                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
                         controller_name)    # contoller_name is like post_controller
             else:

@@ -175,6 +175,7 @@ def test_route_add_method_success(tmp_path, monkeypatch):
         route_name='users.index',
         action='index',
         route_folder_path='app/routes/users',
+        blueprint_name="users",
         relative_path='users',
         controller_name='UserController')
 
@@ -204,6 +205,7 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
         route_name='users.index',
         action='index',
         route_folder_path='app/routes/users',
+        blueprint_name='users',
         relative_path='users',
         controller_name='UserController')
 
@@ -221,6 +223,7 @@ def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
         route_name='users.index',
         action='index',
         route_folder_path='app/routes/users',
+        blueprint_name='users',
         relative_path='users',
         controller_name='UserController')
 
@@ -256,6 +259,7 @@ def test_route_method_exception(tmp_path, monkeypatch):
         route_name='users.index',
         action='index',
         route_folder_path='app/routes/users',
+        blueprint_name='users',
         relative_path='users',
         controller_name='UserController')
 

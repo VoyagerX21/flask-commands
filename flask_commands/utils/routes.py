@@ -6,7 +6,7 @@ from .files import append_file, write_file
 from .naming import singularize
 from .scaffold import crud_mapping_route, split_dotted_path
 
-def route_add_method(relative_path: str,  action: str, route_folder_path:str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
+def route_add_method(relative_path: str,  action: str, route_folder_path:str, blueprint_name:str,  route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
     Add a new route to the routes.py file in the specified route folder.
     Determines the HTTP method based on the action type (POST for store,
@@ -30,6 +30,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path:str, ro
         ...     relative_path='users',
         ...     action='index',
         ...     route_folder_path='app/routes/users',
+        ...     blueprint_name='users',
         ...     route_name='users.index',
         ...     controller_name='UserController'
         ... )
@@ -74,16 +75,14 @@ def route_add_method(relative_path: str,  action: str, route_folder_path:str, ro
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
 
-    supporting_message_inner = click.style(
-        f"url_for('{relative_path}.{action}')", bold=True)
-    supporting_message = \
-        f"    - To reference path use {supporting_message_inner}"
     message = (
-        click.style(f"✅ Added Route\n") +
-        click.style(f"    - Added {method} route '{action}' to '{relative_path}'.\n", fg="cyan") +
-        click.style(supporting_message, fg="cyan")
+        click.style(f"✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
+        click.style(f"    - Updated routes file in directory {click.style(route_folder_path, bold=True)}\n", fg="green") +
+        click.style(f"    - Added {click.style(method, bold=True)} ", fg="green") + click.style(f"route with url {click.style(route_name.replace(relative_path, ''), bold=True)}.\n", fg="green") +
+        click.style(f"    - Reference the new route with ", fg="green") + click.style(f"url_for('{blueprint_name}.{action}')\n", fg="green", bold=True)
     )
     return True, message
+
 
 def route_make_directory_and_register_blueprint(action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
@@ -113,7 +112,7 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
         >>> is_successful, message = route_make_directory_and_register_blueprint(
         ...     action='index',
         ...     route_folder_path='app/routes/users',
-        ...     blueprint_name='/users',
+        ...     blueprint_name='users',
         ...     route_name='users.index',
         ...     controller_name='UserController'
         ... )
@@ -188,13 +187,13 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
     message = (
         click.style(f"✅ Success: Created New Route Directory\n", fg="green", bold=True) +
         click.style(
-            "    - Created a new route file at " +
-            click.style(f"{route_folder_path.replace('/', '.')}/routes.py\n", bold=True),
+            "    - Created a new routes directory at " +
+            click.style(f"{route_folder_path}\n", bold=True),
             fg="green") +
-        click.style(f"    - Initialized route file with a {click.style(method, bold=True)} url defined by function {click.style(action, bold=True)}\n", fg="green") +
-        click.style(f"    - Route function {click.style(action, bold=True)} is using controller {click.style(using_controller_name, bold=True)}\n", fg="green") +
-        click.style(f"    - Registered the new route directory {click.style(blueprint_name, bold=True)} at app/__init__.py\n", fg="green") +
-        click.style(f"    - Reference using the new route using", fg="green") + click.style("url_for('{blueprint_name}.{action}')", fg="green", bold=True)
+        click.style(f"    - Registered the new route directory as {click.style(blueprint_name, bold=True)}", fg="green") + click.style(" at app/__init__.py\n", fg="green") +
+        click.style(f"    - Initialized {click.style(method, bold=True)} ", fg="green") + click.style(f"route with url {click.style(route_name, bold=True)}\n", fg="green") +
+        click.style(f"    - Route function {click.style(action, bold=True)} ", fg="green") + click.style(f"is using controller {click.style(using_controller_name, bold=True)}\n", fg="green") +
+        click.style(f"    - Reference the new route with ", fg="green") + click.style(f"url_for('{using_controller_name}.{action}')\n", fg="green", bold=True)
     )
     return True, message
 

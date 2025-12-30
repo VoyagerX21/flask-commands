@@ -1,0 +1,211 @@
+diff --git a/flask_commands/commands/view.py b/flask_commands/commands/view.py
+index 95a93cf..06fd5cf 100644
+--- a/flask_commands/commands/view.py
++++ b/flask_commands/commands/view.py
+@@ -84,18 +84,12 @@ def make_view(
+         --model MODEL_NAME            set a specific model
+     """
+     relative_path, action = split_dotted_path(dotted_path_with_name)
+-    relative_view_file_path = os.path.join(relative_path, f"{action}.html")
+-    destination_file_path = \
+-        os.path.join("app", "templates", relative_view_file_path)
+-
+-    is_successful, message = view_make_file(destination_file_path)
+-    click.echo(message)
+ 
+     # Infer controller name if not provided
+     if generate_controller and controller_name is None:
+         if relative_path != '':
+             controller_name = controller_infer_name_from(relative_path)
+-            click.secho(f"💡 Info: Inferred the controller name as {click.style(controller_name, bold=True)}", fg="cyan")
++            click.secho(f"💡 Info: Inferred controller name as {click.style(controller_name, bold=True)}", fg="cyan")
+         else:
+             click.secho(f"⚠️  Warning: Could not infer the controller name "
+                        f"from {dotted_path_with_name}", fg="yellow", bold=True)
+@@ -103,16 +97,25 @@ def make_view(
+     # Infer route name if not provided
+     if generate_route and route_name is None:
+         route_name = route_infer_name_from(dotted_path_with_name)
+-        click.secho("💡 Info: Inferred the route name as "
++        click.secho("💡 Info: Inferred route name as "
+                    f"{click.style(route_name, bold=True)}", fg="cyan")
+ 
+ 
+     # Infer model name if not provided
+     if generate_model and model_name is None:
+         model_name = model_infer_name_from(relative_path, dotted_path_with_name)
+-        click.secho(f"💡 Info: Infered the model name as "
++        click.secho(f"💡 Info: Inferred model name as "
+                    f"{click.style(model_name, bold=True)}", fg="cyan")
+ 
++    click.echo("\n")
++
++    relative_view_file_path = os.path.join(relative_path, f"{action}.html")
++    destination_file_path = \
++        os.path.join("app", "templates", relative_view_file_path)
++
++    is_successful, message = view_make_file(destination_file_path)
++    click.echo(message)
++
+     # If a controller_name was provided or inferred
+     if controller_name:
+         controller_file_path = \
+@@ -143,6 +146,7 @@ def make_view(
+                         relative_path,      # this is everything before the last part of dotted_path_with_name replacing . with /
+                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_name
+                         route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
++                        blueprint_name,     # posts or mains or posts_comments
+                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
+                         controller_name)    # contoller_name is like post_controller
+             else:
+diff --git a/flask_commands/utils/controllers.py b/flask_commands/utils/controllers.py
+index 03a9b45..9eed4a3 100644
+--- a/flask_commands/utils/controllers.py
++++ b/flask_commands/utils/controllers.py
+@@ -131,7 +131,7 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
+             f"💣 Error: Failed to update __init__.py:\n{exception}", fg="red")
+ 
+     message = (
+-        click.style(f"✅ Created Controller Class With Method\n", fg="green", bold=True) +
++        click.style(f"✅ Success: Created Controller Class With Method\n", fg="green", bold=True) +
+         click.style(f"    - Controller = {controller_name}\n", fg="green") +
+         click.style(f"    - method = {method_name}\n", fg="green") +
+         click.style(f"    - path = {click.style(controller_file_path, bold=True)}\n", fg="green")
+diff --git a/flask_commands/utils/models.py b/flask_commands/utils/models.py
+index 1bb5de9..304f522 100644
+--- a/flask_commands/utils/models.py
++++ b/flask_commands/utils/models.py
+@@ -112,9 +112,8 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
+ 
+ 
+     message = (
+-        click.style("✅ Model Created Successfully\n", fg="green", bold=True) +
+-        click.style(f"Model '{model_name}' generated at ", fg="green") +
+-        click.style(model_file_path, fg="green", bold=True) + "\n" +
+-        click.style(f"📦 Registered in {model_init_path}", fg="cyan")
++        click.style("✅ Success: Model Created Successfully\n", fg="green", bold=True) +
++        click.style(f"    - Created model {click.style(model_name, bold=True)}", fg="green") + click.style(f" at {click.style(model_file_path, bold=True)}\n", fg="green") +
++        click.style(f"    - Registered {click.style(model_name, bold=True)}", fg="green") + click.style(f" model at {click.style(model_init_path, bold=True)}\n", fg="green")
+     )
+     return True, message
+diff --git a/flask_commands/utils/routes.py b/flask_commands/utils/routes.py
+index 82202eb..af2eb01 100644
+--- a/flask_commands/utils/routes.py
++++ b/flask_commands/utils/routes.py
+@@ -6,7 +6,7 @@ from .files import append_file, write_file
+ from .naming import singularize
+ from .scaffold import crud_mapping_route, split_dotted_path
+ 
+-def route_add_method(relative_path: str,  action: str, route_folder_path:str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
++def route_add_method(relative_path: str,  action: str, route_folder_path:str, blueprint_name:str,  route_name: str, controller_name: str | None) -> Tuple[bool, str]:
+     """
+     Add a new route to the routes.py file in the specified route folder.
+     Determines the HTTP method based on the action type (POST for store,
+@@ -30,6 +30,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path:str, ro
+         ...     relative_path='users',
+         ...     action='index',
+         ...     route_folder_path='app/routes/users',
++        ...     blueprint_name='users',
+         ...     route_name='users.index',
+         ...     controller_name='UserController'
+         ... )
+@@ -74,17 +75,15 @@ def route_add_method(relative_path: str,  action: str, route_folder_path:str, ro
+     except Exception as exception:
+         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
+ 
+-    supporting_message_inner = click.style(
+-        f"url_for('{relative_path}.{action}')", bold=True)
+-    supporting_message = \
+-        f"    - To reference path use {supporting_message_inner}"
+     message = (
+-        click.style(f"✅ Added Route\n") +
+-        click.style(f"    - Added {method} route '{action}' to '{relative_path}'.\n", fg="cyan") +
+-        click.style(supporting_message, fg="cyan")
++        click.style(f"✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
++        click.style(f"    - Updated routes file in directory {click.style(route_folder_path, bold=True)}\n", fg="green") +
++        click.style(f"    - Added {click.style(method, bold=True)} ", fg="green") + click.style(f"route with url {click.style(route_name.replace(relative_path, ''), bold=True)}.\n", fg="green") +
++        click.style(f"    - Reference the new route with ", fg="green") + click.style(f"url_for('{blueprint_name}.{action}')\n", fg="green", bold=True)
+     )
+     return True, message
+ 
++
+ def route_make_directory_and_register_blueprint(action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
+     """
+     Creates a new Flask route directory structure and registers a blueprint in the Flask app.
+@@ -113,7 +112,7 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path:
+         >>> is_successful, message = route_make_directory_and_register_blueprint(
+         ...     action='index',
+         ...     route_folder_path='app/routes/users',
+-        ...     blueprint_name='/users',
++        ...     blueprint_name='users',
+         ...     route_name='users.index',
+         ...     controller_name='UserController'
+         ... )
+@@ -188,13 +187,13 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path:
+     message = (
+         click.style(f"✅ Success: Created New Route Directory\n", fg="green", bold=True) +
+         click.style(
+-            "    - Created a new route file at " +
+-            click.style(f"{route_folder_path.replace('/', '.')}/routes.py\n", bold=True),
++            "    - Created a new routes directory at " +
++            click.style(f"{route_folder_path}\n", bold=True),
+             fg="green") +
+-        click.style(f"    - Initialized route file with a {click.style(method, bold=True)} url defined by function {click.style(action, bold=True)}\n", fg="green") +
+-        click.style(f"    - Route function {click.style(action, bold=True)} is using controller {click.style(using_controller_name, bold=True)}\n", fg="green") +
+-        click.style(f"    - Registered the new route directory {click.style(blueprint_name, bold=True)} at app/__init__.py\n", fg="green") +
+-        click.style(f"    - Reference using the new route using", fg="green") + click.style("url_for('{blueprint_name}.{action}')", fg="green", bold=True)
++        click.style(f"    - Registered the new route directory as {click.style(blueprint_name, bold=True)}", fg="green") + click.style(" at app/__init__.py\n", fg="green") +
++        click.style(f"    - Initialized {click.style(method, bold=True)} ", fg="green") + click.style(f"route with url {click.style(route_name, bold=True)}\n", fg="green") +
++        click.style(f"    - Route function {click.style(action, bold=True)} ", fg="green") + click.style(f"is using controller {click.style(using_controller_name, bold=True)}\n", fg="green") +
++        click.style(f"    - Reference the new route with ", fg="green") + click.style(f"url_for('{using_controller_name}.{action}')\n", fg="green", bold=True)
+     )
+     return True, message
+ 
+diff --git a/flask_commands/utils/views.py b/flask_commands/utils/views.py
+index 7f40f2b..81f5f98 100644
+--- a/flask_commands/utils/views.py
++++ b/flask_commands/utils/views.py
+@@ -61,6 +61,6 @@ def view_make_file(destination_file_path: str) -> Tuple[bool, str]:
+     message = (
+         click.style(f"✅ Success: Created View\n", fg="green", bold=True) +
+         click.style(f"    - view = {destination_file_path.split('/')[-1]}\n", fg="green") +
+-        click.style(f"    - path = {click.style(destination_file_path, bold=True)}", fg="green")
++        click.style(f"    - path = {click.style(destination_file_path, bold=True)}\n", fg="green")
+     )
+     return True, message
+diff --git a/tests/utils/test_routes.py b/tests/utils/test_routes.py
+index 32a6b10..6eae0fd 100644
+--- a/tests/utils/test_routes.py
++++ b/tests/utils/test_routes.py
+@@ -175,6 +175,7 @@ def test_route_add_method_success(tmp_path, monkeypatch):
+         route_name='users.index',
+         action='index',
+         route_folder_path='app/routes/users',
++        blueprint_name="users",
+         relative_path='users',
+         controller_name='UserController')
+ 
+@@ -204,6 +205,7 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
+         route_name='users.index',
+         action='index',
+         route_folder_path='app/routes/users',
++        blueprint_name='users',
+         relative_path='users',
+         controller_name='UserController')
+ 
+@@ -221,6 +223,7 @@ def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
+         route_name='users.index',
+         action='index',
+         route_folder_path='app/routes/users',
++        blueprint_name='users',
+         relative_path='users',
+         controller_name='UserController')
+ 
+@@ -256,6 +259,7 @@ def test_route_method_exception(tmp_path, monkeypatch):
+         route_name='users.index',
+         action='index',
+         route_folder_path='app/routes/users',
++        blueprint_name='users',
+         relative_path='users',
+         controller_name='UserController')
+ 
