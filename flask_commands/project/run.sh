@@ -2,25 +2,25 @@
 
 # Start Up Shell
 osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down'
-osascript -e 'tell application "Terminal" to do script "source venv/bin/activate" in front window'
+osascript -e 'tell application "Terminal" to do script "cd project_path && source venv/bin/activate" in front window'
 osascript -e 'tell application "Terminal" to do script "flask shell" in front window'
 
 # Start Up Flask Server
 osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down'
-osascript -e 'tell application "Terminal" to do script "source venv/bin/activate" in front window'
+osascript -e 'tell application "Terminal" to do script "cd project_path && source venv/bin/activate" in front window'
 osascript -e 'tell application "Terminal" to do script "flask run --debug" in front window'
 
 # Building your tailwind.css file
 osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down'
-osascript -e 'tell application "Terminal" to do script "npm run watch:css" in front window'
+osascript -e 'tell application "Terminal" to do script "cd project_path && npm run watch:css" in front window'
 
 # Building your tailwind.min.css file
 osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down'
-osascript -e 'tell application "Terminal" to do script "npm run build:css" in front window'
+osascript -e 'tell application "Terminal" to do script "cd project_path && npm run build:css" in front window'
 
 # Open up VS code Text
 osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down'
-osascript -e 'tell application "Terminal" to do script "code ." in front window'
+osascript -e 'tell application "Terminal" to do script "cd project_path && code ." in front window'
 
 sleep 5
 

@@ -25,7 +25,7 @@ def append_file(file_path: str, contents: list[str]) -> None:
         for line in normalized_content:
             f.write(line)
 
-def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = None) -> None:
+def copy_templates(project_path: str, include_db: bool, replacements: Optional[Dict[str, str]] = None) -> None:
     """
     Copy everything under the package 'templates' directory into the target
     project_path, preserving directory structure. Optionally apply simple
@@ -37,6 +37,10 @@ def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = N
         for filename in files:
             source_path = os.path.join(root, filename)
             relative_path = os.path.relpath(source_path, templates_directory)
+
+            # Skip over models folder when setup does not include a database
+            if not include_db and relative_path.startswith(os.path.join("app", "models")):
+                continue
             destination_path = os.path.join(project_path, relative_path)
 
             content = _read_template(source_path)
@@ -44,6 +48,13 @@ def copy_templates(project_path: str, replacements: Optional[Dict[str, str]] = N
             if replacements:
                 for key, value in replacements.items():
                     content = content.replace(key, value)
+
+            # Remove models import when setup does not include a database
+            if not include_db and relative_path == os.path.join("app", "__init__.py"):
+                content = '\n'.join(
+                    line for line in content.splitlines()
+                    if line.strip() != "from app import models"
+                ) + "\n"
 
             write_file(destination_path, content.splitlines())
 

@@ -4,7 +4,7 @@ import click
 import shutil
 import subprocess
 
-def install_tailwind(project_name):
+def install_tailwind(project_path):
     if shutil.which("npm") is None:
         click.secho("⚠️  Warning: npm not found on PATH;",
                                fg="yellow", bold=True)
@@ -14,7 +14,7 @@ def install_tailwind(project_name):
                                " system first and then you can follow "
                                "these directions to install tailwind",
                                fg="cyan")
-        click.secho(f"    - To install later: cd {project_name} "
+        click.secho(f"    - To install later: cd {project_path} "
                                " && npm install tailwindcss @tailwindcss/cli",
                                fg="cyan")
         return
@@ -23,18 +23,18 @@ def install_tailwind(project_name):
         subprocess.run(
             ["npm", "install", "tailwindcss", "@tailwindcss/cli"],
             check=True,
-            cwd=project_name,
+            cwd=project_path,
             capture_output=True,
             text=True,
         )
-        _append_tailwind_scripts(project_name)
+        _append_tailwind_scripts(project_path)
         click.secho("    - ✅ Success: Tailwind installed", fg="green")
     except subprocess.CalledProcessError as exc:
         click.secho(f"💣 Error: npm install failed:\n{exc}", fg="red")
 
 
-def _append_tailwind_scripts(project_name):
-    package_json_path = os.path.join(project_name, "package.json")
+def _append_tailwind_scripts(project_path):
+    package_json_path = os.path.join(project_path, "package.json")
 
     tailwind_scripts = {
         "build:css": (

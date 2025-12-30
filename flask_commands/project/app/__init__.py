@@ -23,6 +23,8 @@ def create_app(config_name) -> Flask:
     db.init_app(app)
     migrate.init_app(app, db)
 
+    from app import models
+
     from app.routes.mains import bp as mains_blueprint
     app.register_blueprint(mains_blueprint)
 
