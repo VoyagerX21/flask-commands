@@ -71,7 +71,6 @@ def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypat
     monkeypatch.chdir(project_root)
     # dotted_path_with_name = users.index
     is_successfull, message = route_make_directory_and_register_blueprint(
-        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',
@@ -81,6 +80,41 @@ def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypat
     assert is_successfull is True
     assert "Created new route directory" in message
 
+def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypatch):
+    project_root = tmp_path
+    app_dir = project_root / "app"
+    app_dir.mkdir(parents=True)
+    app_init_file = app_dir / "__init__.py"
+    app_init_file.write_text(
+        'from flask import Flask\n'
+        'from config import config\n'
+        '\n'
+        'def create_app(config_name) -> Flask:\n'
+        '    """Creates a Flask application Instance."""\n'
+        '    app = Flask(__name__)\n'
+        '\n'
+        '    # apply configuration\n'
+        '    app.config.from_object(config[config_name])\n'
+        '\n'
+        '    from app.routes.mains import bp as mains_blueprint\n'
+        '    app.register_blueprint(mains_blueprint)\n'
+        , encoding="utf-8")
+
+    route_dir = project_root / "app" / "routes"
+    route_dir.mkdir(parents=True)
+
+    monkeypatch.chdir(project_root)
+    # dotted_path_with_name = users.index
+    is_successfull, message = route_make_directory_and_register_blueprint(
+        action='index',
+        route_folder_path='app/routes/users',
+        blueprint_name='users',
+        route_name='/users',
+        controller_name='UserController')
+
+    assert is_successfull is False
+    assert "Could not register blueprin" in message
+
 def test_route_make_directory_and_register_blueprint_route_already_exists(tmp_path, monkeypatch):
     project_root = tmp_path
     route_dir = project_root / "app" / "routes" / "users"
@@ -89,7 +123,6 @@ def test_route_make_directory_and_register_blueprint_route_already_exists(tmp_pa
 
     # dotted_path_with_name = users.index
     is_successfull, message = route_make_directory_and_register_blueprint(
-        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',
@@ -112,7 +145,6 @@ def test_route_make_directory_and_register_blueprint_exception(tmp_path, monkeyp
     monkeypatch.chdir(project_root)
     # dotted_path_with_name = users.index
     is_successfull, message = route_make_directory_and_register_blueprint(
-        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',

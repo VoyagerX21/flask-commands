@@ -95,23 +95,23 @@ def make_view(
     if generate_controller and controller_name is None:
         if relative_path != '':
             controller_name = controller_infer_name_from(relative_path)
-            click.echo(click.style(f"💡 Info: Inferred the controller name as {click.style(controller_name, bold=True)}", fg="cyan"))
+            click.secho(f"💡 Info: Inferred the controller name as {click.style(controller_name, bold=True)}", fg="cyan")
         else:
-            click.echo(click.style(f"⚠️  Warning: Could not infer the controller name "
-                       f"from {dotted_path_with_name}", fg="yellow", bold=True))
+            click.secho(f"⚠️  Warning: Could not infer the controller name "
+                       f"from {dotted_path_with_name}", fg="yellow", bold=True)
 
     # Infer route name if not provided
     if generate_route and route_name is None:
         route_name = route_infer_name_from(dotted_path_with_name)
-        click.echo(f"Inferred the route name as "
-                   f"{click.style(route_name, bold=True)}")
+        click.secho("💡 Info: Inferred the route name as "
+                   f"{click.style(route_name, bold=True)}", fg="cyan")
 
 
     # Infer model name if not provided
     if generate_model and model_name is None:
-        message, model_name = \
-            model_infer_name_from(relative_path, dotted_path_with_name)
-        click.echo(message)
+        model_name = model_infer_name_from(relative_path, dotted_path_with_name)
+        click.secho(f"💡 Info: Infered the model name as "
+                   f"{click.style(model_name, bold=True)}", fg="cyan")
 
     # If a controller_name was provided or inferred
     if controller_name:
@@ -148,7 +148,7 @@ def make_view(
             else:
                 is_successful, message = \
                     route_make_directory_and_register_blueprint(
-                        relative_path,      # this is everything before the last part of dotted_path_with_name replacing . with /
+                        # relative_path,      # this is everything before the last part of dotted_path_with_name replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_name
                         route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
                         blueprint_name,     # posts or mains or posts_comments
@@ -156,7 +156,7 @@ def make_view(
                         controller_name)    # contoller_name is like post_controller
             click.echo(message)
         except Exception as exception:
-            click.echo(click.style(f"💣 Error:\n {exception}", fg="red"))
+            click.secho(f"💣 Error:\n {exception}", fg="red")
 
     # If a model_name was provided or inferred
     if model_name:

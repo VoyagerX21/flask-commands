@@ -85,23 +85,22 @@ def route_add_method(relative_path: str,  action: str, route_folder_path:str, ro
     )
     return True, message
 
-def route_make_directory_and_register_blueprint(relative_path: str, action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
+def route_make_directory_and_register_blueprint(action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
     Creates a new Flask route directory structure and registers a blueprint in the Flask app.
 
     This function automates the setup of a new route module by:
     1. Creating the route folder directory
-    2. Creating a __init__.py file
+    2. Creating a __init__.py file in the route directory
     3. Creating a routes.py file with the initial route action
     4. Registering the blueprint in the app's __init__.py
 
     Args:
-        route_name (str): The full name/path of the route (e.g., 'users.index').
         action (str): The action/method name (e.g., 'index', 'store', 'update', 'destroy').
                      Determines HTTP method: POST for store/update/destroy/delete, GET otherwise.
         route_folder_path (str): The file system path where the route folder will be created.
-        relative_path (str): The relative path to strip from route_name for the actual route decorator.
         blueprint_name (str): The name of the Flask blueprint to create (e.g., 'users').
+        route_name (str): The full name/path of the route (e.g., 'users.index').
         controller_name (str | None): The name of the controller class to use. Defaults to 'MainController' if None.
 
     Returns:
@@ -112,11 +111,10 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
 
     Example:
         >>> is_successful, message = route_make_directory_and_register_blueprint(
-        ...     route_name='users.index',
         ...     action='index',
         ...     route_folder_path='app/routes/users',
-        ...     relative_path='users',
         ...     blueprint_name='/users',
+        ...     route_name='users.index',
         ...     controller_name='UserController'
         ... )
     """
@@ -188,10 +186,12 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
         f.write(new_content)
 
     message = (
-        click.style(f"📁 Created new route directory for '{blueprint_name}'.", fg="green") + "\n" +
-        click.style(f"🧩 Registered the '{blueprint_name}' blueprint and added it to app.__init__.", fg="cyan") + "\n" +
-        click.style(f"🛠️  Generated routes.py with the initial {method} action '{action}'.", fg="magenta") + "\n" +
-        click.style(f"🔗 Reference using url_for('{blueprint_name}.{action}').", fg="yellow", bold=True)
+        click.style(f"✅ Success: Created New Route Directory\n", fg="green", bold=True) +
+        click.style(f"    - Created a new route file at {click.style(route_folder_path.replace('/', '.') + "/routes.py\n", bold=True)}", fg="green") +
+        click.style(f"    - Initialized route file with a {click.style(method, bold=True)} url defined by function {click.style(action, bold=True)}\n", fg="green") +
+        click.style(f"    - Route function {click.style(action, bold=True)} is using controller {click.style(using_controller_name, bold=True)}\n", fg="green") +
+        click.style(f"    - Registered the new route directory {click.style(blueprint_name, bold=True)} at app/__init__.py\n", fg="green") +
+        click.style(f"    - Reference using the new route using", fg="green") + click.style("url_for('{blueprint_name}.{action}')", fg="green", bold=True)
     )
     return True, message
 

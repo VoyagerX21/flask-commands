@@ -6,20 +6,20 @@ import subprocess
 
 def install_tailwind(project_name):
     if shutil.which("npm") is None:
-        click.echo(click.style("⚠️  Warning: npm not found on PATH;",
-                               fg="yellow", bold=True))
-        click.echo(click.style("    - Skipping Tailwind installation.",
-                               fg="yellow"))
-        click.echo(click.style("    - You will need to install npm on your "
+        click.secho("⚠️  Warning: npm not found on PATH;",
+                               fg="yellow", bold=True)
+        click.secho("    - Skipping Tailwind installation.",
+                               fg="yellow")
+        click.secho("    - You will need to install npm on your "
                                " system first and then you can follow "
                                "these directions to install tailwind",
-                               fg="cyan"))
-        click.echo(click.style(f"    - To install later: cd {project_name} "
+                               fg="cyan")
+        click.secho(f"    - To install later: cd {project_name} "
                                " && npm install tailwindcss @tailwindcss/cli",
-                               fg="cyan"))
+                               fg="cyan")
         return
     try:
-        click.echo(click.style("Installing Tailwind CSS (tailwindcss @tailwindcss/cli) via npm...", bold=True))
+        click.secho("Installing Tailwind CSS (tailwindcss @tailwindcss/cli) via npm...", bold=True)
         subprocess.run(
             ["npm", "install", "tailwindcss", "@tailwindcss/cli"],
             check=True,
@@ -28,9 +28,9 @@ def install_tailwind(project_name):
             text=True,
         )
         _append_tailwind_scripts(project_name)
-        click.echo(click.style("    - ✅ Success: Tailwind installed.", fg="green"))
+        click.secho("    - ✅ Success: Tailwind installed", fg="green")
     except subprocess.CalledProcessError as exc:
-        click.echo(click.style(f"💣 Error: npm install failed:\n{exc}", fg="red"))
+        click.secho(f"💣 Error: npm install failed:\n{exc}", fg="red")
 
 
 def _append_tailwind_scripts(project_name):

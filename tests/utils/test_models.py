@@ -21,13 +21,11 @@ def model_project(tmp_path, monkeypatch):
     return project_root
 
 def test_model_infer_name_from_reative_path():
-    message, model_name = model_infer_name_from("posts", "posts.index")
-    assert "Infered the model name" in message
+    model_name = model_infer_name_from("posts", "posts.index")
     assert model_name == "Post"
 
 def test_model_infer_name_from_dotted_path_with_name():
-    message, model_name = model_infer_name_from("", "posts")
-    assert "Infered the model name" in message
+    model_name = model_infer_name_from("", "posts")
     assert model_name == "Post"
 
 def test_model_make_file_success(model_project):
@@ -106,7 +104,7 @@ def test_model_make_file_init_missing(tmp_path, monkeypatch):
     )
 
     assert is_successfull is False
-    assert " __init__.py Missing" in message
+    assert " Model __init__.py Missing" in message
 
 
 def test_model_make_file_append_file_exception(model_project, monkeypatch):

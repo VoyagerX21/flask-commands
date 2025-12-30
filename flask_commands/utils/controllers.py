@@ -117,7 +117,7 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
         append_file(controller_init_path, init_contents)
     except FileNotFoundError:
         message = (
-            click.style("⚠️  Warning: __init__.py Missing\n", fg="yellow", bold=True) +
+            click.style("⚠️  Warning: Controller __init__.py Missing\n", fg="yellow", bold=True) +
             click.style(
                 f"    - Controller '{controller_name}' was created, "
                 f"but __init__.py does not exist.\n",

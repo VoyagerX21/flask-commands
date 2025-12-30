@@ -3,7 +3,7 @@ from typing import Tuple
 from .files import append_file, write_file
 from .naming import pluralize, singularize
 
-def model_infer_name_from(relative_path: str, dotted_path_with_name: str) -> Tuple[str, str]:
+def model_infer_name_from(relative_path: str, dotted_path_with_name: str) -> str:
     """
     Infer a model name from either a relative file path or a dotted path.
 
@@ -31,10 +31,7 @@ def model_infer_name_from(relative_path: str, dotted_path_with_name: str) -> Tup
         model_name = singularize(relative_path.split('/')[-1]).title()
     else:
         model_name = singularize(dotted_path_with_name).title()
-    message = (
-        f"Infered the model name as "
-        f"{click.style(model_name, bold=True)}")
-    return message, model_name
+    return model_name
 
 def model_make_file(model_name: str, model_init_path: str, model_file_path: str) -> Tuple[bool, str]:
     """
@@ -100,13 +97,13 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
         append_file(model_init_path, init_contents)
     except FileNotFoundError:
         message = (
-            click.style("⚠️  Warning: __init__.py Missing\n", fg="yellow", bold=True) +
+            click.style("⚠️  Warning: Model __init__.py Missing\n", fg="yellow", bold=True) +
             click.style(
-                f"Model '{model_name}' was created, "
+                f"    - Model '{model_name}' was created, "
                 f"but __init__.py does not exist.\n",
                 fg="yellow"
             ) +
-            click.style("You may need to register it manually.", fg="cyan")
+            click.style("    - You may need to register it manually.", fg="yellow")
         )
         return False, message
     except Exception as exception:

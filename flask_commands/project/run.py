@@ -1,7 +1,6 @@
 import os
 import time
 import logging
-from slugify import slugify
 from logging.handlers import SMTPHandler, RotatingFileHandler
 from app import create_app
 
@@ -23,7 +22,7 @@ with app.app_context():
     # Logging levels to: NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL
 
     file_handler = RotatingFileHandler(
-        f"logs/{slugify(app.config['APP_NAME'])}-{app.config['FLASK_CONFIG']}.log",
+        f"logs/{app.config['APP_NAME']}-{app.config['FLASK_CONFIG']}.log",
         maxBytes=max_bytes,
         backupCount=backup_count)
     file_handler.setFormatter(logging.Formatter(
