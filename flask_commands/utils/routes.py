@@ -187,7 +187,7 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
 
     message = (
         click.style(f"✅ Success: Created New Route Directory\n", fg="green", bold=True) +
-        click.style(f"    - Created a new route file at {click.style(route_folder_path.replace('/', '.') + "/routes.py\n", bold=True)}", fg="green") +
+        click.style(f"    - Created a new route file at {click.style(route_folder_path.replace('/', '.') + '/routes.py\n', bold=True)}", fg="green") +
         click.style(f"    - Initialized route file with a {click.style(method, bold=True)} url defined by function {click.style(action, bold=True)}\n", fg="green") +
         click.style(f"    - Route function {click.style(action, bold=True)} is using controller {click.style(using_controller_name, bold=True)}\n", fg="green") +
         click.style(f"    - Registered the new route directory {click.style(blueprint_name, bold=True)} at app/__init__.py\n", fg="green") +
