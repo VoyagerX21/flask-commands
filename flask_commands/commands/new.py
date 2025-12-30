@@ -4,7 +4,7 @@ import shutil
 from flask_commands.utils.venv import create_venv
 from flask_commands.utils.files import copy_templates
 from flask_commands.utils.css import install_tailwind
-from flask_commands.utils.db import install_sqlitedb
+from flask_commands.utils.databases import install_sqlitedb
 
 @click.command()
 @click.argument("project_name")

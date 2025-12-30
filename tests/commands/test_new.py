@@ -42,3 +42,19 @@ def test_new_command_fails_if_project_exists(tmp_path, monkeypatch):
 
     assert result.exit_code == 0
     assert "already exists" in result.output
+
+def test_new_command_cleans_up_on_exception(tmp_path, monkeypatch):
+    runner = CliRunner()
+    monkeypatch.chdir(tmp_path)
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr("flask_commands.commands.new.create_venv", boom)
+
+    result = runner.invoke(new, ["broken_project"], input="y\n")
+
+    assert result.exit_code == 1
+    assert not (tmp_path / "broken_project").exists()
+    assert "Project Creation Failed" in result.output
+    assert "boom" in result.output
