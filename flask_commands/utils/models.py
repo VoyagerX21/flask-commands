@@ -112,7 +112,7 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
 
 
     message = (
-        click.style("✅ Success: Model Created Successfully\n", fg="green", bold=True) +
+        click.style("✅ Success: Created New Model\n", fg="green", bold=True) +
         click.style(f"    - Created model {click.style(model_name, bold=True)}", fg="green") + click.style(f" at {click.style(model_file_path, bold=True)}\n", fg="green") +
         click.style(f"    - Registered {click.style(model_name, bold=True)}", fg="green") + click.style(f" model at {click.style(model_init_path, bold=True)}\n", fg="green")
     )

@@ -37,7 +37,7 @@ def test_model_make_file_success(model_project):
 
     # --- Return value assertions ---
     assert is_successfull is True
-    assert "Model Created Successfully" in message
+    assert "Created New Model" in message
 
     # --- File creation assertions ---
     model_file = model_project / "app" / "models" / "post.py"

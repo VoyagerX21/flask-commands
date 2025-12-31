@@ -75,9 +75,9 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
         message = click.style(f"💣 Error: Failed to add Controller Method\n {exception}", fg="red")
         return False, message
     message = (
-        click.style("✅ Success: Method Added\n", fg="green", bold=True) +
-        click.style(f"    - Added method '{method_name}' to controller '{controller_name}'.\n", fg="green") +
-        click.style(f"    - path = {click.style(controller_file_path, bold=True)}", fg="green")
+        click.style("✅ Success: Method Added To Controller\n", fg="green", bold=True) +
+        click.style(f"    - Added method {click.style(method_name, bold=True)}", fg="green") + click.style(f" to controller {click.style(controller_name, bold=True)}.\n", fg="green") +
+        click.style(f"    - Controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
     )
     return True, message
 
@@ -132,9 +132,9 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
 
     message = (
         click.style(f"✅ Success: Created Controller Class With Method\n", fg="green", bold=True) +
-        click.style(f"    - Controller = {controller_name}\n", fg="green") +
-        click.style(f"    - method = {method_name}\n", fg="green") +
-        click.style(f"    - path = {click.style(controller_file_path, bold=True)}\n", fg="green")
-        )
+        click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
+        click.style(f"    - Added method {click.style(method_name, bold=True)}", fg="green") + click.style(" to controller") +
+        click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
+    )
 
     return True, message
