@@ -181,7 +181,7 @@ def test_route_add_method_success(tmp_path, monkeypatch):
 
     assert is_successfull is True
     assert "Added Route To Existing Directory" in message
-    assert "Reference the new route with" in message
+    assert "Reference route with" in message
     assert "url_for('users.index')" in message
 
 def test_route_add_method_function_already_exists(tmp_path, monkeypatch):

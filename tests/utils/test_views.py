@@ -9,7 +9,7 @@ def test_view_make_file_success(tmp_path, monkeypatch):
 
     is_successfull, message = view_make_file("app/templates/posts/index.html")
     assert is_successfull is True
-    assert "Created View" in message
+    assert "Created New View" in message
 
 def test_view_make_file_file_exists(tmp_path, monkeypatch):
     project_root = tmp_path

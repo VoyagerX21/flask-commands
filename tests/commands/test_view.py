@@ -63,7 +63,7 @@ def test_make_view_component_only(project):
     assert template_file.exists()
 
     # Output should mention file created
-    assert "Created View" in result.output
+    assert "Created New View" in result.output
 
 def test_make_view_with_generated_controller(project):
     """
