@@ -19,6 +19,7 @@ from flask_commands.utils.routes import (
 )
 
 from flask_commands.utils.scaffold import split_dotted_path
+
 from flask_commands.utils.views import view_make_file
 
 
@@ -100,14 +101,11 @@ def make_view(
         click.secho("💡 Info: Inferred route name as "
                    f"{click.style(route_name, bold=True)}", fg="cyan")
 
-
     # Infer model name if not provided
     if generate_model and model_name is None:
         model_name = model_infer_name_from(relative_path, dotted_path_with_name)
         click.secho(f"💡 Info: Inferred model name as "
                    f"{click.style(model_name, bold=True)}", fg="cyan")
-
-    click.echo("\n")
 
     relative_view_file_path = os.path.join(relative_path, f"{action}.html")
     destination_file_path = \

@@ -1,4 +1,19 @@
+from array import array
+import os
 from typing import Tuple
+from .naming import singularize
+
+
+def check_dotted_path_with_name_for_models(dotted_path_with_name: str) -> list[str]:
+    """"""
+    models = []
+    for part_name in dotted_path_with_name.lower().split("."):
+        model_init_path = os.path.join("app", "models", "__init__.py")
+        with open(model_init_path, "r", encoding="utf-8") as f:
+            model_init_content = f.read()
+        if singularize(part_name) in model_init_content:
+            models.append(part_name)
+    return models
 
 def crud_mapping_route(action: str, resource: str, object: str) -> str:
     """

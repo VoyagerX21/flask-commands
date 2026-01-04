@@ -3,8 +3,24 @@ import os
 import click
 from typing import Tuple
 from .files import append_file, write_file
-from .naming import singularize
-from .scaffold import crud_mapping_route, split_dotted_path
+from .naming import pluralize, singularize
+from .scaffold import (
+    check_dotted_path_with_name_for_models,
+    crud_mapping_route,
+    split_dotted_path)
+
+def parse_route_name_for_params_and_types(route_name: str) ->Tuple[str, str]:
+    matches = re.finditer(r"<(\w+):(\w+)>", route_name)
+    parameters_with_types = []
+    parameters = []
+
+    for match in matches:
+        type_of_param, param = match.groups()
+        parameters_with_types.append(f"{param}: {type_of_param}")
+        parameters.append(param)
+
+    return parameters_with_types, parameters
+
 
 def route_add_method(relative_path: str,  action: str, route_folder_path: str, blueprint_name: str,  route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
@@ -31,7 +47,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         ...     action='index',
         ...     route_folder_path='app/routes/users',
         ...     blueprint_name='users',
-        ...     route_name='users.index',
+        ...     route_name='/users',
         ...     controller_name='UserController'
         ... )
         >>> is_successful, message = route_add_method(
@@ -39,7 +55,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         ...     action='about',
         ...     route_folder_path='app/routes/mains',
         ...     blueprint_name='mains',
-        ...     route_name='mains',
+        ...     route_name='/about',
         ...     controller_name='MainController'
         ... )
     """
@@ -57,11 +73,12 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
         method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+        parameters_with_types, parameter = parse_route_name_for_params_and_types(route_name)
         route_content = [
             "",
             f"@bp.route('{route_name}', methods=['{method}'])",
-            f"def {action}():",
-            f"    return {using_controller_name}.{action}()"
+            f"def {action}({parameters_with_types}):",
+            f"    return {using_controller_name}.{action}({parameter})"
         ]
         with open(route_file_path, "r", encoding="utf-8") as file:
             existing_file_content = file.read()
@@ -69,22 +86,19 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         func_pattern = rf"^\s*def\s+{re.escape(action)}\s*\("
         if re.search(func_pattern, existing_file_content, re.MULTILINE):
             message = (
-                click.style(f"⚠️ Warning: Route function already exists\n",
-                            fg="yellow", bold=True) +
-                click.style(f"Route function '{action}' already exists "
-                            f"at {route_folder_path}/routes.py", fg="yellow") +
-                click.style(f"No changes were made.", fg="cyan")
+                click.style(f"⚠️ Warning: Route Function Exists\n", fg="yellow", bold=True) +
+                click.style(f"    - Route function {click.style(action, bold=True)}", fg="yellow") +
+                    click.style(f" already exists at {click.style(route_folder_path, bold=True)}", fg="yellow") +
+                    click.style(f"/routes.py\n", bold=True, fg="yellow") +
+                click.style("    - No changes were made existing route function\n", fg="yellow")
             )
             return False, message
         append_file(route_file_path, route_content)
     except FileNotFoundError:
         message = (
-            click.style("⚠️ Warning: routes.py Missing\n", fg="yellow", bold=True) +
-            click.style(
-                f"Could not find routes.py file in folder {route_folder_path} ",
-                fg="yellow"
-            ) +
-            click.style("No changes were made.", fg="cyan")
+            click.style("⚠️ Warning: Route Directory Missing\n", fg="yellow", bold=True) +
+            click.style(f"    - Could not find routes.py file in folder {click.style(route_folder_path, bold="bold")} ", fg="yellow") +
+            click.style("    - No changes were made\n", fg="yellow")
         )
         return False, message
     except Exception as exception:
@@ -149,20 +163,21 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
         method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+        parameters_with_types, parameter = parse_route_name_for_params_and_types(route_name)
         route_content = [
             f"from app.controllers import {using_controller_name}",
             f"from app.routes.{blueprint_name.replace('_', '.')} import bp",
             "",
             f"@bp.route('{route_name}', methods=['{method}'])",
-            f"def {action}():",
-            f"    return {using_controller_name}.{action}()"
+            f"def {action}({parameters_with_types}):",
+            f"    return {using_controller_name}.{action}({parameter})"
         ]
         write_file(route_file_path, route_content)
     except FileExistsError:
         message = (
             click.style("⚠️ Warning: Route Already Exists\n", fg="yellow", bold=True) +
-            click.style(f"Route Directory for '{blueprint_name}' already exists.\n", fg="yellow") +
-            click.style("No changes were made.", fg="cyan")
+            click.style(f"    - Route Directory for {click.style(blueprint_name, style="bold")}") + click.style(" already exists.\n", fg="yellow") +
+            click.style("    - No changes were made\n", fg="yellow")
         )
         return False, message
     except Exception as exception:
@@ -207,7 +222,7 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
     )
     return True, message
 
-def route_infer_name_from(dotted_path_with_name: str) -> str:
+def route_infer_name_from(dotted_path_with_name: str, model_name: str) -> str:
     """
     Infer a route path from a dotted path notation with an action name.
 
@@ -229,9 +244,9 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
         >>> route_infer_name_from('posts.show')
         '/posts/<int:post_id>'
         >>> route_infer_name_from('admin.posts.comments.index')
-        '/admin/posts/comments'
+        '/admin/posts/<int:posts_id>/comments'
         >>> route_infer_name_from('admin.posts.comments.show')
-        '/admin/posts/comments/<int:comment_id>'
+        '/admin/posts/<int:posts_id>/comments/<int:comment_id>'
         >>> route_infer_name_from('posts.custom_action')
         '/posts/custom_action'
 
@@ -239,6 +254,13 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
         Recognized CRUD actions: 'index', 'create', 'store', 'show', 'edit',
         'update', 'destroy', 'delete'. Resource names are singularized for CRUD routes.
     """
+
+    # dotted_path_with_name = 'admin.posts.comments.show'
+    # relative_path = admin/posts/comments
+    # action = show
+    # object = comment
+
+    models = check_dotted_path_with_name_for_models(dotted_path_with_name)
     if "." not in dotted_path_with_name:
         return '/' + dotted_path_with_name
     relative_path, action = split_dotted_path(dotted_path_with_name)
@@ -246,9 +268,17 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
         return '/' + dotted_path_with_name.replace('.', '/')
     if "/" in relative_path:
         object = singularize(relative_path.rsplit("/", 1)[-1])
+        resource = ''
+        for relation in relative_path.split("/")[:-1]:
+            if relation in models:
+                resource += relation + f"/<int:{singularize(resource)}_id/"
+            else:
+                resource += relation + '/'
+        resource = resource[:-1]
     else:
         object = singularize(relative_path)
-    return crud_mapping_route(action, relative_path, object)
+        resource = relative_path
+    return crud_mapping_route(action, resource, object)
 
 def generate_route_folder_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
     """

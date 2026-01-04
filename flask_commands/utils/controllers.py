@@ -19,8 +19,8 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
         if re.search(method_pattern, source):
             message = (
                 click.style("⚠️  Warning: Method Already Exists\n", fg="yellow", bold=True) +
-                click.style(f"    - Controller '{controller_name}' already has a method named '{method_name}'.\n", fg="yellow") +
-                click.style("    - No changes were made.", fg="cyan")
+                click.style(f"    - Controller {click.style(controller_name, bold=True)}", fg="yellow") +  click.style(f" already has a method named {click.style(method_name, bold=True)}.\n", fg="yellow") +
+                click.style("    - No changes were made to controller's method\n", fg="yellow")
             )
             return False, message
 
@@ -102,8 +102,8 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
     except FileExistsError:
         message = (
             click.style("⚠️ Warning: Controller Already Exists\n", fg="yellow", bold=True) +
-            click.style(f"Controller '{controller_name}' already exists.\n", fg="yellow" ) +
-            click.style("No changes were made.", fg="cyan")
+            click.style(f"    - Controller {click.style(controller_name, bold=True)}", fg="yellow") + click.style(" already exists.\n", fg="yellow" ) +
+            click.style("    - No changes were made to existing controller\n", fg="yellow")
         )
         return False, message
     except Exception as exception:
