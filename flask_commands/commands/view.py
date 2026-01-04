@@ -107,6 +107,8 @@ def make_view(
         click.secho(f"💡 Info: Inferred model name as "
                    f"{click.style(model_name, bold=True)}", fg="cyan")
 
+    click.echo("\n")
+
     relative_view_file_path = os.path.join(relative_path, f"{action}.html")
     destination_file_path = \
         os.path.join("app", "templates", relative_view_file_path)
@@ -125,11 +127,11 @@ def make_view(
         # if controller exist just add the method
         if os.path.exists(controller_file_path):
             is_successful, message = controller_add_method(
-                controller_name, action, relative_view_file_path)
+                controller_name, action, relative_view_file_path, route_name)
         # else create the controller and the method
         else:
             is_successful, message = controller_make_file(
-                controller_name, action, relative_view_file_path)
+                controller_name, action, relative_view_file_path, route_name)
         click.echo(message)
 
     # If a controller_name was provided or inferred

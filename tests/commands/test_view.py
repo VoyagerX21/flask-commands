@@ -105,6 +105,10 @@ def test_make_view_with_generated_route(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.index", "-r"])
 
+    print("BEGIN DEBUG")
+    print(result.stdout, result.stderr)
+    print("END DEBUG")
+
     assert result.exit_code == 0
 
     template_file = project / "app" / "templates" / "posts" / "index.html"
@@ -156,7 +160,6 @@ def test_make_view_with_generated_route_exception(project, monkeypatch):
     assert result.exit_code == 0
     assert "💣 Error:" in result.output
     assert "boom boom boom" in result.output
-
 
 def test_make_view_with_generated_model(project):
     runner = CliRunner()

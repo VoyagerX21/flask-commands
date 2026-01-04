@@ -21,7 +21,6 @@ def parse_route_name_for_params_and_types(route_name: str) ->Tuple[str, str]:
 
     return parameters_with_types, parameters
 
-
 def route_add_method(relative_path: str,  action: str, route_folder_path: str, blueprint_name: str,  route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
     Add a new route to the routes.py file in the specified route folder.
@@ -63,22 +62,16 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     # The route folder is already there so we just need to add to routes.py
 
     try:
-        click.echo(f"relative_path = {relative_path}")
-        click.echo(f"action = {action}")
-        click.echo(f"route_folder_path = {route_folder_path}")
-        click.echo(f"blueprint_name = {blueprint_name}")
-        click.echo(f"route_name = {route_name}")
-        click.echo(f"controller_name = {controller_name}")
-
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
         method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
-        parameters_with_types, parameter = parse_route_name_for_params_and_types(route_name)
+        parameters_with_types, parameter = \
+            parse_route_name_for_params_and_types(route_name)
         route_content = [
             "",
             f"@bp.route('{route_name}', methods=['{method}'])",
-            f"def {action}({parameters_with_types}):",
-            f"    return {using_controller_name}.{action}({parameter})"
+            f"def {action}({", ".join(parameters_with_types)}):",
+            f"    return {using_controller_name}.{action}({", ".join(parameter)})"
         ]
         with open(route_file_path, "r", encoding="utf-8") as file:
             existing_file_content = file.read()
@@ -107,7 +100,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     message = (
         click.style(f"✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
         click.style(f"    - Updated routes directory at {click.style(route_folder_path, bold=True)}\n", fg="green") +
-        click.style(f"    - Added {click.style(method, bold=True)} ", fg="green") + click.style(f"route with url {click.style(route_name, bold=True)}.\n", fg="green") +
+        click.style(f"    - Added {click.style(method, bold=True)} ", fg="green") + click.style(f"route with url {click.style(route_name, bold=True)}\n", fg="green") +
         click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{blueprint_name}.{action}')\n", fg="green", bold=True)
     )
     return True, message
@@ -141,7 +134,7 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
         ...     action='index',
         ...     route_folder_path='app/routes/users',
         ...     blueprint_name='users',
-        ...     route_name='users.index',
+        ...     route_name='/users',
         ...     controller_name='UserController'
         ... )
     """
@@ -169,14 +162,14 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
             f"from app.routes.{blueprint_name.replace('_', '.')} import bp",
             "",
             f"@bp.route('{route_name}', methods=['{method}'])",
-            f"def {action}({parameters_with_types}):",
-            f"    return {using_controller_name}.{action}({parameter})"
+            f"def {action}({", ".join(parameters_with_types)}):",
+            f"    return {using_controller_name}.{action}({", ".join(parameter)})"
         ]
         write_file(route_file_path, route_content)
     except FileExistsError:
         message = (
-            click.style("⚠️ Warning: Route Already Exists\n", fg="yellow", bold=True) +
-            click.style(f"    - Route Directory for {click.style(blueprint_name, style="bold")}") + click.style(" already exists.\n", fg="yellow") +
+            click.style("⚠️  Warning: Route Already Exists\n", fg="yellow", bold=True) +
+            click.style(f"    - Route Directory for {click.style(blueprint_name, bold=True)}", fg="yellow") + click.style(" already exists\n", fg="yellow") +
             click.style("    - No changes were made\n", fg="yellow")
         )
         return False, message
@@ -204,6 +197,7 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
         return False, message
     insert_index = match.start()
     new_blueprint = [
+        "",
         f"    from {route_folder_path.replace('/', '.')} import bp as {blueprint_name}_blueprint",
         f"    app.register_blueprint({blueprint_name}_blueprint)"
     ]
@@ -222,7 +216,7 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
     )
     return True, message
 
-def route_infer_name_from(dotted_path_with_name: str, model_name: str) -> str:
+def route_infer_name_from(dotted_path_with_name: str) -> str:
     """
     Infer a route path from a dotted path notation with an action name.
 
@@ -246,7 +240,9 @@ def route_infer_name_from(dotted_path_with_name: str, model_name: str) -> str:
         >>> route_infer_name_from('admin.posts.comments.index')
         '/admin/posts/<int:posts_id>/comments'
         >>> route_infer_name_from('admin.posts.comments.show')
-        '/admin/posts/<int:posts_id>/comments/<int:comment_id>'
+        '/admin/posts/<int:post_id>/comments/<int:comment_id>'
+        >>> route_infer_name_from('posts.comments.show')
+        '/posts/<int:post_id>/comments/<int:comment_id>'
         >>> route_infer_name_from('posts.custom_action')
         '/posts/custom_action'
 
@@ -255,10 +251,15 @@ def route_infer_name_from(dotted_path_with_name: str, model_name: str) -> str:
         'update', 'destroy', 'delete'. Resource names are singularized for CRUD routes.
     """
 
-    # dotted_path_with_name = 'admin.posts.comments.show'
-    # relative_path = admin/posts/comments
+    # dotted_path_with_name = 'posts.comments.show'
+    # relative_path = posts/comments
     # action = show
     # object = comment
+
+    # dotted_path_with_name = 'posts.show'
+    # relative_path = posts
+    # action = show
+    # object = post
 
     models = check_dotted_path_with_name_for_models(dotted_path_with_name)
     if "." not in dotted_path_with_name:
@@ -271,10 +272,10 @@ def route_infer_name_from(dotted_path_with_name: str, model_name: str) -> str:
         resource = ''
         for relation in relative_path.split("/")[:-1]:
             if relation in models:
-                resource += relation + f"/<int:{singularize(resource)}_id/"
+                resource += relation + f"/<int:{singularize(relation)}_id>/"
             else:
                 resource += relation + '/'
-        resource = resource[:-1]
+        resource += pluralize(object)
     else:
         object = singularize(relative_path)
         resource = relative_path

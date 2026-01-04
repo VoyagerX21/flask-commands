@@ -7,10 +7,13 @@ from .naming import singularize
 def check_dotted_path_with_name_for_models(dotted_path_with_name: str) -> list[str]:
     """"""
     models = []
-    for part_name in dotted_path_with_name.lower().split("."):
-        model_init_path = os.path.join("app", "models", "__init__.py")
+    model_init_path = os.path.join("app", "models", "__init__.py")
+    try:
         with open(model_init_path, "r", encoding="utf-8") as f:
             model_init_content = f.read()
+    except FileNotFoundError:
+        return models
+    for part_name in dotted_path_with_name.lower().split("."):
         if singularize(part_name) in model_init_content:
             models.append(part_name)
     return models

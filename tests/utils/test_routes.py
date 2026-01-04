@@ -210,7 +210,7 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
         controller_name='UserController')
 
     assert is_successfull is False
-    assert f"Route function already exists" in message
+    assert f"Route Function Exist" in message
 
 
 def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
@@ -228,7 +228,7 @@ def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
         controller_name='UserController')
 
     assert is_successfull is False
-    assert f"routes.py Missing" in message
+    assert f"Route Directory Missing" in message
 
 def test_route_method_exception(tmp_path, monkeypatch):
     def boom(*args, **kwargs):

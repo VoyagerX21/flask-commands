@@ -84,7 +84,7 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
     except FileExistsError:
         message = (
             click.style("⚠️  Warning: Model Already Exists\n", fg="yellow", bold=True) +
-            click.style(f"    - Model {click.style(model_name, bold=True)} ", fg="yellow") + click.style(" already exists.\n", fg="yellow" ) +
+            click.style(f"    - Model {click.style(model_name, bold=True)} ", fg="yellow") + click.style("already exists\n", fg="yellow" ) +
             click.style("    - No changes were made to the existing model\n", fg="yellow")
         )
         return False, message
