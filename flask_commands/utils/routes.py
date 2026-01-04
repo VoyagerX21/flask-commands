@@ -70,8 +70,8 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         route_content = [
             "",
             f"@bp.route('{route_name}', methods=['{method}'])",
-            f"def {action}({", ".join(parameters_with_types)}):",
-            f"    return {using_controller_name}.{action}({", ".join(parameter)})"
+            f"def {action}({', '.join(parameters_with_types)}):",
+            f"    return {using_controller_name}.{action}({', '.join(parameter)})"
         ]
         with open(route_file_path, "r", encoding="utf-8") as file:
             existing_file_content = file.read()
