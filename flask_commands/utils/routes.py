@@ -163,7 +163,7 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
             "",
             f"@bp.route('{route_name}', methods=['{method}'])",
             f"def {action}({', '.join(parameters_with_types)}):",
-            f"    return {using_controller_name}.{action}({", ".join(parameter)})"
+            f"    return {using_controller_name}.{action}({', '.join(parameter)})"
         ]
         write_file(route_file_path, route_content)
     except FileExistsError:
