@@ -90,7 +90,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     except FileNotFoundError:
         message = (
             click.style("⚠️ Warning: Route Directory Missing\n", fg="yellow", bold=True) +
-            click.style(f"    - Could not find routes.py file in folder {click.style(route_folder_path, bold="bold")} ", fg="yellow") +
+            click.style(f"    - Could not find routes.py file in folder {click.style(route_folder_path, bold=True)}\n", fg="yellow") +
             click.style("    - No changes were made\n", fg="yellow")
         )
         return False, message
