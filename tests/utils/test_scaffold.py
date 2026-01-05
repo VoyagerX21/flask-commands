@@ -1,8 +1,36 @@
 from re import split
+import pytest
 from flask_commands.utils.scaffold import (
+    check_dotted_path_with_name_for_models,
     crud_mapping_route,
     split_dotted_path
 )
+
+@pytest.fixture
+def model_builder(tmp_path, monkeypatch):
+    project_root = tmp_path
+    models_directory = project_root / "app" / "models"
+    models_directory.mkdir(parents=True)
+    models_init_file = models_directory / "__init__.py"
+    models_init_file.write_text(
+        "from .users import User"
+        , encoding="utf-8"
+    )
+    monkeypatch.chdir(project_root)
+
+    return project_root
+
+def test_check_dotted_path_with_name_for_models_no_models_init():
+    models = check_dotted_path_with_name_for_models("posts.index")
+    assert models == []
+
+def test_check_dotted_path_with_name_for_models_empty(model_builder):
+    models = check_dotted_path_with_name_for_models("posts.index")
+    assert models == []
+
+def test_check_dotted_path_with_name_for_models_intersection(model_builder):
+    models = check_dotted_path_with_name_for_models("users.index")
+    assert models == ['users']
 
 def test_split_dotted_path_with_no_dot():
     relative_path, action = split_dotted_path("index")

@@ -1,10 +1,26 @@
+import pytest
 from flask_commands.utils.routes import (
     route_add_method,
     route_make_directory_and_register_blueprint,
     route_infer_name_from,
     generate_route_folder_path_and_blueprint_name)
 
-def test_route_infer_name_from_crud():
+@pytest.fixture
+def model_builder(tmp_path, monkeypatch):
+    project_root = tmp_path
+    models_directory = project_root / "app" / "models"
+    models_directory.mkdir(parents=True)
+    models_init_file = models_directory / "__init__.py"
+    models_init_file.write_text(
+        "from .posts import Post"
+        , encoding="utf-8"
+    )
+    monkeypatch.chdir(project_root)
+
+    return project_root
+
+
+def test_route_infer_name_from_crud(model_builder):
     assert route_infer_name_from('posts.index') == '/posts'
     assert route_infer_name_from('posts.create') == '/posts/create'
     assert route_infer_name_from('posts.store') == '/posts'
@@ -14,8 +30,8 @@ def test_route_infer_name_from_crud():
     assert route_infer_name_from('posts.destroy') == '/posts/<int:post_id>/delete'
     assert route_infer_name_from('posts.delete') == '/posts/<int:post_id>/delete'
     assert route_infer_name_from('admin.posts.create') == '/admin/posts/create'
-    assert route_infer_name_from('admin.posts.comments.show') == '/admin/posts/comments/<int:comment_id>'
-    assert route_infer_name_from('admin.posts.comments.index') == '/admin/posts/comments'
+    assert route_infer_name_from('admin.posts.comments.show') == '/admin/posts/<int:post_id>/comments/<int:comment_id>'
+    assert route_infer_name_from('admin.posts.comments.index') == '/admin/posts/<int:post_id>/comments'
 
 def test_route_infer_name_from_non_crud():
     assert route_infer_name_from('posts') == '/posts'

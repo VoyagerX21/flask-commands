@@ -15,10 +15,14 @@ def controller_project(tmp_path, monkeypatch):
     project_root = tmp_path
     controller_dir = project_root / "app" / "controllers"
     controller_dir.mkdir(parents=True)
+    controller_init_file = controller_dir / "__init__.py"
+    controller_init_file.write_text("\n", encoding="utf-8")
 
-    # __init__.py must exist for ...
-    init_file = controller_dir / "__init__.py"
-    init_file.write_text("\n", encoding="utf-8")
+    model_directory = project_root / "app" / "models"
+    model_directory.mkdir()
+    model_init_file = model_directory / "__init__.py"
+    model_init_file.write_text("from .users import User\n", encoding="utf-8")
+
 
     monkeypatch.chdir(project_root)
 
@@ -32,7 +36,7 @@ def controller_project(tmp_path, monkeypatch):
 def test_controller_add_method_already_exists(controller_project):
     controller_file = controller_project(
         "post_controller.py",
-        "class PostController:\n"
+        "class PostController(object):\n"
         "    @staticmethod\n"
         "    def index():\n"
         "        posts = Post.query.all()\n"
@@ -55,10 +59,10 @@ def test_controller_add_method_already_exists(controller_project):
     # File should be unchanged
     assert controller_file.read_text(encoding="utf-8") == original_source
 
-def test_controller_no_controller_class(controller_project):
+def test_controller_add_method_no_controller_class(controller_project):
     controller_file = controller_project(
         "post_controller.py",
-        "class CommentController:\n"
+        "class CommentController(object):\n"
         "    pass"
     )
 
@@ -75,7 +79,7 @@ def test_controller_add_method_success(controller_project):
     """The fixture runs and controller_project is the return from fixture"""
     controller_file = controller_project(
         "post_controller.py",
-        "class PostController:\n"
+        "class PostController(object):\n"
         "\n"
         "    @staticmethod\n"
         "    def create():\n"
@@ -89,7 +93,8 @@ def test_controller_add_method_success(controller_project):
     is_successfull, message = controller_add_method(
         controller_name="PostController",
         method_name="index",
-        relative_view_file_path="posts/index.html"
+        relative_view_file_path="posts/index.html",
+        route_name="/posts"
     )
 
     # Assert
@@ -101,6 +106,38 @@ def test_controller_add_method_success(controller_project):
     assert "@staticmethod" in updated_source
     assert "def index()" in updated_source
     assert "return render_template('posts/index.html')" in updated_source
+
+def test_controller_add_method_success_with_relation(controller_project):
+    """The fixture runs and controller_project is the return from fixture"""
+    controller_file = controller_project(
+        "user_post_controller.py",
+        "from flask import render_template\n"
+        "\n"
+        "class UserPostController(object):\n"
+        "    @staticmethod\n"
+        "    def index(user_id: int):\n"
+        "        return render_template('users/posts/index.html')\n"
+    )
+
+    # Act
+    is_successfull, message = controller_add_method(
+        controller_name="UserPostController",
+        method_name="show",
+        relative_view_file_path="users/posts/index.html",
+        route_name="/users/<int:user_id>/posts/<int:post_id>"
+    )
+
+    # Assert
+    assert is_successfull is True
+    assert "Method Added" in message
+
+    updated_source = controller_file.read_text(encoding="utf-8")
+
+    assert "@staticmethod" in updated_source
+    assert "def show(user_id: int, post_id: int)" in updated_source
+    assert "return render_template('users/posts/index.html')" in updated_source
+
+
 
 def test_controller_add_method_exception(controller_project, monkeypatch):
     controller_file = controller_project(
@@ -134,7 +171,6 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
 
     assert is_successfull is False
     assert "Failed to add Controller Method" in message
-
 
 def test_controller_infer_name_from():
     assert controller_infer_name_from('posts') == 'PostController'
