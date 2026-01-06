@@ -1,70 +1,60 @@
 # flask-commands
 
-Lightweight CLI scaffolding to generate a ready-to-run Flask project with sensible defaults (dotenv, Tailwind build scripts, logs, basic blueprint layout). The generator is intended to be used locally per-project (editable install / project venv) rather than as a globally installed tool.
+Local-first CLI that scaffolds a Flask project (venv, dotenv, Tailwind build scripts, blueprints, optional SQLite) and can keep generating views, routes, controllers, and models for you.
 
-Key files
-- Package metadata: [pyproject.toml](pyproject.toml)
-- CLI entrypoint: [`flask_commands.cli.cli`](flask_commands/cli.py)
-- Generator command: [`flask_commands.commands.new.new`](flask_commands/commands/new.py)
-- Helpers: [`flask_commands.utils.create_venv`](flask_commands/utils.py), [`flask_commands.utils.copy_templates`](flask_commands/utils.py)
-- Project template used when scaffolding: [flask_commands/project](flask_commands/project)
-- License: [LICENSE](LICENSE)
+## Install
+- Python 3.10+
+- Optional: `npm` if you want Tailwind auto-installed; the tool will skip Tailwind if `npm` is missing.
+- `pip install Flask-Commands`
 
-Why local-first
-- Avoids polluting global Python installs.
-- Lets each project keep its own copy of the scaffold (and modify it).
-- Works well with virtual environments and CI workflows.
+> The published console script is currently `flask`. If you have a clash with Flask’s own CLI, run with `python -m flask_commands.cli ...` or rename the script to `flask-commands` in `pyproject.toml`.
 
-Quickstart (development)
-1. Create and activate a development venv for this tool:
-```sh
-python -m venv .venv
-# macOS / Linux
-source .venv/bin/activate
-# Windows (PowerShell)
-.venv\Scripts\Activate.ps1
+## Commands at a glance
+- `flask new <project_name> [--db/--no-db]` — bootstrap a new project in a sibling folder, create a venv, install deps, copy the template, wire Tailwind, and optionally initialize SQLite + migrations.
+- `flask make:view <dotted_path_with_name> [options]` — create a view under `app/templates/` and optionally add a controller method, route/blueprint, and model.
+
+## Creating a project: `flask new`
+What happens:
+- Creates `<project_name>/` and a virtual environment under `venv/`.
+- Installs Python deps: always `Flask` + `python-dotenv`; adds `Flask-Login`, `Flask-Migrate`, and `Flask-SQLAlchemy` when `--db` (or when you accept the prompt).
+- Freezes `requirements.txt` from the venv.
+- Copies the starter app from `flask_commands/project` (blueprint-based app with configs, sample controller/route, Tailwind input.css, `.env` files, `run.py`, and `run.sh`), and marks `run.sh` executable.
+- Installs Tailwind via npm and adds `watch:css` / `build:css` scripts (skipped with a warning if npm is absent).
+- If `--db` is enabled, runs `flask db init/migrate/upgrade` using the new venv to seed SQLite.
+
+Quickstart:
+```bash
+flask new myproject        # use --no-db to skip SQLite setup
+cd myproject
+source venv/bin/activate
+flask run --debug          # or ./run.sh on macOS to open terminals + Safari and tailwind watchers
 ```
-2. Install the tool in editable mode and install Flask for testing:
-```sh
-pip install -e .
-pip install Flask
+`run.sh` uses `osascript`/`fswatch`, so it is macOS-only.
+
+## Generating views/routes/controllers/models: `flask make:view`
+Usage:
 ```
-3. Run the generator:
-```sh
-# preferred (if you change the console script name in pyproject.toml)
-flask-commands new myproject
-
-# or run module directly (no console script needed)
-python -m flask_commands.cli new myproject
+flask make:view <dotted_path_with_name> [--controller NAME|-c] [--route PATH|-r] [--model NAME|-m]
 ```
+- `dotted_path_with_name` maps folders + filename under `app/templates/`: `posts.index` → `app/templates/posts/index.html`. Nest as needed: `admin.users.show` → `app/templates/admin/users/show.html`.
+- Without flags you get just the view file (a small HTML snippet with a random Python quote).
+- `-c/--generate-controller` infers a controller class from the path (e.g., `PostController` from `posts.index`) and adds the action method; `--controller` lets you set it explicitly.
+- `-r/--generate-route` infers a RESTful route path (CRUD actions get GET/POST as appropriate, nested resources pick up parent IDs if a matching model import exists in `app/models/__init__.py`); `--route` lets you set a path yourself. If the route folder exists, it appends a function; otherwise it creates a blueprint folder and registers it in `app/__init__.py`.
+- `-m/--generate-model` infers a singular class name and creates a basic SQLAlchemy model file and import stub; `--model` lets you name it explicitly.
 
-Notes on console script
-- Current package [pyproject.toml](pyproject.toml) registers a `flask` console script. That will conflict with the official Flask `flask` script. Rename the script in [pyproject.toml](pyproject.toml) (for example to `flask-commands`) or call the module directly as shown above.
+Examples:
+- Minimal view component: `flask make:view button`
+- CRUD start with inferred pieces: `flask make:view posts.index -crm`
+- Nested resource with route params: `flask make:view admin.posts.comments.show -cr`
+- Explicit wiring: `flask make:view posts.show --controller PostController --route /posts/<int:post_id> --model Post`
 
-What the generator does
-- Creates a project folder and a venv inside it using the same Python interpreter that runs the generator (see [`flask_commands.utils.create_venv`](flask_commands/utils.py)). This avoids guessing `python` vs `python3`.
-- Installs default Python dependencies into the new venv and writes a `requirements.txt` (if enabled).
-- Copies the template tree from [flask_commands/project](flask_commands/project) into the new project using [`flask_commands.utils.copy_templates`](flask_commands/utils.py).
-- Optionally runs `npm install` for Tailwind and injects package.json scripts for building/watching CSS.
-- Makes `run.sh` executable in POSIX environments.
+## Project template (copied by `flask new`)
+- Application entrypoints: `run.py`, `run.sh`
+- App package: `app/__init__.py` with blueprint registration + extensions (`LoginManager`, `SQLAlchemy`, `Migrate`)
+- Default blueprint: `app/routes/mains` → `app/controllers/main_controller.py` → `app/templates/mains/index.html`
+- Configs: `config/{base,development,production}_config.py`
+- Static/Tailwind: `app/static/src/input.css` (Tailwind CLI builds `tailwind.css` / `tailwind.min.css`)
+- Environment files: `.env`, `.env.example`
 
-Generated project (high level)
-- run script: `run.sh` / `run.py`
-- app package: `app/__init__.py`, `controllers/`, `routes/`, `static/`, `templates/`
-- config: `config/{base,development,production}_config.py`
-- example env files: `.env`, `.env.example`
-
-Customization
-- Edit the template files under [flask_commands/project](flask_commands/project) to change the generated structure or defaults.
-- If you want generator commands to register on the project's Flask CLI (so commands appear under the project's `flask`), add an `init_app_cli(app)` helper that calls `app.cli.add_command(...)` and scaffold a small `manage.py` that wires it in.
-
-Development tips
-- Use `pip install -e .` when hacking on this package so local changes are reflected immediately in an active venv.
-- The generator uses the current interpreter (`sys.executable`) to create project venvs, so it works whether the user runs `python` or `python3`.
-
-Contributing
-- Open issues or pull requests; follow the project license: [LICENSE](LICENSE).
-
-License
-- MIT — see [LICENSE](LICENSE)
-
+## Contributing
+PRs and issues welcome. License: MIT.
