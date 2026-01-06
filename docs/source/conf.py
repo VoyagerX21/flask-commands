@@ -23,7 +23,6 @@ release = '0.1.0'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
 ]
@@ -36,9 +35,7 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "alabaster"
 html_static_path = ['_static']
-source_suffix = {
-    ".rst": "restructuredtext",
-    ".md": "markdown",
-}
+html_css_files = ["theme-overrides.css"]
+source_suffix = ".rst"
