@@ -1,5 +1,8 @@
+Introduction
+============
+
 Getting Started
-===============
+---------------
 
 Flask-Commands bundles a few opinionated conveniences:
 
