@@ -22,6 +22,7 @@ docs = [
     "sphinx-rtd-theme (>=3.0.2,<4.0.0)",
     "myst-parser (>=4.0.1,<5.0.0)",
     "sphinx-autodoc-typehints (<3)",
+    "sphinx-copybutton",
 ]
 
 [build-system]
@@ -40,7 +41,8 @@ docs = [
     "sphinx (<9)",
     "sphinx-rtd-theme (>=3.0.2,<4.0.0)",
     "myst-parser (>=4.0.1,<5.0.0)",
-    "sphinx-autodoc-typehints (<3)"
+    "sphinx-autodoc-typehints (<3)",
+    "sphinx-copybutton",
 ]
 
 [tool.coverage.run]
@@ -51,4 +53,4 @@ show_missing = true
 fail_under = 70
 
 [tool.poetry.extras]
-docs = ["sphinx", "sphinx-rtd-theme", "myst-parser"]
+docs = ["sphinx", "sphinx-rtd-theme", "myst-parser", "sphinx-copybutton"]
