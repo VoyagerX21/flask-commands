@@ -1,60 +1,111 @@
-# flask-commands
+# Flask-Commands
 
-Local-first CLI that scaffolds a Flask project (venv, dotenv, Tailwind build scripts, blueprints, optional SQLite) and can keep generating views, routes, controllers, and models for you.
+[![pypi](https://img.shields.io/pypi/v/flask-commands.svg)](https://pypi.org/project/flask-commands/)
+[![tests](https://img.shields.io/github/actions/workflow/status/drewbutcher/flask-commands/tests.yml?branch=main)](https://github.com/drewbutcher/flask-commands/actions)
+[![docs](https://img.shields.io/readthedocs/flask-commands/latest)](https://flask-commands.readthedocs.io/)
+[![license](https://img.shields.io/pypi/l/flask-commands.svg)](https://github.com/drewbutcher/flask-commands/blob/main/LICENSE)
 
-## Install
-- Python 3.10+
-- Optional: `npm` if you want Tailwind auto-installed; the tool will skip Tailwind if `npm` is missing.
-- `pip install Flask-Commands`
+**Flask-Commands** is a local-first CLI tool that scaffolds Flask projects and keeps generating views, routes, controllers, and models for you so you can stay in flow. This is still very much in a beta stage, so try it out at your own risk.
 
-> The published console script is currently `flask`. If you have a clash with Flask’s own CLI, run with `python -m flask_commands.cli ...` or rename the script to `flask-commands` in `pyproject.toml`.
+Current Release: 0.1.0
 
-## Commands at a glance
-- `flask new <project_name> [--db/--no-db]` — bootstrap a new project in a sibling folder, create a venv, install deps, copy the template, wire Tailwind, and optionally initialize SQLite + migrations.
-- `flask make:view <dotted_path_with_name> [options]` — create a view under `app/templates/` and optionally add a controller method, route/blueprint, and model.
+## Getting Started
 
-## Creating a project: `flask new`
-What happens:
-- Creates `<project_name>/` and a virtual environment under `venv/`.
-- Installs Python deps: always `Flask` + `python-dotenv`; adds `Flask-Login`, `Flask-Migrate`, and `Flask-SQLAlchemy` when `--db` (or when you accept the prompt).
-- Freezes `requirements.txt` from the venv.
-- Copies the starter app from `flask_commands/project` (blueprint-based app with configs, sample controller/route, Tailwind input.css, `.env` files, `run.py`, and `run.sh`), and marks `run.sh` executable.
-- Installs Tailwind via npm and adds `watch:css` / `build:css` scripts (skipped with a warning if npm is absent).
-- If `--db` is enabled, runs `flask db init/migrate/upgrade` using the new venv to seed SQLite.
+Flask-Commands bundles a few opinionated conveniences:
 
-Quickstart:
+- `flask new` bootstraps a ready-to-run Flask project with virtualenv, dotenv, Tailwind wiring, and optional SQLite + migrations.
+- `flask make:view` generates HTML views and can optionally add controllers, routes/blueprints, and SQLAlchemy models to match.
+
+The goal is to remove the repetitive setup work while keeping everything local and transparent.
+
+## Installation
+
+Flask-Commands is designed to be installed globally so you can create new Flask apps anywhere on your machine.
+
 ```bash
-flask new myproject        # use --no-db to skip SQLite setup
+pip install Flask-Commands
+```
+
+> The published console script is `flask`. If you have a clash with Flask’s own CLI, run with `python -m flask_commands.cli ...` or rename the script in `pyproject.toml`.
+
+## Quick Start
+
+```bash
+flask new myproject          # add --no-db if you want to skip SQLite/migrations
 cd myproject
 source venv/bin/activate
-flask run --debug          # or ./run.sh on macOS to open terminals + Safari and tailwind watchers
+flask run --debug            # or ./run.sh on macOS to open terminals + Tailwind watcher
 ```
-`run.sh` uses `osascript`/`fswatch`, so it is macOS-only.
 
-## Generating views/routes/controllers/models: `flask make:view`
-Usage:
+Add a first page with controller and route wiring:
+
+```bash
+flask make:view posts.index -cr
+flask make:view admin.users.show -cr   # nested example
 ```
-flask make:view <dotted_path_with_name> [--controller NAME|-c] [--route PATH|-r] [--model NAME|-m]
+
+Tailwind is installed automatically when `npm` is available; otherwise the tool skips it with a warning.
+
+## Commands
+
+### flask new
+
+After installing Flask-Commands globally, you’ll have access to a new command called `flask`, which lets you quickly scaffold Flask applications from the terminal.
+
+```bash
+flask new myproject
 ```
-- `dotted_path_with_name` maps folders + filename under `app/templates/`: `posts.index` → `app/templates/posts/index.html`. Nest as needed: `admin.users.show` → `app/templates/admin/users/show.html`.
-- Without flags you get just the view file (a small HTML snippet with a random Python quote).
-- `-c/--generate-controller` infers a controller class from the path (e.g., `PostController` from `posts.index`) and adds the action method; `--controller` lets you set it explicitly.
-- `-r/--generate-route` infers a RESTful route path (CRUD actions get GET/POST as appropriate, nested resources pick up parent IDs if a matching model import exists in `app/models/__init__.py`); `--route` lets you set a path yourself. If the route folder exists, it appends a function; otherwise it creates a blueprint folder and registers it in `app/__init__.py`.
-- `-m/--generate-model` infers a singular class name and creates a basic SQLAlchemy model file and import stub; `--model` lets you name it explicitly.
+
+Once the command completes, you’ll see a new directory called `myproject/` that contains everything you need to get a Flask application up and running.
+
+What you get:
+
+- A Python virtual environment `venv/` with core Flask dependencies pre-installed and listed in `requirements.txt`.
+- When using `--db` (enabled by default unless `--no-db` is specified), the following are also included:
+  - Flask-Migrate
+  - Flask-SQLAlchemy
+  - A seeded SQLite database with a users table
+  - An initial migration already applied
+- A blueprint-based application skeleton under `app/`, organized by responsibility:
+  - **Model** `app/models/` defining all your application’s data models/structure along with their methods.
+  - **View** `app/templates/` containing all HTML templates (including macros/components) used by the application.
+  - **Controller** `app/controllers/` housing controller classes responsible for the logic to gather and serve the requested data.
+  - **URL** `app/routes/` declaring URL paths and connecting them to controllers.
+- The project entry point at `run.py`.
+- Centralized configuration files under `config/`.
+- If `npm` is installed, a Tailwind-ready static asset pipeline at `app/static/src/`, including npm scripts for watching and building CSS.
+- Environment configuration files:
+  - `.env`
+  - `.env.example`
+- A default blueprint named `mains`, defined in `app/__init__.py`:
+  - Routes at `app/routes/mains`
+  - A controller at `app/controllers/main_controller` named `MainController`
+  - A starter “Hello World” template at `app/templates/mains/index.html`
+- A macOS-friendly helper script `run.sh` for starting the application with a single command:
+
+```bash
+./run.sh
+```
+
+You can review this structure directly in the Flask-Commands source under `flask_commands/project`.
+
+### flask make:view
+
+Generates template files under `app/templates/` from dotted paths (for example, `posts.index` maps to `app/templates/posts/index.html`). Optional flags wire up matching components:
+
+- `-c/--generate-controller` or `--controller NAME` creates or extends the controller class.
+- `-r/--generate-route` or `--route PATH` adds blueprint routes (CRUD verbs inferred when possible).
+- `-m/--generate-model` or `--model NAME` seeds a SQLAlchemy model and import stub.
 
 Examples:
-- Minimal view component: `flask make:view button`
-- CRUD start with inferred pieces: `flask make:view posts.index -crm`
-- Nested resource with route params: `flask make:view admin.posts.comments.show -cr`
-- Explicit wiring: `flask make:view posts.show --controller PostController --route /posts/<int:post_id> --model Post`
 
-## Project template (copied by `flask new`)
-- Application entrypoints: `run.py`, `run.sh`
-- App package: `app/__init__.py` with blueprint registration + extensions (`LoginManager`, `SQLAlchemy`, `Migrate`)
-- Default blueprint: `app/routes/mains` → `app/controllers/main_controller.py` → `app/templates/mains/index.html`
-- Configs: `config/{base,development,production}_config.py`
-- Static/Tailwind: `app/static/src/input.css` (Tailwind CLI builds `tailwind.css` / `tailwind.min.css`)
-- Environment files: `.env`, `.env.example`
+```bash
+flask make:view button                    # view-only snippet
+flask make:view posts.index -crm          # view + controller + route + model
+flask make:view posts.show --route /posts/<int:post_id> --controller PostController
+```
 
 ## Contributing
-PRs and issues welcome. License: MIT.
+
+I’m keeping development closed for now, but feedback is welcome.
+Please open an issue for bugs or ideas. License: MIT.
