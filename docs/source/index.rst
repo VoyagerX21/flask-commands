@@ -22,7 +22,7 @@ Flask-Commands
 Current Release: |release|
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    introduction
