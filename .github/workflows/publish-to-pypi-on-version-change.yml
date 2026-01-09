@@ -34,19 +34,19 @@ jobs:
 
           # Extract versions (supports both [project] and [tool.poetry])
           old_version=$(git show HEAD~1:pyproject.toml | python - <<'PY'
-import re, sys
-t=sys.stdin.read()
-m=re.search(r'(?m)^\s*version\s*=\s*"([^"]+)"\s*$', t)
-print(m.group(1) if m else "")
-PY
-)
+          import re, sys
+          t=sys.stdin.read()
+          m=re.search(r'(?m)^\s*version\s*=\s*"([^"]+)"\s*$', t)
+          print(m.group(1) if m else "")
+          PY
+          )
           new_version=$(python - <<'PY'
-import re
-t=open("pyproject.toml","r",encoding="utf-8").read()
-m=re.search(r'(?m)^\s*version\s*=\s*"([^"]+)"\s*$', t)
-print(m.group(1) if m else "")
-PY
-)
+          import re
+          t=open("pyproject.toml","r",encoding="utf-8").read()
+          m=re.search(r'(?m)^\s*version\s*=\s*"([^"]+)"\s*$', t)
+          print(m.group(1) if m else "")
+          PY
+          )
 
           if [[ -z "$old_version" || -z "$new_version" ]]; then
             echo "Could not detect version in pyproject.toml"
