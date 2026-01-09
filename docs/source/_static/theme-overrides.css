@@ -4,3 +4,27 @@ a.reference.external {
   text-decoration: none !important;
   border-bottom: 0px !important;
 }
+
+/* Code Block Stying */
+div.highlight {
+  border-radius: 4px;
+}
+
+/* Default hidden so sidebar logo remains primary on desktop */
+.page-logo {
+  display: none;
+}
+
+/* Show logo at top of content on small screens when sidebar collapses */
+@media (max-width: 940px) {
+  .page-logo {
+    display: block;
+    text-align: center;
+    margin: 0.75rem 0 1rem;
+  }
+
+  .page-logo img {
+    max-width: 180px;
+    height: auto;
+  }
+}

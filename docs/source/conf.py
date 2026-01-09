@@ -70,6 +70,15 @@ html_theme_options = {
         "Changelog": "https://github.com/drewbutcher/flask-commands/releases",
     },
 }
+html_logo = "_static/flask-commands-logo.svg"
 html_static_path = ['_static']
 html_css_files = ["theme-overrides.css"]
 source_suffix = ".rst"
+
+rst_prolog = """
+.. raw:: html
+
+    <div class="page-logo">
+        <img src="_static/flask-commands-logo.svg" alt="Logo of Flask-Commands">
+    </div>
+"""
