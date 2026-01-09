@@ -1,4 +1,4 @@
-# Flask-Commands
+# ![Flask-Commands logo](docs/source/_static/flask-commands-logo.svg) Flask-Commands
 
 [![pypi](https://img.shields.io/pypi/v/flask-commands.svg?cacheSeconds=300)](https://pypi.org/project/flask-commands/)
 [![tests](https://img.shields.io/github/actions/workflow/status/drewbutcher/flask-commands/tests.yml?branch=main)](https://github.com/drewbutcher/flask-commands/actions)
