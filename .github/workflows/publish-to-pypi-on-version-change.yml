@@ -11,7 +11,6 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: publish to pypi on version change
 
     steps:
       - name: Checkout
