@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Detect version change in pyproject.toml
         id: version_check
@@ -31,7 +31,8 @@ jobs:
             exit 0
           fi
 
-          changed_files="$(git diff --name-only HEAD~1..HEAD)"
+          range="${GITHUB_EVENT_BEFORE}..${GITHUB_SHA}"
+          changed_files="$(git diff --name-only "$range")"
 
           if printf '%s\n' "$changed_files" | grep -Fxq 'pyproject.toml'; then
             echo "pyproject.toml changed"
@@ -41,7 +42,7 @@ jobs:
             exit 0
           fi
 
-          old_toml="$(git show HEAD~1:pyproject.toml)"
+          old_toml="$(git show "${GITHUB_EVENT_BEFORE}:pyproject.toml")"
           new_toml="$(cat pyproject.toml)"
 
           old_version="$(python -c 'import re,sys; t=sys.stdin.read(); m=re.search(r"(?m)^\\s*version\\s*=\\s*\\\"([^\\\"]+)\\\"\\s*$", t); print(m.group(1) if m else "")' <<< "$old_toml")"
