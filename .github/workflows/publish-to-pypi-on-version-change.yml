@@ -21,45 +21,11 @@ jobs:
       - name: Detect version change in pyproject.toml
         id: version_check
         shell: bash
-        env:
-          BEFORE_SHA: ${{ github.event.before }}
         run: |
           set -euo pipefail
 
-          # If there's no previous commit (rare edge case), don't publish.
-          if ! git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-            echo "No previous commit to diff against."
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          before="${BEFORE_SHA:-}"
-          if [[ -z "$before" || "$before" == "0000000000000000000000000000000000000000" ]]; then
-            if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
-              before="$(git rev-parse HEAD~1)"
-            else
-              echo "No valid 'before' SHA found; skipping publish."
-              echo "changed=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          fi
-
-          range="${before}..${GITHUB_SHA}"
-          changed_files="$(git diff --name-only "$range")"
-
-          if printf '%s\n' "$changed_files" | grep -Fxq 'pyproject.toml'; then
-            echo "pyproject.toml changed"
-          else
-            echo "pyproject.toml not changed"
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          old_toml="$(git show "${before}:pyproject.toml")"
-          new_toml="$(cat pyproject.toml)"
-
-          old_version="$(python -c 'import re,sys; t=sys.stdin.read(); m=re.search(r"(?m)^\\s*version\\s*=\\s*\\\"([^\\\"]+)\\\"\\s*$", t); print(m.group(1) if m else "")' <<< "$old_toml")"
-          new_version="$(python -c 'import re,sys; t=sys.stdin.read(); m=re.search(r"(?m)^\\s*version\\s*=\\s*\\\"([^\\\"]+)\\\"\\s*$", t); print(m.group(1) if m else "")' <<< "$new_toml")"
+          old_version="$(git show HEAD~1:pyproject.toml | grep -m 1 '^version = ' | cut -d '\"' -f 2)"
+          new_version="$(grep -m 1 '^version = ' pyproject.toml | cut -d '\"' -f 2)"
 
           if [[ -z "$old_version" || -z "$new_version" ]]; then
             echo "Could not detect version in pyproject.toml"
@@ -75,7 +41,7 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
           else
-            echo "Version unchanged"
+            echo "Version unchanged. Skipping publish"
             echo "changed=false" >> "$GITHUB_OUTPUT"
           fi
 
