@@ -31,7 +31,14 @@ jobs:
             exit 0
           fi
 
-          range="${GITHUB_EVENT_BEFORE}..${GITHUB_SHA}"
+          before="${GITHUB_EVENT_BEFORE:-}"
+          if [[ -z "$before" || "$before" == "0000000000000000000000000000000000000000" ]]; then
+            echo "No valid 'before' SHA found; skipping publish."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          range="${before}..${GITHUB_SHA}"
           changed_files="$(git diff --name-only "$range")"
 
           if printf '%s\n' "$changed_files" | grep -Fxq 'pyproject.toml'; then
@@ -42,7 +49,7 @@ jobs:
             exit 0
           fi
 
-          old_toml="$(git show "${GITHUB_EVENT_BEFORE}:pyproject.toml")"
+          old_toml="$(git show "${before}:pyproject.toml")"
           new_toml="$(cat pyproject.toml)"
 
           old_version="$(python -c 'import re,sys; t=sys.stdin.read(); m=re.search(r"(?m)^\\s*version\\s*=\\s*\\\"([^\\\"]+)\\\"\\s*$", t); print(m.group(1) if m else "")' <<< "$old_toml")"
