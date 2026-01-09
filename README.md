@@ -7,8 +7,6 @@
 
 **Flask-Commands** is a local-first CLI tool that scaffolds Flask projects and keeps generating views, routes, controllers, and models for you so you can stay in flow. This is still very much in a beta stage, so try it out at your own risk.
 
-Current Release: 0.1.0
-
 ## Getting Started
 
 Flask-Commands bundles a few opinionated conveniences:
