@@ -24,26 +24,23 @@ jobs:
         run: |
           set -euo pipefail
 
-          old_version="$(git show HEAD~1:pyproject.toml | grep -m 1 '^version = ' | cut -d '\"' -f 2)"
-          new_version="$(grep -m 1 '^version = ' pyproject.toml | cut -d '\"' -f 2)"
+          # Extract version from pyproject.toml in the current commit
+          NEW_VERSION=$(grep -m 1 '^version = ' pyproject.toml | cut -d '"' -f 2)
 
-          if [[ -z "$old_version" || -z "$new_version" ]]; then
-            echo "Could not detect version in pyproject.toml"
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          # Extract version from pyproject.toml in the previous commit
+          OLD_VERSION=$(git show HEAD~1:pyproject.toml | grep -m 1 '^version = ' | cut -d '"' -f 2)
 
-          echo "old=$old_version"
-          echo "new=$new_version"
+          echo "Old version: $OLD_VERSION"
+          echo "New version: $NEW_VERSION"
 
-          if [[ "$old_version" != "$new_version" ]]; then
-            echo "Version changed: $old_version -> $new_version"
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+          if [ "$NEW_VERSION" != "$OLD_VERSION" ]; then
+            echo "Version changed. Proceeding with publish."
+            echo "changed=true" >> $GITHUB_OUTPUT
           else
-            echo "Version unchanged. Skipping publish"
-            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Version unchanged. Skipping publish."
+            echo "changed=false" >> $GITHUB_OUTPUT
           fi
+
 
       - name: Set up Python
         if: steps.version_check.outputs.changed == 'true'
