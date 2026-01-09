@@ -8,7 +8,7 @@ Flask-Commands
 ================
 |pypi| |tests| |docs| |license|
 
-.. |pypi| image:: https://img.shields.io/pypi/v/flask-commands.svg
+.. |pypi| image:: https://img.shields.io/pypi/v/flask-commands.svg?cacheSeconds=300
    :target: https://pypi.org/project/flask-commands/
 .. |tests| image:: https://img.shields.io/github/actions/workflow/status/drewbutcher/flask-commands/tests.yml?branch=main
    :target: https://github.com/drewbutcher/flask-commands/actions
