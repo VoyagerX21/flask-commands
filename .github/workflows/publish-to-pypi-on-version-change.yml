@@ -21,6 +21,8 @@ jobs:
       - name: Detect version change in pyproject.toml
         id: version_check
         shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
           set -euo pipefail
 
@@ -31,11 +33,15 @@ jobs:
             exit 0
           fi
 
-          before="${GITHUB_EVENT_BEFORE:-}"
+          before="${BEFORE_SHA:-}"
           if [[ -z "$before" || "$before" == "0000000000000000000000000000000000000000" ]]; then
-            echo "No valid 'before' SHA found; skipping publish."
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            if git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+              before="$(git rev-parse HEAD~1)"
+            else
+              echo "No valid 'before' SHA found; skipping publish."
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
           fi
 
           range="${before}..${GITHUB_SHA}"
