@@ -71,7 +71,7 @@ html_theme_options = {
     },
 }
 html_logo = "_static/flask-commands-logo.svg"
-html_favicon = "_static/flask-commands-logo.ico"
+html_favicon = "_static/flask-commands-logo.svg"
 html_static_path = ['_static']
 html_css_files = ["theme-overrides.css"]
 source_suffix = ".rst"
