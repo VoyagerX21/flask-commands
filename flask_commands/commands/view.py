@@ -92,8 +92,7 @@ def make_view(
             controller_name = controller_infer_name_from(relative_path)
             click.secho(f"💡 Info: Inferred controller name as {click.style(controller_name, bold=True)}", fg="cyan")
         else:
-            click.secho(f"⚠️  Warning: Could not infer the controller name "
-                       f"from {dotted_path_with_name}", fg="yellow", bold=True)
+            controller_name = 'MainController'
 
     # Infer route name if not provided
     if generate_route and route_name is None:

@@ -6,6 +6,7 @@
 [![tests](https://img.shields.io/github/actions/workflow/status/drewbutcher/flask-commands/tests.yml?branch=main)](https://github.com/drewbutcher/flask-commands/actions)
 [![docs](https://img.shields.io/readthedocs/flask-commands/latest)](https://flask-commands.readthedocs.io/)
 [![license](https://img.shields.io/pypi/l/flask-commands.svg)](https://github.com/drewbutcher/flask-commands/blob/main/LICENSE)
+[![stars](https://img.shields.io/github/stars/drewbutcher/flask-commands)](https://github.com/drewbutcher/flask-commands/stargazers)
 
 **Flask-Commands** is a local-first CLI tool that scaffolds Flask projects and keeps generating views, routes, controllers, and models for you so you can stay in flow. This is still very much in a beta stage, so try it out at your own risk.
 

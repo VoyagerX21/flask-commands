@@ -6,7 +6,7 @@
 ================
 Flask-Commands
 ================
-|pypi| |tests| |docs| |license|
+|pypi| |tests| |docs| |license| |stars|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/flask-commands.svg?cacheSeconds=300&v=|release|
    :target: https://pypi.org/project/flask-commands/
@@ -16,6 +16,8 @@ Flask-Commands
    :target: https://flask-commands.readthedocs.io/
 .. |license| image:: https://img.shields.io/pypi/l/flask-commands.svg
    :target: https://github.com/drewbutcher/flask-commands/blob/main/LICENSE
+.. |stars| image:: https://img.shields.io/github/stars/drewbutcher/flask-commands
+   :target: https://github.com/drewbutcher/flask-commands/stargazers
 
 **Flask-Commands** is a local-first CLI tool that scaffolds Flask projects and keeps generating views, routes, controllers, and models for you so you can stay in flow.  This is still very much in a beta stage, so try it out at your own risk!
 
