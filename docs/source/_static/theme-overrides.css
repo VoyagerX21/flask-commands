@@ -28,3 +28,10 @@ div.highlight {
     height: auto;
   }
 }
+
+/* list itms on mobel */
+@media (max-width: 940px) {
+  ul.simple {
+    margin-left: 1.5rem;
+  }
+}
