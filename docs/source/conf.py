@@ -6,10 +6,6 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 
-# If you use src-layout: sys.path.insert(0, os.path.abspath("../../src"))
-# If not src-layout:
-sys.path.insert(0, os.path.abspath("../.."))
-
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -44,8 +40,6 @@ project_description = _project_data.get("description", "")
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
     "sphinx_copybutton",
 ]
 

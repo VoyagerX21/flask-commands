@@ -30,10 +30,10 @@ The generated project includes a clean, opinionated structure with sensible defa
     - **Model** ``app/models/`` Defining all your applications data models/structure along with their methods.
     - **View** ``app/templates/`` Containing all HTML templates (including macros/components) used by the application.
     - **Controller** ``app/controllers/`` Housing controller classes responsible for the logic to gather and serve the requested data.
-    - **URL** ``app/routes/`` Declaring and names URL paths and connects them to controllers.
+    - **URL** ``app/routes/`` Declaring and naming URL paths and connects them to controllers.
 - The project entry point at ``run.py``
 - Centralized configuration files under ``config/``
-- If npm is install on your machine then a Tailwind ready static asset pipeline located at ``app/static/src/``, including npm scripts for watching and building CSS
+- If npm is installed on your machine then a Tailwind ready static asset pipeline located at ``app/static/src/``, including npm scripts for watching and building CSS
 - Environment configuration files:
     - ``.env``
     - ``.env.example``

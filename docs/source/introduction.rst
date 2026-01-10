@@ -45,7 +45,7 @@ new Flask applications from any directory on your machine.
 Quick Start
 -----------
 
-Once you have install **Flask-Commands** you are ready to use the new ``flask``
+Once you have installed **Flask-Commands** you are ready to use the new ``flask``
 command anywhere in your terminal.  The first step is to create a new project.
 Below I will create a project called *myproject* feel free to change this to your
 awesome project name:
@@ -142,7 +142,7 @@ Start with something simple, like a static **About** page:
 
    flask make:view about
 
-This creates an ``about.html`` template in your templates direction and that's it.
+This creates an ``about.html`` template in your templates directory and that's it.
 You are left to wire up the template 😢.  Don't worry that's why we have flags 🎉.
 We will show this in more detail in the :ref:`Commands section <commands>`.
 For now just check your templates folder and you should see the new ``about.html`` file.
