@@ -145,16 +145,18 @@ So lets suppose I have a cooking website and I want to list all my recipes on th
 This one command is going to make 5 files and it is going to edit 3 other files!  I know crazy 😮
 
 # Created Files:
-- ``app/templates/recipes/index.html`` - the new view file when you can show off all your recipes.
--  ``app/controllers/recipe_controller.py`` - the controller which will eventually house the logic for several methods.  For now it starts off with the one we just made ``index``
-- ``app/routes/recipes/__init__.py`` - Created routes directory at app/routes/recipes and name the route **recipes**
-- ``app/routes/recipes/routes.py`` - The route file for recipes where all the recipe related urls will live.  For now it has the one we just made which is a GET route with url **/recipes** and this route uses the RecipeController which as created above.
--  ``app/models/recipe.py`` - the model file which contains all the column information, all model's methods, and all the model's relationship structures.
+
+- ``app/templates/recipes/index.html`` The new view file when you can show off all your recipes.
+-  ``app/controllers/recipe_controller.py`` The controller which will eventually house the logic for several methods.  For now it starts off with the one we just made ``index``
+- ``app/routes/recipes/__init__.py`` Created routes directory at app/routes/recipes and name the route **recipes**
+- ``app/routes/recipes/routes.py`` The route file for recipes where all the recipe related urls will live.  For now it has the one we just made which is a GET route with url **/recipes** and this route uses the RecipeController which as created above.
+-  ``app/models/recipe.py`` The model file which contains all the column information, all model's methods, and all the model's relationship structures.
 
 # Updated Files:
-- ``app/controllers/__init__.py`` - the new RecipeController was just register with your controllers by adding it to the bottom of this file.
--  ``app/models/__init__.py``  - the new Recipe model was just register with your models by adding it to the bottom of this file.
-- ``app/__init__.py`` - A new recipes blueprint was just added to the create_app function
+
+- ``app/controllers/__init__.py`` The new RecipeController was just register with your controllers by adding it to the bottom of this file.
+-  ``app/models/__init__.py``  The new Recipe model was just register with your models by adding it to the bottom of this file.
+- ``app/__init__.py`` A new recipes blueprint was just added to the create_app function
 
 Now you know why I wrote this package.  So many thing to wire up just to have one new model's view!  But wait it get's better!!! The above is just to much to type so I shortened it to
 

@@ -142,7 +142,7 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
         click.style(f"✅ Success: Created Controller Class With Method\n", fg="green", bold=True) +
         click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
         click.style(f"    - Added method {click.style(method_name, bold=True)}", fg="green") + click.style(" to controller\n", fg="green") +
-        click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style('app/controllers/__init__.py', bold=True, fg="green")}\n", fg="green") +
+        click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style('app/controllers/__init__.py', bold=True, fg='green')}\n", fg="green") +
         click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
     )
 

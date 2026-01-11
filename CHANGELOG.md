@@ -13,6 +13,16 @@ This project follows [Keep a Changelog](https://keepachangelog.com/) and [SemVer
 ### Fixed
 -
 
+## [0.1.19] - 2026-01-10
+### Added
+-
+
+### Changed
+-
+
+### Fixed
+- Second Typo in the controllers comment causing test to fail
+
 ## [0.1.18] - 2026-01-10
 ### Added
 -
