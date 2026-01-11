@@ -42,6 +42,16 @@ def project(tmp_path, monkeypatch):
         "    return app\n"
     )
 
+    main_controller_file_path = root / "app" / "controllers" / "main_controller.py"
+    main_controller_file_path.write_text(
+        "from flask import render_template\n"
+        "\n"
+        "class MainController(object):\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('mains/index.html')\n"
+    )
+
     monkeypatch.chdir(root)
     return root
 
@@ -89,12 +99,12 @@ def test_make_view_with_generated_controller(project):
     assert "class PostController" in controller_text
     assert "def index" in controller_text
 
-def test_make_view_with_generated_controller_not_able_to_infer(project):
+def test_make_view_with_generated_controller_and_no_relationship(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["card", "-c"])
 
     assert result.exit_code == 0
-    assert "ould not infer the controller name" in result.output
+    assert "Method Added To Controller" in result.output
 
 def test_make_view_with_generated_route(project):
     """
@@ -104,10 +114,6 @@ def test_make_view_with_generated_route(project):
     """
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.index", "-r"])
-
-    print("BEGIN DEBUG")
-    print(result.stdout, result.stderr)
-    print("END DEBUG")
 
     assert result.exit_code == 0
 
