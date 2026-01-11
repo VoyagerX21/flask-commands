@@ -81,7 +81,7 @@ Suppose you want an about view for your company:
 
     flask make:view about
 
-That is it, you now have a new html file located at ```app/templates/about.html```.  This issue is that this page is not appearing in your application.  You can't just put ```about``` or ```about.html``` into the url and see the pages content because the page is not wired up to a route in your application.
+That is it, you now have a new html file located at ``app/templates/about.html``.  This issue is that this page is not appearing in your application.  You can't just put ``about`` or ``about.html`` into the url and see the pages content because the page is not wired up to a route in your application.
 
 Adding a Route and Controller (Manually)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -117,10 +117,12 @@ These commands would make the following files ``accordions.html``, ``checkboxes.
 
 Adding Models
 ~~~~~~~~~~~~~
-Nesting becomes essential when you want to start building out models.  So for those who create a Flask application with a database (any time SQLite, MySQL, PostgreSQL, ...) you will want to often create views related to your models.  For example you might want to make an admin view that shows all your users.  ```Flask-Commands``` follows the seven RESTful actions (index, show, create, store, edit, update, destroy or delete).
+Nesting becomes essential when you want to start building out models.  So for those who create a Flask application with a database (any time SQLite, MySQL, PostgreSQL, ...) you will want to often create views related to your models.  For example you might want to make an admin view that shows all your users.  ``Flask-Commands`` follows the seven RESTful actions (index, show, create, store, edit, update, destroy or delete).
+
 If you are new to these actions or just need a little refresher here is a review of what each is used for and the request method they use in terms of GETs and POSTs.  There are other Methods such as delete but the browser only understand GETs and POSTs.  I always thing of the browser cycle as a Get the Page Post your Form and then redirect to a new page to provide feedback of what was just posted. So the traditional steps are Get -> Post -> Redirect. We will look more closely at this when we discuss controllers.  For now just familarize yourself with the 7 actions (I allow for destory to be replaced with delete if you perfer delete instead of destory).  Frakely, I would have called it ``nuke`` 😜
 
-# The Seven Restful Actions:
+**The Seven Restful Actions:**
+
 .. table:: The Seven Restful Actions
 
    ======= ====== =========================== ======================================================================
@@ -144,7 +146,10 @@ So lets suppose I have a cooking website and I want to list all my recipes on th
 
 This one command is going to make 5 files and it is going to edit 3 other files!  I know crazy 😮
 
-# Created Files:
+.. raw:: html
+
+   <span style="text-decoration: underline;">Created Files:</span>
+
 
 - ``app/templates/recipes/index.html`` The new view file when you can show off all your recipes.
 -  ``app/controllers/recipe_controller.py`` The controller which will eventually house the logic for several methods.  For now it starts off with the one we just made ``index``
@@ -152,7 +157,9 @@ This one command is going to make 5 files and it is going to edit 3 other files!
 - ``app/routes/recipes/routes.py`` The route file for recipes where all the recipe related urls will live.  For now it has the one we just made which is a GET route with url **/recipes** and this route uses the RecipeController which as created above.
 -  ``app/models/recipe.py`` The model file which contains all the column information, all model's methods, and all the model's relationship structures.
 
-# Updated Files:
+.. raw:: html
+
+   <span style="text-decoration: underline;">Updated Files:</span>
 
 - ``app/controllers/__init__.py`` The new RecipeController was just register with your controllers by adding it to the bottom of this file.
 -  ``app/models/__init__.py``  The new Recipe model was just register with your models by adding it to the bottom of this file.
@@ -168,7 +175,6 @@ If you use the flag -r, -c, and -m (in any order) then Flask-Commands will under
 
 To make the show page that will show off a single recipe you are write it out
 
-# Created Files:
 .. code-block:: bash
 
    flask make:view recipes.show --route /recipes/<int:recipe_id> --controller RecipeController
