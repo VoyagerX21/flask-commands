@@ -29,3 +29,4 @@ Current Release: |release|
 
    introduction
    commands
+   changelog

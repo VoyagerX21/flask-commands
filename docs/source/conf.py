@@ -61,7 +61,6 @@ html_theme_options = {
     "extra_nav_links": {
         "GitHub": "https://github.com/drewbutcher/flask-commands",
         "PyPI": "https://pypi.org/project/flask-commands/",
-        "Changelog": "https://github.com/drewbutcher/flask-commands/releases",
     },
 }
 html_logo = "_static/flask-commands-logo.svg"

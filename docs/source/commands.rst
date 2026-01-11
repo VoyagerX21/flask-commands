@@ -61,128 +61,236 @@ The generated project includes a clean, opinionated structure with sensible defa
 You can review this structure directly in the Flask-Commands source by exploring the files and folders under:
 ``flask_commands/project``
 
+
+
 flask make:view
 ---------------
 
-Now for the fun part and powerful part of this package.  Make sure you are at the root of your new project.  The ``flask make:view`` command is designed to generate template files under ``app/templates/`` which follows a dot paths for nexting folders (for example, ``posts.index`` will create the following file ``app/templates/posts/index.html``).  While creating template files is great fun they do not serve much purpose unless they are being used by a route and controller to render content and or specific application data.  To make this possible there are optional flags wire up so you can easly integergate your view files:
+Now for the fun (and powerful) part of this package.  First make sure you are
+at the root of your new project.
 
-- ``-c/--generate-controller`` or ``--controller NAME`` creates or extends a controller class in your application.
-- ``-r/--generate-route`` or ``--route PATH`` adds blueprint routes (allows the the seven RESTful actions -- index, show, create, store, edit, update, destroy/delete).
-- ``-m/--generate-model`` or ``--model NAME`` seeds a SQLAlchemy model and sets up a boiler plate columns id, created_at, updated_at.
+The ``flask make:view`` command generates template files under ``app/templates/``.
+It supports *dot notation* for nested folders. For example, ``posts.index`` creates:
 
-Let's work throug a few examples starting with the basics and ended with nested relationships using RESTful actions.
+- ``app/templates/posts/index.html``
+
+While creating template files is great fun templates themselve don’t do
+much on their own unless they are rendered by a route and a controller
+class. To make that wiring easier, ``flask make:view`` includes optional
+generator flags:
+
+- ``-c / --generate-controller`` or ``--controller NAME``
+  Creates (or extends) a controller **class** in your application.
+- ``-r / --generate-route`` or ``--route PATH``
+  Adds blueprint routes and supports the seven RESTful actions:
+  ``index``, ``show``, ``create``, ``store``, ``edit``, ``update``,
+  ``destroy`` (or ``delete`` if you prefer).
+- ``-m / --generate-model`` or ``--model NAME``
+  Seeds a SQLAlchemy model with boilerplate columns:
+  ``id``, ``created_at``, and ``updated_at``.
+
+Let’s work through a few examples, starting with the basics and ending with
+nested relationships using RESTful actions.
 
 No Dot Examples
 ~~~~~~~~~~~~~~~
 
-Suppose you want an about view for your company:
+Suppose you want an ``about`` view for your company:
 
 .. code-block:: bash
 
-    flask make:view about
+   flask make:view about
 
-That is it, you now have a new html file located at ``app/templates/about.html``.  This issue is that this page is not appearing in your application.  You can't just put ``about`` or ``about.html`` into the url and see the pages content because the page is not wired up to a route in your application.
+That’s it — you now have a new template at ``app/templates/about.html``.
 
-Adding a Route and Controller (Manually)
+The issue is that this page is not appearing in your application. You can’t just
+type ``/about`` or ``about.html`` into the browser and expect it to work because
+the view is not wired up to a route or controller class.
+
+Adding a Route and Controller (Explicit)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To solve the above issue we could have explicity told the command to wire up our new view with a route and controller using the following command:
+To solve the above issue, we can explicitly tell the command to wire up a
+route and controller class:
 
 .. code-block:: bash
 
-    flask make:view about --route /about --controller MainController
+   flask make:view about --route /about --controller MainController
 
-In this example, I used ``MainController`` because the fresh application ships with a ``MainController`` and a *route* called ``mains``.  Consequently, the above command not only creates the ``about.html`` file in ``app/templates`` but it also adds an ``about`` method to the ``MainController``  located at ``app/controllers/main_controller.py``.  In addition, the command updates the ``mains`` ``routes.py`` file located at ``app/routes/mains/routes.py`` with a ``GET`` route named ``about`` using url ``/about``.  This is great but a lot of typing in the terminal 😵‍💫.  Don't worry in comes the route and controller generators flag ``-r`` and ``-c`` or as a combo ``-rc``.
+In this example, ``MainController`` is used because a fresh application ships
+with a ``MainController`` and a blueprint named ``mains``.
 
-Adding a Route and Controller (with Generators)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This command:
 
-The same files as above will be generate with the generators flags using the following command:
+- creates ``app/templates/about.html``
+- adds an ``about`` method to the ``MainController`` class
+  (``app/controllers/main_controller.py``)
+- updates the ``mains`` routes file
+  (``app/routes/mains/routes.py``) with a ``GET`` route at ``/about``
+
+This works great — but it’s a lot of typing 😵‍💫. Don’t worry, in come the
+generator flags ``-r`` and ``-c`` (or combined as ``-rc``).
+
+Adding a Route and Controller (Generators)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The same result as above, using generator flags:
 
 .. code-block:: bash
 
-    flask make:view about -rc
+   flask make:view about -rc
+
+Much shorter and easy to remember just think i need to wire this up
+with a **route** (url) and have the **controller** serve the page.  So
+**route** is the **r** and **controller** is the *c*
 
 Nesting Views
 ~~~~~~~~~~~~~
-The name value uses dot-notation to represent nested structures.  If you want to make several reusable component views you might want to keep those in a components directory.  To do this just put ``components.`` before the view name consider the following commands:
+
+The view name uses dot notation to represent nested structures.
+
+If you want to create reusable component views, you might keep them in
+a ``components`` directory. To do this, just prefix the view name
+with ``components.``:
 
 .. code-block:: bash
 
-    flask make:view components.accordions
-    flask make:view components.checkboxes
-    flask make:view components.selects
+   flask make:view components.accordions
+   flask make:view components.checkboxes
+   flask make:view components.selects
 
-These commands would make the following files ``accordions.html``, ``checkboxes.html``, and ``selects.html`` you might used these files to house reusable macros.  Notice that these views are not wired up to any controller and there is no route connection because we didn't specify any of the optional flags.
+These commands create:
+
+- ``app/templates/components/accordions.html``
+- ``app/templates/components/checkboxes.html``
+- ``app/templates/components/selects.html``
+
+You might use these files to house reusable macros. Notice that these views are
+*not* wired up to any controller class or route because we didn’t specify any
+generator flags.
+
+In the ``about`` example from Adding a Route and Controller (Generators) I
+would actually nest this because ``mains`` has it's own folder in
+templates.  To keep you templates folder nice and tidy I would have used
+the command:
+
+.. code-block:: bash
+
+   flask make:view mains.about -rc
+
+but we didn't know about nesting at the time (now we do).
 
 Adding Models
 ~~~~~~~~~~~~~
-Nesting becomes essential when you want to start building out models.  So for those who create a Flask application with a database (any time SQLite, MySQL, PostgreSQL, ...) you will want to often create views related to your models.  For example you might want to make an admin view that shows all your users.  ``Flask-Commands`` follows the seven RESTful actions (index, show, create, store, edit, update, destroy or delete).
 
-If you are new to these actions or just need a little refresher here is a review of what each is used for and the request method they use in terms of GETs and POSTs.  There are other Methods such as delete but the browser only understand GETs and POSTs.  I always thing of the browser cycle as a Get the Page Post your Form and then redirect to a new page to provide feedback of what was just posted. So the traditional steps are Get -> Post -> Redirect. We will look more closely at this when we discuss controllers.  For now just familarize yourself with the 7 actions (I allow for destory to be replaced with delete if you perfer delete instead of destory).  Frakely, I would have called it ``nuke`` 😜
+Nesting becomes essential when you start building out models.
 
-**The Seven Restful Actions:**
+For applications that use a database (SQLite, MySQL, PostgreSQL, …), views are
+often tied directly to models. ``Flask-Commands`` follows the seven RESTful
+actions:
 
-.. table:: The Seven Restful Actions
+- ``index``
+- ``show``
+- ``create``
+- ``store``
+- ``edit``
+- ``update``
+- ``destroy`` (or ``delete`` — frankly, I would have called it ``nuke`` 😜)
 
-   ======= ====== =========================== ======================================================================
-   Action  Method URL Example                 Behavior
-   ======= ====== =========================== ======================================================================
-   index   GET    /users                      Shows all instances of a model
-   show    GET    /users/<int:user_id>        Shows a single instance of a model
-   create  GET    /users/create               Shows the page to create a new instance of a model
-   store   POST   /users/create               The act of creating a new instance of a model (then redirects)
-   edit    GET    /users/<int:user_id>/edit   Shows the page to edit an instance of a model
-   update  POST   /users/<int:user_id>/edit   The act of editing an existing instance of a model (the redirecting)
-   destory POST   /users/<int:user_id>/delete The aact of deleting an existing instance of a model (the redirecting)
-   ======= ====== =========================== ======================================================================
+If you’re new to these actions (or just need a refresher), here’s a quick review
+of what each one does and which HTTP method it uses.
 
+There *are* other HTTP methods (PUT, PATCH, DELETE), but browsers traditionally
+only understand GETs and POSTs. I always think of the browser lifecycle as:
 
-So lets suppose I have a cooking website and I want to list all my recipes on the website.  In this case we would use the index action.  This means we need ``recipes.index`` view and this view needs to be linked to a Recipe model and there needs to be a RecipeController that handles all the different actions on the Recipe Model.  The index page is always a great starting point so to create the index page for our recipes and wire up the controller and model we would use the following command.
+**Get → Post → Redirect**
+
+You *get* the page, you *post* a form, and then you *redirect* to a new page to
+give feedback about what just happened. We’ll look at this more closely when we
+discuss controller classes. For now, just familiarize yourself with the seven
+actions.
+
+.. table:: The Seven RESTful Actions
+
+   ======= ====== ============================= ============================================================
+   Action  Method URL Example                   Behavior
+   ======= ====== ============================= ============================================================
+   index   GET    /users                        Show all instances of a model
+   show    GET    /users/<int:user_id>          Show a single instance
+   create  GET    /users/create                 Show the page to create a new instance
+   store   POST   /users/create                 Create a new instance (then redirect)
+   edit    GET    /users/<int:user_id>/edit     Show the page to edit an instance
+   update  POST   /users/<int:user_id>/edit     Update an instance (then redirect)
+   destroy POST   /users/<int:user_id>/delete   Delete an instance (then redirect)
+   ======= ====== ============================= ============================================================
+
+To demonstrate this let’s suppose you have a cooking website and you want to list all your recipes.
+That’s the ``index`` action.
+
+This means we need:
+
+- a ``recipes.index`` view
+- a ``Recipe`` model
+- a ``RecipeController`` controller class to handle the actions
+
+To create the index page and wire up the route, controller, and model:
 
 .. code-block:: bash
 
    flask make:view recipes.index --route /recipes --controller RecipeController --model Recipe
 
-This one command is going to make 5 files and it is going to edit 3 other files!  I know crazy 😮
+This one command creates **five files** and updates **three more** 😮
 
-.. raw:: html
+Created files
+^^^^^^^^^^^^^
 
-   <span style="text-decoration: underline;">Created Files:</span>
+- ``app/templates/recipes/index.html`` — the recipes index view
+- ``app/controllers/recipe_controller.py`` — the controller class
+- ``app/routes/recipes/__init__.py`` — the recipes blueprint package
+- ``app/routes/recipes/routes.py`` — the recipes routes file
+- ``app/models/recipe.py`` — the Recipe model
 
+Updated files
+^^^^^^^^^^^^^
 
-- ``app/templates/recipes/index.html`` The new view file when you can show off all your recipes.
--  ``app/controllers/recipe_controller.py`` The controller which will eventually house the logic for several methods.  For now it starts off with the one we just made ``index``
-- ``app/routes/recipes/__init__.py`` Created routes directory at app/routes/recipes and name the route **recipes**
-- ``app/routes/recipes/routes.py`` The route file for recipes where all the recipe related urls will live.  For now it has the one we just made which is a GET route with url **/recipes** and this route uses the RecipeController which as created above.
--  ``app/models/recipe.py`` The model file which contains all the column information, all model's methods, and all the model's relationship structures.
+- ``app/controllers/__init__.py`` — registers ``RecipeController``
+- ``app/models/__init__.py`` — registers ``Recipe``
+- ``app/__init__.py`` — registers the recipes blueprint in ``create_app``
 
-.. raw:: html
+Now you know why I wrote this package — that’s a *lot* to wire up just to get one
+model-backed view.
 
-   <span style="text-decoration: underline;">Updated Files:</span>
-
-- ``app/controllers/__init__.py`` The new RecipeController was just register with your controllers by adding it to the bottom of this file.
--  ``app/models/__init__.py``  The new Recipe model was just register with your models by adding it to the bottom of this file.
-- ``app/__init__.py`` A new recipes blueprint was just added to the create_app function
-
-Now you know why I wrote this package.  So many thing to wire up just to have one new model's view!  But wait it get's better!!! The above is just to much to type so I shortened it to
+But wait it get's better!!! The above is just to much to type so I shortened it to the command
 
 .. code-block:: bash
 
    flask make:view recipes.index -rcm
 
-If you use the flag -r, -c, and -m (in any order) then Flask-Commands will understand that you want the standard setup above and do exactly the same thing as above.  Notice that you can just run all the flags together.
+If you use ``-r``, ``-c``, and ``-m`` (in any order), Flask-Commands assumes the
+standard setup above and does exactly the same thing.
 
-To make the show page that will show off a single recipe you are write it out
+To create the ``show`` page for a single recipe, you could write:
 
 .. code-block:: bash
 
    flask make:view recipes.show --route /recipes/<int:recipe_id> --controller RecipeController
 
-or you can use the generators and just write the command:
+Or, using the generators:
 
 .. code-block:: bash
 
    flask make:view recipes.show -rc
 
-Notice that in this case we didn't have to add the -m or --model option because we already created the model in the prior command.  Also in this example the only new file is the view files.  The wiring of the view file was all done with existing files.  In other words, the route was update with the show function and the RecipeController was updated with the show method.
+Notice we didn’t include ``-m`` here because the model already exists. In this
+case, the only new file is the view template — the route and controller class
+are updated in place.  If you forgot and added the ``-m`` then you would have received a warning saying that the recipe model already exists and was left alone (which is what you want expecally if you have gone in and made changes to the model)
+
+Nesting Models
+~~~~~~~~~~~~~~
+
+This is were the packages really shine!  Let's continue with our recipe website example and suppose that we are going to allow users to make comments on the recipes.  This is an example of a one to many relationship (a single recipe might have many comments).  First let's write out the long command to understand what we need and then we will provide the shortened version.
+
+
+.. code-block:: bash
+
+   flask make:view recipes.comments.index -rcm
