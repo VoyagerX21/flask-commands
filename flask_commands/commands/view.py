@@ -145,9 +145,9 @@ def make_view(
                         relative_path,      # this is everything before the last part of dotted_path_with_name replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_name
                         route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
-                        blueprint_name,     # posts or mains or posts_comments
+                        blueprint_name,     # posts or mains - this is the top level of the relative_path or it is main if relative_path = ''
                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
-                        controller_name)    # contoller_name is like post_controller
+                        controller_name)    # contoller_name is like PostController
             else:
                 is_successful, message = \
                     route_make_directory_and_register_blueprint(

@@ -9,7 +9,28 @@ from .scaffold import (
     crud_mapping_route,
     split_dotted_path)
 
-def parse_route_name_for_params_and_types(route_name: str) ->Tuple[str, str]:
+def parse_route_name_for_params_and_types(route_name: str) ->Tuple[list[str], list[str]]:
+    """
+    Parse a Flask-style route and extract parameter names and typed parameter
+    declarations.
+
+    Args:
+        route_name: Route string containing typed params, e.g. "/posts/<int:post_id>"
+        route_name: Route string containing typed params, e.g. "/posts/<str:post_slug>".
+
+    Returns:
+        A tuple of (parameters_with_types, parameters) where:
+        - parameters_with_types is a list like ["post_id: int"] or ["post_slug: str"].
+        - parameters is a list like ["post_id"] or ["post_slug"].
+
+
+    Examples:
+        >>> parse_route_name_for_params_and_types(
+        ...     "/recipes/<int:recipe_id>/comments/<int:comment_id>/images/<int:image_id>"
+        ... )
+        (['recipe_id: int', 'comment_id: int', 'image_id: int'],
+         ['recipe_id', 'comment_id', 'image_id'])
+    """
     matches = re.finditer(r"<(\w+):(\w+)>", route_name)
     parameters_with_types = []
     parameters = []
@@ -32,7 +53,8 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         relative_path (str): The relative path to strip from route_name for the decorator.
         action (str): The action name (e.g., 'store', 'update', 'show', 'destroy'). Determines HTTP method.
         route_folder_path (str): The absolute path to the routes folder containing routes.py.
-        route_name (str): The full name/path of the route.
+        blueprint_name (str): The top level of the relative_path (e.g., posts or mains)
+        route_name (str): this is the url path like /posts/<int:post_id> or /admin/posts/comments
         controller_name (str | None): The name of the controller class. Defaults to 'MainController' if None.
 
     Returns:
@@ -50,12 +72,20 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         ...     controller_name='UserController'
         ... )
         >>> is_successful, message = route_add_method(
+        ...     relative_path='recipes/comments/images',
+        ...     action='show',
+        ...     route_folder_path='app/routes/recipes/comments/images',
+        ...     blueprint_name='recipes',
+        ...     route_name='/recipes/<int:recipe_id>/comments/<int:comment_id>/images/<int:image_id>',
+        ...     controller_name='RecipeCommentImageController'
+        ... )
+        >>> is_successful, message = route_add_method(
         ...     relative_path='',
         ...     action='about',
         ...     route_folder_path='app/routes/mains',
         ...     blueprint_name='mains',
         ...     route_name='/about',
-        ...     controller_name='MainController'
+        ...     controller_name=None
         ... )
     """
 
@@ -65,13 +95,13 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
         method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
-        parameters_with_types, parameter = \
+        parameters_with_types, parameters = \
             parse_route_name_for_params_and_types(route_name)
         route_content = [
             "",
             f"@bp.route('{route_name}', methods=['{method}'])",
             f"def {action}({', '.join(parameters_with_types)}):",
-            f"    return {using_controller_name}.{action}({', '.join(parameter)})"
+            f"    return {using_controller_name}.{action}({', '.join(parameters)})"
         ]
         with open(route_file_path, "r", encoding="utf-8") as file:
             existing_file_content = file.read()
@@ -101,7 +131,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         click.style(f"✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
         click.style(f"    - Updated routes directory at {click.style(route_folder_path, bold=True)}\n", fg="green") +
         click.style(f"    - Added {click.style(method, bold=True)} ", fg="green") + click.style(f"route with url {click.style(route_name, bold=True)}\n", fg="green") +
-        click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{blueprint_name}.{action}')\n", fg="green", bold=True)
+        click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{relative_path.replace('/', '.')}.{action}', {', '.join(f'{param}={i}' for i, param in enumerate(parameters, start=1))} )\n", fg="green", bold=True)
     )
     return True, message
 
@@ -302,11 +332,15 @@ def generate_route_folder_path_and_blueprint_name(dotted_path_with_name: str, re
         ('app/routes/posts', 'posts')
 
         >>> generate_route_folder_path_and_blueprint_name('posts.comments.index', 'posts/comments')
-        ('app/routes/posts/comments', 'posts_comments')
+        ('app/routes/posts/comments', 'posts')
 
-        >>> generate_route_folder_path_and_blueprint_name('dashboard', 'mains')
+        >>> generate_route_folder_path_and_blueprint_name('dashboard', '')
         ('app/routes/mains', 'mains')
+
+        >>> generate_route_folder_path_and_blueprint_name('recipe.comments.images.index', 'recipe/comments/images')
+        ('app/routes/recipe/comments/images', 'mains')
     """
     if "." not in dotted_path_with_name:
         return os.path.join("app", "routes", "mains"), 'mains'
-    return  os.path.join("app", "routes", relative_path), relative_path.replace("/", "_")
+    top_level = relative_path.split("/", 1)[0]
+    return os.path.join("app", "routes", relative_path), top_level
