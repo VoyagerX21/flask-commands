@@ -135,7 +135,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     )
     return True, message
 
-def route_make_directory_and_register_blueprint(action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
+def route_make_directory_and_register_blueprint(relative_path: str, action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
     Creates a new Flask route directory structure and registers a blueprint in the Flask app.
 
@@ -161,27 +161,48 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
 
     Example:
         >>> is_successful, message = route_make_directory_and_register_blueprint(
+        ...     relative_path='users',
         ...     action='index',
         ...     route_folder_path='app/routes/users',
         ...     blueprint_name='users',
         ...     route_name='/users',
         ...     controller_name='UserController'
-        ... )
+        ...
+        >>> is_successful, message = route_make_directory_and_register_blueprint(
+        ...     relative_path='recipes/comments/images',
+        ...     action='index',
+        ...     route_folder_path='app/routes/recipes/comments/images',
+        ...     blueprint_name='recipes',
+        ...     route_name='/recipes/<int:recipe_id>/comments/<int:comment_id>/images',
+        ...     controller_name='RecipeCommentImageController')
     """
     # The route folder is not there so we need to create everything:
     #   1) create routes folder - check
     try:
         os.makedirs(route_folder_path)
-    #   2) __init__.py file - check
+    #   2) Create and possibly update __init__.py files
+    #   2a) Create the nested __init__.py file
         route_init_path = os.path.join(route_folder_path, "__init__.py")
         route_init_content = [
             "from flask import Blueprint",
             "",
-            f"bp = Blueprint('{blueprint_name}', __name__)",
+            f"bp = Blueprint('{route_folder_path.split("/")[-1]}', __name__)",
             "",
-            f"from app.routes.{blueprint_name.replace('_', '.')} import routes"
+            f"from {route_folder_path.replace('/', '.')} import routes"
         ]
         write_file(route_init_path, route_init_content)
+    #   2b) Check to see if you need to update the top level __init__.py to
+    #       include the new blueprint
+        top_level_path = os.path.join("app", "routes", blueprint_name)
+        top_level_init_path = os.path.join(top_level_path, "__init__.py")
+        if route_init_path != top_level_init_path:
+            new_blueprint_content = [
+                "",
+                f"from {route_folder_path.replace('/', '.')} import bp as {relative_path.replace("/", "_")}_blueprint",
+                f"bp.register_blueprint({relative_path.replace("/", "_")}_blueprint)"
+            ]
+            append_file(top_level_init_path, new_blueprint_content)
+
     #   3) routes.py file - check
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
@@ -189,7 +210,7 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
         parameters_with_types, parameter = parse_route_name_for_params_and_types(route_name)
         route_content = [
             f"from app.controllers import {using_controller_name}",
-            f"from app.routes.{blueprint_name.replace('_', '.')} import bp",
+            f"from {route_folder_path.replace('/', '.')} import bp",
             "",
             f"@bp.route('{route_name}', methods=['{method}'])",
             f"def {action}({', '.join(parameters_with_types)}):",
@@ -205,36 +226,6 @@ def route_make_directory_and_register_blueprint(action: str, route_folder_path: 
         return False, message
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to create route:\n{exception}", fg="red")
-
-    #  4) update the __init__.py in app directory to include the new blueprint
-    app_init_path = os.path.join("app", "__init__.py")
-    with open(app_init_path, "r", encoding="utf-8") as f:
-        source = f.read()
-
-    match = re.search(r"^\s*return app\b", source, flags=re.MULTILINE)
-    if match is None:
-        message = (
-            click.style("⚠️  Warning: Could not register blueprint\n", fg="yellow", bold=True) +
-            click.style(
-                "    - Failed to locate `return app` in app/__init__.py.\n",
-                fg="yellow"
-            ) +
-            click.style(
-                f"    - Please register '{blueprint_name}' manually.",
-                fg="yellow"
-            )
-        )
-        return False, message
-    insert_index = match.start()
-    new_blueprint = [
-        "",
-        f"    from {route_folder_path.replace('/', '.')} import bp as {blueprint_name}_blueprint",
-        f"    app.register_blueprint({blueprint_name}_blueprint)"
-    ]
-    new_blueprint = "\n".join(new_blueprint)
-    new_content = source[:insert_index] + new_blueprint + "\n" + source[insert_index:]
-    with open(app_init_path, "w") as f:
-        f.write(new_content)
 
     message = (
         click.style(f"✅ Success: Created New Route Directory\n", fg="green", bold=True) +
