@@ -206,8 +206,8 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
         if is_nested_blueprint:
             new_blueprint_content = [
                 "",
-                f"from {route_folder_path.replace('/', '.')} import bp as {relative_path.replace("/", "_")}_blueprint",
-                f"bp.register_blueprint({relative_path.replace("/", "_")}_blueprint)"
+                f"from {route_folder_path.replace('/', '.')} import bp as {relative_path.replace('/', '_')}_blueprint",
+                f"bp.register_blueprint({relative_path.replace('/', '_')}_blueprint)"
             ]
             append_file(top_level_init_path, new_blueprint_content)
 
