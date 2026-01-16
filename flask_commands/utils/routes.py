@@ -195,7 +195,8 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
     #       include the new blueprint
         top_level_path = os.path.join("app", "routes", blueprint_name)
         top_level_init_path = os.path.join(top_level_path, "__init__.py")
-        if route_init_path != top_level_init_path:
+        is_nested_blueprint = route_init_path != top_level_init_path
+        if is_nested_blueprint:
             new_blueprint_content = [
                 "",
                 f"from {route_folder_path.replace('/', '.')} import bp as {relative_path.replace("/", "_")}_blueprint",
@@ -226,6 +227,38 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
         return False, message
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to create route:\n{exception}", fg="red")
+
+    #  4) update the __init__.py in app directory to include the new blueprint
+    # if it is not a nested blueprint
+    if not is_nested_blueprint:
+        app_init_path = os.path.join("app", "__init__.py")
+        with open(app_init_path, "r", encoding="utf-8") as f:
+            source = f.read()
+
+        match = re.search(r"^\s*return app\b", source, flags=re.MULTILINE)
+        if match is None:
+            message = (
+                click.style("⚠️  Warning: Could not register blueprint\n", fg="yellow", bold=True) +
+                click.style(
+                    "    - Failed to locate `return app` in app/__init__.py.\n",
+                    fg="yellow"
+                ) +
+                click.style(
+                    f"    - Please register '{blueprint_name}' manually.",
+                    fg="yellow"
+                )
+            )
+            return False, message
+        insert_index = match.start()
+        new_blueprint = [
+            "",
+            f"    from {route_folder_path.replace('/', '.')} import bp as {blueprint_name}_blueprint",
+            f"    app.register_blueprint({blueprint_name}_blueprint)"
+        ]
+        new_blueprint = "\n".join(new_blueprint)
+        new_content = source[:insert_index] + new_blueprint + "\n" + source[insert_index:]
+        with open(app_init_path, "w") as f:
+            f.write(new_content)
 
     message = (
         click.style(f"✅ Success: Created New Route Directory\n", fg="green", bold=True) +
