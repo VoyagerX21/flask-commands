@@ -7,7 +7,20 @@ This project follows `Keep a Changelog <https://keepachangelog.com/>`_ and
 
 Unreleased
 ----------
+Added
+~~~~~
+-
 
+Changed
+~~~~~~~
+-
+
+Fixed
+~~~~~
+-
+
+0.1.20 - 2026-01-16
+-------------------
 Added
 ~~~~~
 - Add changelog page to the docs toctree and remove the top nav link.
@@ -15,6 +28,9 @@ Added
 Changed
 ~~~~~~~
 - Update flask make:view documentation with clearer examples and RESTful guidance.
+- Improve nested blueprint registration so `url_for` uses dot notation consistently,
+  avoiding mixed dot/underscore names in nested relationships.
+- Register nested blueprints at the top of the relationship tree instead of the app level.
 
 Fixed
 ~~~~~
