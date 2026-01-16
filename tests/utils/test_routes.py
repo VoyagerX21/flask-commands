@@ -52,7 +52,13 @@ def test_generate_route_folder_path_and_blueprint_name_crud_with_relation():
         generate_route_folder_path_and_blueprint_name(
             "posts.comments.index", 'posts/comments')
     assert route_folder_path == 'app/routes/posts/comments'
-    assert blueprint_name == 'posts_comments'
+    assert blueprint_name == 'posts'
+
+    route_folder_path, blueprint_name = \
+        generate_route_folder_path_and_blueprint_name(
+            "posts.comments.images.index", 'posts/comments/images')
+    assert route_folder_path == 'app/routes/posts/comments/images'
+    assert blueprint_name == 'posts'
 
 def test_generate_route_folder_path_and_blueprint_name_non_crud():
     route_folder_path, blueprint_name = generate_route_folder_path_and_blueprint_name("dashboard", "mains")
@@ -87,6 +93,7 @@ def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypat
     monkeypatch.chdir(project_root)
     # dotted_path_with_name = users.index
     is_successfull, message = route_make_directory_and_register_blueprint(
+        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',
@@ -122,6 +129,7 @@ def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypat
     monkeypatch.chdir(project_root)
     # dotted_path_with_name = users.index
     is_successfull, message = route_make_directory_and_register_blueprint(
+        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',
@@ -139,6 +147,7 @@ def test_route_make_directory_and_register_blueprint_route_already_exists(tmp_pa
 
     # dotted_path_with_name = users.index
     is_successfull, message = route_make_directory_and_register_blueprint(
+        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',
@@ -161,6 +170,7 @@ def test_route_make_directory_and_register_blueprint_exception(tmp_path, monkeyp
     monkeypatch.chdir(project_root)
     # dotted_path_with_name = users.index
     is_successfull, message = route_make_directory_and_register_blueprint(
+        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',
@@ -188,11 +198,11 @@ def test_route_add_method_success(tmp_path, monkeypatch):
         , encoding="utf-8")
 
     is_successfull, message = route_add_method(
-        route_name='users.index',
+        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name="users",
-        relative_path='users',
+        route_name='users.index',
         controller_name='UserController')
 
     assert is_successfull is True
@@ -218,16 +228,15 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
         , encoding="utf-8")
 
     is_successfull, message = route_add_method(
-        route_name='users.index',
+        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',
-        relative_path='users',
+        route_name='users.index',
         controller_name='UserController')
 
     assert is_successfull is False
     assert f"Route Function Exist" in message
-
 
 def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
     project_root = tmp_path
@@ -236,11 +245,11 @@ def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
     monkeypatch.chdir(project_root)
 
     is_successfull, message = route_add_method(
-        route_name='users.index',
+        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',
-        relative_path='users',
+        route_name='users.index',
         controller_name='UserController')
 
     assert is_successfull is False
@@ -272,11 +281,11 @@ def test_route_method_exception(tmp_path, monkeypatch):
         , encoding="utf-8")
 
     is_successfull, message = route_add_method(
-        route_name='users.index',
+        relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
         blueprint_name='users',
-        relative_path='users',
+        route_name='users.index',
         controller_name='UserController')
 
     assert is_successfull is False

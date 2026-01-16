@@ -127,11 +127,17 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
 
+    parameter_reference = ""
+    if parameters:
+        parameter_reference = ", " + ", ".join(
+            f"{parameter}={i}" for i, parameter in enumerate(
+                parameters, start=1))
+
     message = (
         click.style(f"✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
         click.style(f"    - Updated routes directory at {click.style(route_folder_path, bold=True)}\n", fg="green") +
         click.style(f"    - Added {click.style(method, bold=True)} ", fg="green") + click.style(f"route with url {click.style(route_name, bold=True)}\n", fg="green") +
-        click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{relative_path.replace('/', '.')}.{action}', {', '.join(f'{param}={i}' for i, param in enumerate(parameters, start=1))} )\n", fg="green", bold=True)
+        click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{relative_path.replace('/', '.')}.{action}'{parameter_reference})\n", fg="green", bold=True)
     )
     return True, message
 
@@ -208,14 +214,14 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
         method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
-        parameters_with_types, parameter = parse_route_name_for_params_and_types(route_name)
+        parameters_with_types, parameters = parse_route_name_for_params_and_types(route_name)
         route_content = [
             f"from app.controllers import {using_controller_name}",
             f"from {route_folder_path.replace('/', '.')} import bp",
             "",
             f"@bp.route('{route_name}', methods=['{method}'])",
             f"def {action}({', '.join(parameters_with_types)}):",
-            f"    return {using_controller_name}.{action}({', '.join(parameter)})"
+            f"    return {using_controller_name}.{action}({', '.join(parameters)})"
         ]
         write_file(route_file_path, route_content)
     except FileExistsError:
@@ -260,13 +266,26 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
         with open(app_init_path, "w") as f:
             f.write(new_content)
 
+    registered_blueprint = blueprint_name
+    registered_location = "app/__init__.py"
+    if is_nested_blueprint:
+        registered_blueprint = route_folder_path.split("/")[-1]
+        registered_location = top_level_init_path
+    route_reference = relative_path.replace("/", ".")
+    parameter_reference = ""
+    if parameters:
+        parameter_reference = ", " + ", ".join(
+            f"{parameter}={i}" for i, parameter in enumerate(
+                parameters, start=1))
+
+
     message = (
         click.style(f"✅ Success: Created New Route Directory\n", fg="green", bold=True) +
-        click.style(f"    - Registered the new route directory as {click.style(blueprint_name, bold=True)}", fg="green") + click.style(" at app/__init__.py\n", fg="green") +
+        click.style(f"    - Registered the new route directory as {click.style(registered_blueprint, bold=True)}", fg="green") + click.style(f" at {click.style(registered_location, bold=True)}\n", fg="green") +
         click.style(f"    - Created routes directory at {click.style(route_folder_path, bold=True)}\n", fg="green") +
         click.style(f"    - Initialized {click.style(method, bold=True)} ", fg="green") + click.style(f"route with url {click.style(route_name, bold=True)}\n", fg="green") +
         click.style(f"    - Route function {click.style(action, bold=True)} ", fg="green") + click.style(f"is using controller {click.style(using_controller_name, bold=True)}\n", fg="green") +
-        click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{blueprint_name}.{action}')\n", fg="green", bold=True)
+        click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{route_reference}.{action}'{parameter_reference})\n", fg="green", bold=True)
     )
     return True, message
 
