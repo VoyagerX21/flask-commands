@@ -189,10 +189,11 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
     #   2) Create and possibly update __init__.py files
     #   2a) Create the nested __init__.py file
         route_init_path = os.path.join(route_folder_path, "__init__.py")
+        registered_blueprint = route_folder_path.split("/")[-1]
         route_init_content = [
             "from flask import Blueprint",
             "",
-            f"bp = Blueprint('{route_folder_path.split("/")[-1]}', __name__)",
+            f"bp = Blueprint('{registered_blueprint}', __name__)",
             "",
             f"from {route_folder_path.replace('/', '.')} import routes"
         ]
@@ -266,10 +267,8 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
         with open(app_init_path, "w") as f:
             f.write(new_content)
 
-    registered_blueprint = blueprint_name
     registered_location = "app/__init__.py"
     if is_nested_blueprint:
-        registered_blueprint = route_folder_path.split("/")[-1]
         registered_location = top_level_init_path
     route_reference = relative_path.replace("/", ".")
     parameter_reference = ""
