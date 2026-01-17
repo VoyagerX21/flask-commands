@@ -1,11 +1,9 @@
-from array import array
 import os
 from typing import Tuple
 from .naming import singularize
 
 
 def check_dotted_path_with_name_for_models(dotted_path_with_name: str) -> list[str]:
-    """"""
     models = []
     model_init_path = os.path.join("app", "models", "__init__.py")
     try:

@@ -46,7 +46,7 @@ def project(tmp_path, monkeypatch):
     main_controller_file_path.write_text(
         "from flask import render_template\n"
         "\n"
-        "class MainController(object):\n"
+        "class MainController:\n"
         "    @staticmethod\n"
         "    def index() -> str:\n"
         "        return render_template('mains/index.html')\n"
@@ -199,7 +199,7 @@ def test_make_view_controller_exist(project):
     controller_file.write_text(
         "from flask import render_template\n"
         "\n"
-        "class PostController(object):\n"
+        "class PostController:\n"
         "    @staticmethod\n"
         "    def index() -> str:\n"
         "        return render_template('posts/index.html')"

@@ -95,19 +95,16 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
     try:
         controller_file_path = os.path.join(
             "app", "controllers", f"{camel_to_snake(controller_name)}.py")
-        parameters = parse_route_name_for_params_and_types(route_name)[1] \
-            if route_name else ""
-        parameters = ""
         if route_name:
             parameters_with_types, _ = \
                 parse_route_name_for_params_and_types(route_name)
-            parameters = ", ".join(parameters_with_types)
+            parameters_with_types_joined = ", ".join(parameters_with_types)
         contents = [
             "from flask import render_template",
             "",
-            f"class {controller_name}(object):",
+            f"class {controller_name}:",
             "    @staticmethod",
-            f"    def {method_name}({parameters}) -> str:",
+            f"    def {method_name}({parameters_with_types_joined}) -> str:",
             f"        return render_template('{relative_view_file_path}')"
         ]
         write_file(controller_file_path, contents)

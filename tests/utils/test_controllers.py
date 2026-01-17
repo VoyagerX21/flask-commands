@@ -36,7 +36,7 @@ def controller_project(tmp_path, monkeypatch):
 def test_controller_add_method_already_exists(controller_project):
     controller_file = controller_project(
         "post_controller.py",
-        "class PostController(object):\n"
+        "class PostController:\n"
         "    @staticmethod\n"
         "    def index():\n"
         "        posts = Post.query.all()\n"
@@ -62,7 +62,7 @@ def test_controller_add_method_already_exists(controller_project):
 def test_controller_add_method_no_controller_class(controller_project):
     controller_file = controller_project(
         "post_controller.py",
-        "class CommentController(object):\n"
+        "class CommentController:\n"
         "    pass"
     )
 
@@ -79,7 +79,7 @@ def test_controller_add_method_success(controller_project):
     """The fixture runs and controller_project is the return from fixture"""
     controller_file = controller_project(
         "post_controller.py",
-        "class PostController(object):\n"
+        "class PostController:\n"
         "\n"
         "    @staticmethod\n"
         "    def create():\n"
@@ -113,7 +113,7 @@ def test_controller_add_method_success_with_relation(controller_project):
         "user_post_controller.py",
         "from flask import render_template\n"
         "\n"
-        "class UserPostController(object):\n"
+        "class UserPostController:\n"
         "    @staticmethod\n"
         "    def index(user_id: int):\n"
         "        return render_template('users/posts/index.html')\n"

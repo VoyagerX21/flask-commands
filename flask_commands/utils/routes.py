@@ -42,6 +42,17 @@ def parse_route_name_for_params_and_types(route_name: str) ->Tuple[list[str], li
 
     return parameters_with_types, parameters
 
+
+def _http_method_for_action(action: str) -> str:
+    return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+
+def _build_parameter_reference(parameters: list[str]) -> str:
+    if not parameters:
+        return ""
+    return ", " + ", ".join(
+        f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
+    )
+
 def route_add_method(relative_path: str,  action: str, route_folder_path: str, blueprint_name: str,  route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
     Add a new route to the routes.py file in the specified route folder.
@@ -94,7 +105,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     try:
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
-        method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+        method = _http_method_for_action(action)
         parameters_with_types, parameters = \
             parse_route_name_for_params_and_types(route_name)
         route_content = [
@@ -127,11 +138,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
 
-    parameter_reference = ""
-    if parameters:
-        parameter_reference = ", " + ", ".join(
-            f"{parameter}={i}" for i, parameter in enumerate(
-                parameters, start=1))
+    parameter_reference = _build_parameter_reference(parameters)
 
     message = (
         click.style(f"✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
@@ -202,6 +209,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
     #       include the new blueprint
         top_level_path = os.path.join("app", "routes", blueprint_name)
         top_level_init_path = os.path.join(top_level_path, "__init__.py")
+        parent_init_path = os.path.join(os.path.dirname(route_folder_path), "__init__.py")
         is_nested_blueprint = route_init_path != top_level_init_path
         if is_nested_blueprint:
             new_blueprint_content = [
@@ -209,12 +217,12 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
                 f"from {route_folder_path.replace('/', '.')} import bp as {relative_path.replace('/', '_')}_blueprint",
                 f"bp.register_blueprint({relative_path.replace('/', '_')}_blueprint)"
             ]
-            append_file(top_level_init_path, new_blueprint_content)
+            append_file(parent_init_path, new_blueprint_content)
 
     #   3) routes.py file - check
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
-        method = "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+        method = _http_method_for_action(action)
         parameters_with_types, parameters = parse_route_name_for_params_and_types(route_name)
         route_content = [
             f"from app.controllers import {using_controller_name}",
@@ -269,13 +277,9 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
 
     registered_location = "app/__init__.py"
     if is_nested_blueprint:
-        registered_location = top_level_init_path
+        registered_location = parent_init_path
     route_reference = relative_path.replace("/", ".")
-    parameter_reference = ""
-    if parameters:
-        parameter_reference = ", " + ", ".join(
-            f"{parameter}={i}" for i, parameter in enumerate(
-                parameters, start=1))
+    parameter_reference = _build_parameter_reference(parameters)
 
 
     message = (
@@ -340,18 +344,18 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
     if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
         return '/' + dotted_path_with_name.replace('.', '/')
     if "/" in relative_path:
-        object = singularize(relative_path.rsplit("/", 1)[-1])
+        child_object = singularize(relative_path.rsplit("/", 1)[-1])
         resource = ''
         for relation in relative_path.split("/")[:-1]:
             if relation in models:
                 resource += relation + f"/<int:{singularize(relation)}_id>/"
             else:
                 resource += relation + '/'
-        resource += pluralize(object)
+        resource += pluralize(child_object)
     else:
-        object = singularize(relative_path)
+        child_object = singularize(relative_path)
         resource = relative_path
-    return crud_mapping_route(action, resource, object)
+    return crud_mapping_route(action, resource, child_object)
 
 def generate_route_folder_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
     """
