@@ -95,6 +95,7 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
     try:
         controller_file_path = os.path.join(
             "app", "controllers", f"{camel_to_snake(controller_name)}.py")
+        parameters_with_types_joined = ""
         if route_name:
             parameters_with_types, _ = \
                 parse_route_name_for_params_and_types(route_name)

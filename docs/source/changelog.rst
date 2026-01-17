@@ -19,6 +19,23 @@ Fixed
 ~~~~~
 -
 
+0.1.21 - 2026-01-17
+-------------------
+Added
+~~~~~
+- Add tests for nested route blueprint registration and controller creation with route names.
+
+Changed
+~~~~~~~
+- Clarify scaffold helpers for model detection and CRUD route generation.
+- Remove the top-level CHANGELOG.md in favor of this docs changelog.
+
+Fixed
+~~~~~
+- Avoid controller_make_file crashing when no route_name is provided.
+- Fix small typos in tests and view docstrings.
+- Register nested relationship blueprints with their parent instead of the top-level route, enabling full dotted-path route naming.
+
 0.1.20 - 2026-01-16
 -------------------
 Added

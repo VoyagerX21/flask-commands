@@ -20,7 +20,7 @@ def model_project(tmp_path, monkeypatch):
 
     return project_root
 
-def test_model_infer_name_from_reative_path():
+def test_model_infer_name_from_relative_path():
     model_name = model_infer_name_from("posts", "posts.index")
     assert model_name == "Post"
 
@@ -29,14 +29,14 @@ def test_model_infer_name_from_dotted_path_with_name():
     assert model_name == "Post"
 
 def test_model_make_file_success(model_project):
-    is_successfull, message = model_make_file(
+    is_successful, message = model_make_file(
         model_name="Post",
         model_init_path=os.path.join("app", "models", "__init__.py"),
         model_file_path=os.path.join("app", "models", "post.py"),
     )
 
     # --- Return value assertions ---
-    assert is_successfull is True
+    assert is_successful is True
     assert "Created New Model" in message
 
     # --- File creation assertions ---
@@ -62,13 +62,13 @@ def test_model_make_file_file_already_exists(model_project):
     model_file = model_project / "app" / "models" / "post.py"
     model_file.write_text("\n")
 
-    is_successfull, message = model_make_file(
+    is_successful, message = model_make_file(
         model_name="Post",
         model_init_path=os.path.join("app", "models", "__init__.py"),
         model_file_path=os.path.join("app", "models", "post.py"),
     )
 
-    assert is_successfull is False
+    assert is_successful is False
     assert "Model Already Exists" in message
 
 def test_model_make_file_write_file_exception(model_project, monkeypatch):
@@ -81,13 +81,13 @@ def test_model_make_file_write_file_exception(model_project, monkeypatch):
         boom
     )
 
-    is_successfull, message = model_make_file(
+    is_successful, message = model_make_file(
         model_name="Post",
         model_init_path=os.path.join("app", "models", "__init__.py"),
         model_file_path=os.path.join("app", "models", "post.py"),
     )
 
-    assert is_successfull is False
+    assert is_successful is False
     assert "Failed to create model" in message
 
 def test_model_make_file_init_missing(tmp_path, monkeypatch):
@@ -97,13 +97,13 @@ def test_model_make_file_init_missing(tmp_path, monkeypatch):
 
     monkeypatch.chdir(project_root)
 
-    is_successfull, message = model_make_file(
+    is_successful, message = model_make_file(
         model_name="Post",
         model_init_path=os.path.join("app", "models", "__init__.py"),
         model_file_path=os.path.join("app", "models", "post.py"),
     )
 
-    assert is_successfull is False
+    assert is_successful is False
     assert " Model __init__.py Missing" in message
 
 
@@ -117,11 +117,11 @@ def test_model_make_file_append_file_exception(model_project, monkeypatch):
         boom
     )
 
-    is_successfull, message = model_make_file(
+    is_successful, message = model_make_file(
         model_name="Post",
         model_init_path=os.path.join("app", "models", "__init__.py"),
         model_file_path=os.path.join("app", "models", "post.py"),
     )
 
-    assert is_successfull is False
+    assert is_successful is False
     assert "Failed to update __init__.py" in message

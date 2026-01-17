@@ -46,14 +46,14 @@ def test_controller_add_method_already_exists(controller_project):
     original_source = controller_file.read_text(encoding="utf-8")
 
     # Act
-    is_successfull, message = controller_add_method(
+    is_successful, message = controller_add_method(
         controller_name="PostController",
         method_name="index",
         relative_view_file_path="posts/index.html"
     )
 
     # Assert
-    assert is_successfull is False
+    assert is_successful is False
     assert "Method Already Exists" in message
 
     # File should be unchanged
@@ -66,13 +66,13 @@ def test_controller_add_method_no_controller_class(controller_project):
         "    pass"
     )
 
-    is_successfull, message = controller_add_method(
+    is_successful, message = controller_add_method(
         controller_name="PostController",
         method_name="index",
         relative_view_file_path="posts/index.html"
     )
 
-    assert is_successfull is False
+    assert is_successful is False
     assert "Controller Class Not Found" in message
 
 def test_controller_add_method_success(controller_project):
@@ -90,7 +90,7 @@ def test_controller_add_method_success(controller_project):
     )
 
     # Act
-    is_successfull, message = controller_add_method(
+    is_successful, message = controller_add_method(
         controller_name="PostController",
         method_name="index",
         relative_view_file_path="posts/index.html",
@@ -98,7 +98,7 @@ def test_controller_add_method_success(controller_project):
     )
 
     # Assert
-    assert is_successfull is True
+    assert is_successful is True
     assert "Method Added" in message
 
     updated_source = controller_file.read_text(encoding="utf-8")
@@ -120,7 +120,7 @@ def test_controller_add_method_success_with_relation(controller_project):
     )
 
     # Act
-    is_successfull, message = controller_add_method(
+    is_successful, message = controller_add_method(
         controller_name="UserPostController",
         method_name="show",
         relative_view_file_path="users/posts/index.html",
@@ -128,7 +128,7 @@ def test_controller_add_method_success_with_relation(controller_project):
     )
 
     # Assert
-    assert is_successfull is True
+    assert is_successful is True
     assert "Method Added" in message
 
     updated_source = controller_file.read_text(encoding="utf-8")
@@ -136,8 +136,6 @@ def test_controller_add_method_success_with_relation(controller_project):
     assert "@staticmethod" in updated_source
     assert "def show(user_id: int, post_id: int)" in updated_source
     assert "return render_template('users/posts/index.html')" in updated_source
-
-
 
 def test_controller_add_method_exception(controller_project, monkeypatch):
     controller_file = controller_project(
@@ -163,13 +161,13 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
     monkeypatch.setattr(builtins, "open", boom_open)
 
     # Act
-    is_successfull, message = controller_add_method(
+    is_successful, message = controller_add_method(
         controller_name="PostController",
         method_name="index",
         relative_view_file_path="posts/index.html"
     )
 
-    assert is_successfull is False
+    assert is_successful is False
     assert "Failed to add Controller Method" in message
 
 def test_controller_infer_name_from():
@@ -179,13 +177,24 @@ def test_controller_infer_name_from():
 
 def test_controller_make_file_success(controller_project):
 
-    is_successfull, message = controller_make_file(
+    is_successful, message = controller_make_file(
         controller_name="PostController",
         method_name="index",
         relative_view_file_path="posts/index.html"
     )
 
-    assert is_successfull == True
+    assert is_successful == True
+    assert "Created Controller" in message
+
+def test_controller_make_file_success_with_route_name(controller_project):
+    is_successful, message = controller_make_file(
+        controller_name="PostController",
+        method_name="index",
+        relative_view_file_path="posts/index.html",
+        route_name="/posts"
+    )
+
+    assert is_successful == True
     assert "Created Controller" in message
 
 def test_controller_make_file_file_already_exists(controller_project):
@@ -197,14 +206,14 @@ def test_controller_make_file_file_already_exists(controller_project):
     )
 
     # Act
-    is_successfull, message = controller_make_file(
+    is_successful, message = controller_make_file(
         controller_name="PostController",
         method_name="index",
         relative_view_file_path="posts/index.html",
     )
 
     # Assert
-    assert is_successfull is False
+    assert is_successful is False
     assert "Controller Already Exists" in message
     assert "PostController" in message
 
@@ -233,13 +242,13 @@ def test_controller_make_file_write_file_exception(tmp_path, monkeypatch):
 
     monkeypatch.chdir(tmp_path)
 
-    is_successfull, message = controller_make_file(
+    is_successful, message = controller_make_file(
         controller_name="Post",
         method_name="index",
         relative_view_file_path="posts/index.html"
     )
 
-    assert is_successfull is False
+    assert is_successful is False
     assert "Failed to create controller" in message
 
 def test_controller_make_file_init_missing(tmp_path, monkeypatch):
@@ -249,13 +258,13 @@ def test_controller_make_file_init_missing(tmp_path, monkeypatch):
 
     monkeypatch.chdir(project_root)
 
-    is_successfull, message = controller_make_file(
+    is_successful, message = controller_make_file(
         controller_name="PostController",
         method_name="index",
         relative_view_file_path="posts/index.html"
     )
 
-    assert is_successfull is False
+    assert is_successful is False
     assert "Controller __init__.py Missing" in message
     assert "You may need to register the controller manually" in message
 
@@ -268,11 +277,11 @@ def test_controller_make_file_init_exception(controller_project, monkeypatch):
         boom
     )
 
-    is_successfull, message = controller_make_file(
+    is_successful, message = controller_make_file(
         controller_name="Post",
         method_name="index",
         relative_view_file_path="posts/index.html"
     )
 
-    assert is_successfull is False
+    assert is_successful is False
     assert "Failed to update __init__.py" in message

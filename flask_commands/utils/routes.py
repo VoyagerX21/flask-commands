@@ -330,12 +330,12 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
     # dotted_path_with_name = 'posts.comments.show'
     # relative_path = posts/comments
     # action = show
-    # object = comment
+    # child_object = comment
 
     # dotted_path_with_name = 'posts.show'
     # relative_path = posts
     # action = show
-    # object = post
+    # child_object = post
 
     models = check_dotted_path_with_name_for_models(dotted_path_with_name)
     if "." not in dotted_path_with_name:
