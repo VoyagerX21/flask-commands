@@ -288,9 +288,41 @@ are updated in place.  If you forgot and added the ``-m`` then you would have re
 Nesting Models
 ~~~~~~~~~~~~~~
 
-This is were the packages really shine!  Let's continue with our recipe website example and suppose that we are going to allow users to make comments on the recipes.  This is an example of a one to many relationship (a single recipe might have many comments).  First let's write out the long command to understand what we need and then we will provide the shortened version.
+This is where the package really shines! Let's continue with our cooking website
+example and suppose we are going to allow users to make comments on the recipes.
+This is a one-to-many relationship (a single recipe might have many comments).
+First let's write out the long command to understand what we need and then we
+will provide the shortened version.
 
+.. code-block:: bash
+
+   flask make:view recipes.comments.index --route '/recipes/<int:recipe_id>/comments' --controller RecipeCommentController --model Comment
+
+When you run that command, Flask-Commands sets up the nested comments view and
+route under recipes, creates the RecipeCommentController, and seeds the Comment
+model. The key part of the story is that the comments blueprint gets registered
+inside the recipes blueprint (in ``app/routes/recipes/__init__.py``), which is
+why you can reference the route as
+``url_for('recipes.comments.index', recipe_id=1)``.
+
+Here is the shortened command for the same thing:
 
 .. code-block:: bash
 
    flask make:view recipes.comments.index -rcm
+
+Let’s dive a little deeper down this rabbit hole with another relationship.
+Suppose that on our cooking website we allow users to upload images when they
+make a comment. In this case, we need a new Image model and an ``images``
+blueprint. The cool thing that Flask-Commands does is register the ``images``
+blueprint inside ``comments`` at
+``app/routes/recipes/comments/__init__.py``, and ``comments`` is already
+registered in ``recipes``, which is registered with the application. That chain
+gives you natural dot notation (similar to SQLAlchemy’s relationships) when you
+reference the view as ``recipes.comments.images``, so your ``url_for`` looks
+like ``url_for('recipes.comments.images.index', recipe_id=1, comment_id=1)``.
+Here is the simple command that sets everything up:
+
+.. code-block:: bash
+
+   flask make:view recipes.comments.images.index -rcm
