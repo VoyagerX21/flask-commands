@@ -14,9 +14,10 @@
 
 Flask-Commands bundles a few opinionated conveniences:
 
-- `flask new` bootstraps a ready-to-run Flask project with virtualenv, dotenv, Tailwind wiring, and optional SQLite + migrations.
-- `flask make:view` generates HTML views and can optionally add controllers, routes/blueprints, and SQLAlchemy models to match.
+- `flask new` bootstraps a ready-to-run Flask project with virtualenv, dotenv, Tailwind wiring, and optional SQLite + migrations (prompted unless you pass `--db/--no-db`).
+- `flask make:view` generates HTML views and can optionally add controllers, routes/blueprints, and SQLAlchemy models.
 
+All generated code is plain Flask with no hidden runtime layers; every file is created on disk.
 The goal is to remove the repetitive setup work while keeping everything local and transparent.
 
 ## Installation
@@ -32,11 +33,24 @@ pip install Flask-Commands
 ## Quick Start
 
 ```bash
-flask new myproject          # add --no-db if you want to skip SQLite/migrations
+flask new myproject          # prompts for SQLite; use --db/--no-db to skip the prompt
 cd myproject
-source venv/bin/activate
-flask run --debug            # or ./run.sh on macOS to open terminals + Tailwind watcher
 ```
+
+Recommended (macOS):
+
+```bash
+./run.sh
+```
+
+Manual startup:
+
+```bash
+source venv/bin/activate
+flask run --debug
+```
+
+`run.sh` opens a Flask shell, starts the dev server, rebuilds `tailwind.css` and `tailwind.min.css`, opens VS Code and Safari, and hot-reloads changes in `templates/`, `controllers/`, `forms/`, `models/`, and `routes/`.
 
 Add a first page with controller and route wiring:
 
@@ -51,13 +65,15 @@ Tailwind is installed automatically when `npm` is available; otherwise the tool 
 
 ### flask new
 
-After installing Flask-Commands globally, you’ll have access to a new command called `flask`, which lets you quickly scaffold Flask applications from the terminal.
+After installing Flask-Commands globally, you'll have access to a new command called `flask`, which lets you quickly scaffold Flask applications from the terminal.
 
 ```bash
 flask new myproject
 ```
 
-Once the command completes, you’ll see a new directory called `myproject/` that contains everything you need to get a Flask application up and running.
+Once the command completes, you'll see a new directory called `myproject/` that contains everything you need to get a Flask application up and running.
+
+If you do not pass `--db` or `--no-db`, the command prompts you to include a SQLite database (default yes).
 
 What you get:
 
@@ -95,14 +111,16 @@ You can review this structure directly in the Flask-Commands source under `flask
 Generates template files under `app/templates/` from dotted paths (for example, `posts.index` maps to `app/templates/posts/index.html`). Optional flags wire up matching components:
 
 - `-c/--generate-controller` or `--controller NAME` creates or extends the controller class.
-- `-r/--generate-route` or `--route PATH` adds blueprint routes (CRUD verbs inferred when possible).
-- `-m/--generate-model` or `--model NAME` seeds a SQLAlchemy model and import stub.
+- `-r/--generate-route` or `--route PATH` adds blueprint routes and supports RESTful actions (`index`, `show`, `create`, `store`, `edit`, `update`, `destroy`, or `delete`).
+- `-m/--generate-model` or `--model NAME` seeds a SQLAlchemy model with `id`, `created_at`, and `updated_at` columns plus an import stub.
 
 Examples:
 
 ```bash
-flask make:view button                    # view-only snippet
-flask make:view posts.index -crm          # view + controller + route + model
+flask make:view button                         # view-only snippet
+flask make:view components.buttons             # reusable component template
+flask make:view posts.index -crm               # view + controller + route + model
+flask make:view recipes.comments.index -rcm    # nested relationship
 flask make:view posts.show --route /posts/<int:post_id> --controller PostController
 ```
 
