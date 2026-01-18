@@ -1,5 +1,6 @@
 import click
 from flask_commands.commands.new import new
+from flask_commands.commands.controller import make_controller
 from flask_commands.commands.view import make_view
 
 @click.group()
@@ -9,4 +10,5 @@ def cli() -> None:
 
 # Add commands to the CLI
 cli.add_command(new)
+cli.add_command(make_controller)
 cli.add_command(make_view)

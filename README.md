@@ -1,5 +1,5 @@
 
-# <img src="https://raw.githubusercontent.com/drewbutcher/flask-commands/main/docs/source/_static/flask-commands-logo.svg" alt="Flask-Commands logo" width="200" style="display:inline-block; vertical-align:middle;"> Flask-Commands
+# <img src="https://raw.githubusercontent.com/drewbutcher/flask-commands/main/docs/source/_static/flask-commands-logo.png" alt="Flask-Commands logo" width="200" style="display:inline-block; vertical-align:middle;"> Flask-Commands
 
 
 [![pypi](https://img.shields.io/pypi/v/flask-commands.svg?cacheSeconds=300)](https://pypi.org/project/flask-commands/)

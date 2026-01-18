@@ -9,7 +9,7 @@ Unreleased
 ----------
 Added
 ~~~~~
--
+- Started work on new command ``flask make:controller``
 
 Changed
 ~~~~~~~

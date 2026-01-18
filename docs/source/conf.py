@@ -63,8 +63,8 @@ html_theme_options = {
         "PyPI": "https://pypi.org/project/flask-commands/",
     },
 }
-html_logo = "_static/flask-commands-logo.svg"
-html_favicon = "_static/flask-commands-logo.svg"
+html_logo = "_static/flask-commands-logo.png"
+html_favicon = "_static/flask-commands-logo.png"
 html_static_path = ['_static']
 html_css_files = ["theme-overrides.css"]
 source_suffix = ".rst"
@@ -73,6 +73,6 @@ rst_prolog = """
 .. raw:: html
 
     <div class="page-logo">
-        <img src="_static/flask-commands-logo.svg" alt="Logo of Flask-Commands">
+        <img src="_static/flask-commands-logo.png" alt="Logo of Flask-Commands">
     </div>
 """
