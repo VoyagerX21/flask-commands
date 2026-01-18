@@ -15,8 +15,8 @@ def make_controller(controller_name: str) -> None:
 
     # if controller exist warn the user that the controller already exist
     if os.path.exists(controller_file_path):
-        click.secho("⚠️  Warning: Controller Already Exists\n", fg="yellow", bold=True) +
-        click.secho(f"    - Controller File for {click.style(controller_name, bold=True)}", fg="yellow") + click.style(" already exists\n", fg="yellow") +
+        click.secho("⚠️  Warning: Controller Already Exists\n", fg="yellow", bold=True)
+        click.secho(f"    - Controller File for {click.style(controller_name, bold=True)}", fg="yellow") + click.style(" already exists\n", fg="yellow")
         click.secho("    - No changes were made\n", fg="yellow")
     # else create the controller and the method
     else:
