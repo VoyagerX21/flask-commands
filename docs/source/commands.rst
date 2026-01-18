@@ -273,7 +273,7 @@ To create the ``show`` page for a single recipe, you could write:
 
 .. code-block:: bash
 
-   flask make:view recipes.show --route /recipes/<int:recipe_id> --controller RecipeController
+   flask make:view recipes.show --route '/recipes/<int:recipe_id>' --controller RecipeController
 
 Or, using the generators:
 

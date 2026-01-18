@@ -121,7 +121,7 @@ flask make:view button                         # view-only snippet
 flask make:view components.buttons             # reusable component template
 flask make:view posts.index -crm               # view + controller + route + model
 flask make:view recipes.comments.index -rcm    # nested relationship
-flask make:view posts.show --route /posts/<int:post_id> --controller PostController
+flask make:view posts.show --route '/posts/<int:post_id>' --controller PostController
 ```
 
 ## Contributing
