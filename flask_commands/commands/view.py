@@ -21,6 +21,7 @@ from flask_commands.utils.routes import (
 from flask_commands.utils.scaffold import split_dotted_path
 
 from flask_commands.utils.views import view_make_file
+from flask_commands.utils.files import is_project_root
 
 
 @click.command(name="make:view")
@@ -84,6 +85,9 @@ def make_view(
         --route ROUTE_NAME            set a specific route
         --model MODEL_NAME            set a specific model
     """
+    if not is_project_root():
+        return
+
     relative_path, action = split_dotted_path(dotted_path_with_name)
 
     # Infer controller name if not provided

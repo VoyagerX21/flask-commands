@@ -3,10 +3,14 @@ import click
 
 from flask_commands.utils.controllers import controller_make_file
 from flask_commands.utils.naming import camel_to_snake
+from flask_commands.utils.files import is_project_root
 
 @click.command(name="make:controller")
 @click.argument("controller_name")
 def make_controller(controller_name: str) -> None:
+    if not is_project_root():
+        return
+
     controller_file_path = \
         os.path.join(
             "app",

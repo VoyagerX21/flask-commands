@@ -26,6 +26,10 @@ Out of the box, Flask-Commands provides:
   - routes / blueprints
   - SQLAlchemy models
 
+Safeguard: ``flask make:...`` commands only run from a Flask project root (the
+current directory must include ``app/`` and ``run.py``). ``flask new`` can be
+run from any directory.
+
 All generated code is plain python's lovable Flask framework—no hidden runtime
 layers, no framework lock-in.
 Every file is created on disk and meant to be opened, read, and edited directly.

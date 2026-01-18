@@ -10,6 +10,7 @@ Unreleased
 Added
 ~~~~~
 - Started work on new command ``flask make:controller``
+- Add a project-root safeguard so ``flask make:...`` commands only run when ``app/`` and ``run.py`` are present.
 
 Changed
 ~~~~~~~
