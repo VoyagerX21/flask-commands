@@ -52,6 +52,14 @@ def project(tmp_path, monkeypatch):
         "        return render_template('mains/index.html')\n"
     )
 
+    app_run_file_path = root / "run.py"
+    app_run_file_path.write_text(
+        "import os\n"
+        "from app import create_app\n"
+        "\n"
+        "app = create_app(os.getenv('FLASK_CONFIG') or 'development')\n"
+    )
+
     monkeypatch.chdir(root)
     return root
 
