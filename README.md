@@ -16,6 +16,7 @@ Flask-Commands bundles a few opinionated conveniences:
 
 - `flask new` bootstraps a ready-to-run Flask project with virtualenv, dotenv, Tailwind wiring, and optional SQLite + migrations (prompted unless you pass `--db/--no-db`).
 - `flask make:view` generates HTML views and can optionally add controllers, routes/blueprints, and SQLAlchemy models.
+- `flask make:controller` scaffolds a controller class and registers it in `app/controllers/__init__.py`.
 
 All generated code is plain Flask with no hidden runtime layers; every file is created on disk.
 The goal is to remove the repetitive setup work while keeping everything local and transparent.
@@ -122,6 +123,21 @@ flask make:view components.buttons             # reusable component template
 flask make:view posts.index -crm               # view + controller + route + model
 flask make:view recipes.comments.index -rcm    # nested relationship
 flask make:view posts.show --route '/posts/<int:post_id>' --controller PostController
+```
+
+### flask make:controller
+
+Creates a controller class under `app/controllers/` and registers it in `app/controllers/__init__.py`.
+
+```bash
+flask make:controller PostController
+```
+
+This creates `app/controllers/post_controller.py` with a class stub:
+
+```python
+class PostController:
+    pass
 ```
 
 ## Contributing

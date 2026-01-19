@@ -285,3 +285,24 @@ def test_controller_make_file_init_exception(controller_project, monkeypatch):
 
     assert is_successful is False
     assert "Failed to update __init__.py" in message
+
+
+def test_controller_make_file_method_name_no_relative_view_file_path():
+    is_successful, message = controller_make_file(
+        controller_name="Post",
+        method_name=None,
+        relative_view_file_path="posts/index.html"
+    )
+    assert is_successful == False
+    assert "view path requires method" in message
+
+
+def test_controller_make_file_relative_view_file_path_no_method_name():
+    is_successful, message = controller_make_file(
+        controller_name="Post",
+        method_name="index",
+        relative_view_file_path=None
+    )
+    assert is_successful == False
+    assert "method requires view path" in message
+

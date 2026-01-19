@@ -9,8 +9,7 @@ Unreleased
 ----------
 Added
 ~~~~~
-- Started work on new command ``flask make:controller``
-- Add a project-root safeguard so ``flask make:...`` commands only run when ``app/`` and ``run.py`` are present.
+-
 
 Changed
 ~~~~~~~
@@ -19,6 +18,23 @@ Changed
 Fixed
 ~~~~~
 -
+
+0.2.0 - 2026-01-19
+-------------------
+Added
+~~~~~
+- Started work on new command ``flask make:controller``
+- Add a project-root safeguard so ``flask make:...`` commands only run when ``app/`` and ``run.py`` are present.
+- Add tests covering controller creation, view behavior outside project roots, and file utility helpers.
+
+Changed
+~~~~~~~
+- Make controller creation support class-only scaffolds with clearer output and validation.
+- Refine project-root warning wording for clarity.
+
+Fixed
+~~~~~
+- Prevent controller file generation when method/view arguments are mismatched.
 
 0.1.21 - 2026-01-17
 -------------------

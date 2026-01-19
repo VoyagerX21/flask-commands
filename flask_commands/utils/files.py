@@ -2,20 +2,6 @@ import os
 import click
 from typing import Dict, Optional
 
-def is_project_root() -> bool:
-    if os.path.isdir("app") and os.path.isfile("run.py"):
-        return True
-
-    click.secho("⚠️  Warning: You are not currently in a Flask project root directory.", fg="yellow", bold=True)
-    click.secho("    - In order to run a flask make:... command please make sure you are in your flask", fg="yellow")
-    click.secho("    - Flask-Commands expects to find app/ and run.py in the current directory", fg="yellow")
-    click.echo(
-        click.style(f"    - Change to your project root or run {click.style('`flask new`', bold=True)} ", fg="yellow") +
-        click.style(f"to create a new flask project", fg="yellow")
-    )
-    click.secho("    - No files were created or changed", fg="yellow")
-    return False
-
 def append_file(file_path: str, contents: list[str]) -> None:
     """Appends a list of lines from contents to the file_path.  Insert a
     leading newline only if the file doesn't already end with one. Rasises
@@ -72,6 +58,20 @@ def copy_templates(project_path: str, include_db: bool, replacements: Optional[D
                 ) + "\n"
 
             write_file(destination_path, content.splitlines())
+
+def is_project_root() -> bool:
+    if os.path.isdir("app") and os.path.isfile("run.py"):
+        return True
+
+    click.secho("⚠️  Warning: You are not currently in a Flask project root directory.", fg="yellow", bold=True)
+    click.secho("    - In order to run a flask make:... command please make sure you are in your flask application's main project directory", fg="yellow")
+    click.echo(
+        click.style(f"    - Change to your project root or run {click.style('`flask new`', bold=True)} ", fg="yellow") +
+        click.style(f"to create a new flask project", fg="yellow")
+    )
+    click.secho("    - Flask-Commands expects to find app/ and run.py in the current directory", fg="yellow")
+    click.secho("    - No files were created or changed", fg="yellow")
+    return False
 
 def write_file(file_path: str, contents: list[str]) -> None:
     """Writes the contents to the file_path for a new file.  Raises a File

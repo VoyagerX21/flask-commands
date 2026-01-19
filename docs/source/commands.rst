@@ -326,3 +326,23 @@ Here is the simple command that sets everything up:
 .. code-block:: bash
 
    flask make:view recipes.comments.images.index -rcm
+
+
+flask make:controller
+---------------------
+
+Use ``flask make:controller`` to scaffold a controller class under
+``app/controllers/`` and register it in ``app/controllers/__init__.py``.
+
+.. code-block:: bash
+
+   flask make:controller RecipeController
+
+This creates ``app/controllers/recipe_controller.py`` with a class stub:
+
+.. code-block:: python
+
+   class RecipeController:
+       pass
+
+In fact, if you are following this tutorial from the beginning, you should receive a warning that this controller already exists. It does, and it's much better than a simple class with a ``pass``. So why would we use the ``make:controller`` command? It's all about the options like ``--RESTfull`` which will produce a controller with seven methods pre-stubbed (work in progress)...

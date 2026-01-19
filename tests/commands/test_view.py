@@ -63,12 +63,22 @@ def project(tmp_path, monkeypatch):
     monkeypatch.chdir(root)
     return root
 
+def test_make_view_not_in_project_root(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(make_view, ["card"])
+
+    assert result.exit_code == 0
+    assert "Warning: You are not currently in a Flask project root directory" in result.output
+    assert not (tmp_path / "app" / "templates" / "card.py").exists()
+
 def test_make_view_component_only(project):
     """
     This should:
     1) create app/templates/card.html
     2) Not create any routes, controllers, or models
-    3) prin the "File Created" message
+    3) print the "File Created" message
     """
 
     runner = CliRunner()

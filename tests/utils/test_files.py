@@ -1,13 +1,36 @@
+import os
 import pytest
-from flask_commands.utils.files import append_file, write_file
+from flask_commands.utils.files import append_file, is_project_root, write_file
 
-def test_write_file_happy_path(tmp_path):
+def test_append_file_success(tmp_path):
+    file_path = tmp_path / "test.txt"
+    file_path.write_text("I'm all alone please join me.", encoding="utf-8")
+    append_file(str(file_path), ["I'm here!"])
+    assert file_path.read_text(encoding="utf-8") == "I'm all alone please join me.\nI'm here!\n"
+
+def test_append_file_fails_if_file_does_not_exists(tmp_path):
+    file_path = tmp_path / "test.txt"
+    with pytest.raises(FileNotFoundError):
+        append_file(str(file_path), ["I'm here!"])
+
+def test_is_project_root_true(tmp_path, monkeypatch):
+    app_directory = tmp_path / "app"
+    app_directory.mkdir()
+    (tmp_path / "run.py").write_text("", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    is_successful = is_project_root()
+    assert is_successful is True
+
+def test_is_project_root_false(tmp_path):
+    is_successful = is_project_root()
+    assert is_successful is False
+
+def test_write_file_success(tmp_path):
     file_path = tmp_path / "test.txt"
     write_file(file_path, ["hello", "world"])
 
     assert file_path.exists()
     assert file_path.read_text() == "hello\nworld\n"
-
 
 def test_write_file_fails_if_file_exists(tmp_path):
     file_path = tmp_path / "test.txt"
@@ -22,14 +45,3 @@ def test_write_file_fails_if_file_exists(tmp_path):
     # Ensure the original content is still intact
     assert file_path.read_text(encoding="utf-8") == "I already exist don't write over me"
 
-
-def test_append_file_happy_path(tmp_path):
-    file_path = tmp_path / "test.txt"
-    file_path.write_text("I'm all alone please join me.", encoding="utf-8")
-    append_file(str(file_path), ["I'm here!"])
-    assert file_path.read_text(encoding="utf-8") == "I'm all alone please join me.\nI'm here!\n"
-
-def test_append_file_fails_if_file_does_not_exists(tmp_path):
-    file_path = tmp_path / "test.txt"
-    with pytest.raises(FileNotFoundError):
-        append_file(str(file_path), ["I'm here!"])

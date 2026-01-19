@@ -91,23 +91,37 @@ def controller_infer_name_from(relative_path: str) -> str:
     return ''.join([singularize(part).title()
                     for part in relative_path.split('/')]) + "Controller"
 
-def controller_make_file(controller_name: str, method_name: str, relative_view_file_path: str, route_name: str | None = None) -> Tuple[bool, str]:
-    try:
-        controller_file_path = os.path.join(
-            "app", "controllers", f"{camel_to_snake(controller_name)}.py")
-        parameters_with_types_joined = ""
-        if route_name:
-            parameters_with_types, _ = \
-                parse_route_name_for_params_and_types(route_name)
-            parameters_with_types_joined = ", ".join(parameters_with_types)
-        contents = [
-            "from flask import render_template",
-            "",
-            f"class {controller_name}:",
+def controller_make_file(
+        controller_name: str,
+        method_name: str | None,
+        relative_view_file_path: str | None,
+        route_name: str | None = None) -> Tuple[bool, str]:
+    if method_name and not relative_view_file_path:
+        return False, click.style("💣 Error: method requires view path", fg="red")
+    if relative_view_file_path and not method_name:
+        return False, click.style("💣 Error: view path requires method", fg="red")
+
+    parameters_with_types_joined = ""
+    if route_name:
+        parameters_with_types, _ = \
+            parse_route_name_for_params_and_types(route_name)
+        parameters_with_types_joined = ", ".join(parameters_with_types)
+
+    contents = []
+    if method_name:
+        contents.extend(["from flask import render_template", ""])
+    contents.append(f"class {controller_name}:")
+    if method_name:
+        contents.extend([
             "    @staticmethod",
             f"    def {method_name}({parameters_with_types_joined}) -> str:",
             f"        return render_template('{relative_view_file_path}')"
-        ]
+        ])
+    else:
+        contents.append("    pass")
+    try:
+        controller_file_path = os.path.join(
+            "app", "controllers", f"{camel_to_snake(controller_name)}.py")
         write_file(controller_file_path, contents)
     except FileExistsError:
         message = (
@@ -136,12 +150,20 @@ def controller_make_file(controller_name: str, method_name: str, relative_view_f
         return False, click.style(
             f"💣 Error: Failed to update __init__.py:\n{exception}", fg="red")
 
-    message = (
-        click.style(f"✅ Success: Created Controller Class With Method\n", fg="green", bold=True) +
-        click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
-        click.style(f"    - Added method {click.style(method_name, bold=True)}", fg="green") + click.style(" to controller\n", fg="green") +
-        click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style('app/controllers/__init__.py', bold=True, fg='green')}\n", fg="green") +
-        click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
-    )
+    if method_name:
+        message = (
+            click.style(f"✅ Success: Created Controller Class With Method\n", fg="green", bold=True) +
+            click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
+            click.style(f"    - Added method {click.style(method_name, bold=True)}", fg="green") + click.style(" to controller\n", fg="green") +
+            click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style('app/controllers/__init__.py', bold=True, fg='green')}\n", fg="green") +
+            click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
+        )
+    else:
+        message = (
+            click.style(f"✅ Success: Created Controller Class\n", fg="green", bold=True) +
+            click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
+            click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style('app/controllers/__init__.py', bold=True, fg='green')}\n", fg="green") +
+            click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
+        )
 
     return True, message
