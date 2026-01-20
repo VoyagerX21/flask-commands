@@ -9,6 +9,50 @@ from .scaffold import (
     crud_mapping_route,
     split_dotted_path)
 
+def _build_parameter_reference(parameters: list[str]) -> str:
+    if not parameters:
+        return ""
+    return ", " + ", ".join(
+        f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
+    )
+
+def _http_method_for_action(action: str) -> str:
+    return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
+
+def generate_route_folder_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
+    """
+    Generate a file path and blueprint name for a Flask route module.
+
+    Args:
+        dotted_path_with_name (str): A dotted path notation string that may contain
+            a dot separator and a name component (e.g., 'auth.login' or 'dashboard').
+        relative_path (str): A relative path string representing the route directory
+            structure (e.g., 'auth/login' or 'users/profile').
+
+    Returns:
+        Tuple[str, str]: A tuple containing:
+            - str: The file path for the route module relative to the project root.
+            - str: The blueprint name derived from the relative path, with forward slashes
+                replaced by underscores.
+
+    Example:
+        >>> generate_route_folder_path_and_blueprint_name('posts.index', 'posts')
+        ('app/routes/posts', 'posts')
+
+        >>> generate_route_folder_path_and_blueprint_name('posts.comments.index', 'posts/comments')
+        ('app/routes/posts/comments', 'posts')
+
+        >>> generate_route_folder_path_and_blueprint_name('dashboard', '')
+        ('app/routes/mains', 'mains')
+
+        >>> generate_route_folder_path_and_blueprint_name('recipe.comments.images.index', 'recipe/comments/images')
+        ('app/routes/recipe/comments/images', 'mains')
+    """
+    if "." not in dotted_path_with_name:
+        return os.path.join("app", "routes", "mains"), 'mains'
+    top_level = relative_path.split("/", 1)[0]
+    return os.path.join("app", "routes", relative_path), top_level
+
 def parse_route_name_for_params_and_types(route_name: str) ->Tuple[list[str], list[str]]:
     """
     Parse a Flask-style route and extract parameter names and typed parameter
@@ -41,17 +85,6 @@ def parse_route_name_for_params_and_types(route_name: str) ->Tuple[list[str], li
         parameters.append(param)
 
     return parameters_with_types, parameters
-
-
-def _http_method_for_action(action: str) -> str:
-    return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
-
-def _build_parameter_reference(parameters: list[str]) -> str:
-    if not parameters:
-        return ""
-    return ", " + ", ".join(
-        f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
-    )
 
 def route_add_method(relative_path: str,  action: str, route_folder_path: str, blueprint_name: str,  route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
@@ -147,6 +180,71 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{relative_path.replace('/', '.')}.{action}'{parameter_reference})\n", fg="green", bold=True)
     )
     return True, message
+
+def route_infer_name_from(dotted_path_with_name: str) -> str:
+    """
+    Infer a route path from a dotted path notation with an action name.
+
+    This function converts a dotted path notation (e.g., 'posts.comments.show') into
+    a RESTful route path. It handles both custom routes and CRUD operation mappings.
+
+    Args:
+        dotted_path_with_name (str): A dotted path string optionally ending with a CRUD action.
+                                     Format: 'parent_resource.resource.action' or 'resource.action'
+
+    Returns:
+        str: The inferred route path starting with '/'.
+             - For non-CRUD actions: returns the dotted path converted to slashes
+             - For CRUD actions: returns a RESTful path based on the resource hierarchy
+
+    Examples:
+        >>> route_infer_name_from('posts')
+        '/posts'
+        >>> route_infer_name_from('posts.show')
+        '/posts/<int:post_id>'
+        >>> route_infer_name_from('admin.posts.comments.index')
+        '/admin/posts/<int:posts_id>/comments'
+        >>> route_infer_name_from('admin.posts.comments.show')
+        '/admin/posts/<int:post_id>/comments/<int:comment_id>'
+        >>> route_infer_name_from('posts.comments.show')
+        '/posts/<int:post_id>/comments/<int:comment_id>'
+        >>> route_infer_name_from('posts.custom_action')
+        '/posts/custom_action'
+
+    Note:
+        Recognized CRUD actions: 'index', 'create', 'store', 'show', 'edit',
+        'update', 'destroy', 'delete'. Resource names are singularized for CRUD routes.
+    """
+
+    # dotted_path_with_name = 'posts.comments.show'
+    # relative_path = posts/comments
+    # action = show
+    # child_object = comment
+
+    # dotted_path_with_name = 'posts.show'
+    # relative_path = posts
+    # action = show
+    # child_object = post
+
+    models = check_dotted_path_with_name_for_models(dotted_path_with_name)
+    if "." not in dotted_path_with_name:
+        return '/' + dotted_path_with_name
+    relative_path, action = split_dotted_path(dotted_path_with_name)
+    if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
+        return '/' + dotted_path_with_name.replace('.', '/')
+    if "/" in relative_path:
+        child_object = singularize(relative_path.rsplit("/", 1)[-1])
+        resource = ''
+        for relation in relative_path.split("/")[:-1]:
+            if relation in models:
+                resource += relation + f"/<int:{singularize(relation)}_id>/"
+            else:
+                resource += relation + '/'
+        resource += pluralize(child_object)
+    else:
+        child_object = singularize(relative_path)
+        resource = relative_path
+    return crud_mapping_route(action, resource, child_object)
 
 def route_make_directory_and_register_blueprint(relative_path: str, action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> Tuple[bool, str]:
     """
@@ -292,101 +390,3 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
     )
     return True, message
 
-def route_infer_name_from(dotted_path_with_name: str) -> str:
-    """
-    Infer a route path from a dotted path notation with an action name.
-
-    This function converts a dotted path notation (e.g., 'posts.comments.show') into
-    a RESTful route path. It handles both custom routes and CRUD operation mappings.
-
-    Args:
-        dotted_path_with_name (str): A dotted path string optionally ending with a CRUD action.
-                                     Format: 'parent_resource.resource.action' or 'resource.action'
-
-    Returns:
-        str: The inferred route path starting with '/'.
-             - For non-CRUD actions: returns the dotted path converted to slashes
-             - For CRUD actions: returns a RESTful path based on the resource hierarchy
-
-    Examples:
-        >>> route_infer_name_from('posts')
-        '/posts'
-        >>> route_infer_name_from('posts.show')
-        '/posts/<int:post_id>'
-        >>> route_infer_name_from('admin.posts.comments.index')
-        '/admin/posts/<int:posts_id>/comments'
-        >>> route_infer_name_from('admin.posts.comments.show')
-        '/admin/posts/<int:post_id>/comments/<int:comment_id>'
-        >>> route_infer_name_from('posts.comments.show')
-        '/posts/<int:post_id>/comments/<int:comment_id>'
-        >>> route_infer_name_from('posts.custom_action')
-        '/posts/custom_action'
-
-    Note:
-        Recognized CRUD actions: 'index', 'create', 'store', 'show', 'edit',
-        'update', 'destroy', 'delete'. Resource names are singularized for CRUD routes.
-    """
-
-    # dotted_path_with_name = 'posts.comments.show'
-    # relative_path = posts/comments
-    # action = show
-    # child_object = comment
-
-    # dotted_path_with_name = 'posts.show'
-    # relative_path = posts
-    # action = show
-    # child_object = post
-
-    models = check_dotted_path_with_name_for_models(dotted_path_with_name)
-    if "." not in dotted_path_with_name:
-        return '/' + dotted_path_with_name
-    relative_path, action = split_dotted_path(dotted_path_with_name)
-    if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
-        return '/' + dotted_path_with_name.replace('.', '/')
-    if "/" in relative_path:
-        child_object = singularize(relative_path.rsplit("/", 1)[-1])
-        resource = ''
-        for relation in relative_path.split("/")[:-1]:
-            if relation in models:
-                resource += relation + f"/<int:{singularize(relation)}_id>/"
-            else:
-                resource += relation + '/'
-        resource += pluralize(child_object)
-    else:
-        child_object = singularize(relative_path)
-        resource = relative_path
-    return crud_mapping_route(action, resource, child_object)
-
-def generate_route_folder_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
-    """
-    Generate a file path and blueprint name for a Flask route module.
-
-    Args:
-        dotted_path_with_name (str): A dotted path notation string that may contain
-            a dot separator and a name component (e.g., 'auth.login' or 'dashboard').
-        relative_path (str): A relative path string representing the route directory
-            structure (e.g., 'auth/login' or 'users/profile').
-
-    Returns:
-        Tuple[str, str]: A tuple containing:
-            - str: The file path for the route module relative to the project root.
-            - str: The blueprint name derived from the relative path, with forward slashes
-                replaced by underscores.
-
-    Example:
-        >>> generate_route_folder_path_and_blueprint_name('posts.index', 'posts')
-        ('app/routes/posts', 'posts')
-
-        >>> generate_route_folder_path_and_blueprint_name('posts.comments.index', 'posts/comments')
-        ('app/routes/posts/comments', 'posts')
-
-        >>> generate_route_folder_path_and_blueprint_name('dashboard', '')
-        ('app/routes/mains', 'mains')
-
-        >>> generate_route_folder_path_and_blueprint_name('recipe.comments.images.index', 'recipe/comments/images')
-        ('app/routes/recipe/comments/images', 'mains')
-    """
-    if "." not in dotted_path_with_name:
-        return os.path.join("app", "routes", "mains"), 'mains'
-    top_level = relative_path.split("/", 1)[0]
-    return os.path.join("app", "routes", relative_path), top_level

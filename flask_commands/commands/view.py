@@ -1,28 +1,15 @@
 import os
 import click
 
-from flask_commands.utils.controllers import (
-    controller_add_method,
-    controller_infer_name_from,
-    controller_make_file
-)
+from flask_commands.utils.controllers import controller_infer_name_from
 from flask_commands.utils.models import (
     model_infer_name_from,
     model_make_file
 )
-from flask_commands.utils.naming import camel_to_snake
-from flask_commands.utils.routes import (
-    route_add_method,
-    route_infer_name_from,
-    route_make_directory_and_register_blueprint,
-    generate_route_folder_path_and_blueprint_name
-)
-
+from flask_commands.utils.routes import route_infer_name_from
 from flask_commands.utils.scaffold import split_dotted_path
-
-from flask_commands.utils.views import view_make_file
 from flask_commands.utils.files import is_project_root
-
+from flask_commands.utils.wirings import wire_controller_route_view
 
 @click.command(name="make:view")
 @click.argument("dotted_path_with_name")
@@ -112,58 +99,17 @@ def make_view(
 
     click.echo("\n")
 
-    relative_view_file_path = os.path.join(relative_path, f"{action}.html")
-    destination_file_path = \
-        os.path.join("app", "templates", relative_view_file_path)
+    all_successful = True
+    is_successful, messages = wire_controller_route_view(
+        dotted_path_with_name,
+        relative_path,
+        action,
+        controller_name,
+        route_name)
+    all_successful = all_successful and is_successful
 
-    is_successful, message = view_make_file(destination_file_path)
-    click.echo(message)
-
-    # If a controller_name was provided or inferred
-    if controller_name:
-        controller_file_path = \
-            os.path.join(
-                "app",
-                "controllers",
-                f"{camel_to_snake(controller_name)}.py")
-
-        # if controller exist just add the method
-        if os.path.exists(controller_file_path):
-            is_successful, message = controller_add_method(
-                controller_name, action, relative_view_file_path, route_name)
-        # else create the controller and the method
-        else:
-            is_successful, message = controller_make_file(
-                controller_name, action, relative_view_file_path, route_name)
+    for message in messages:
         click.echo(message)
-
-    # If a controller_name was provided or inferred
-    if route_name:
-        route_folder_path, blueprint_name = \
-            generate_route_folder_path_and_blueprint_name(
-                dotted_path_with_name, relative_path)
-        try:
-            if os.path.exists(route_folder_path):
-                is_successful, message = \
-                    route_add_method(
-                        relative_path,      # this is everything before the last part of dotted_path_with_name replacing . with /
-                        action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_name
-                        route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
-                        blueprint_name,     # posts or mains - this is the top level of the relative_path or it is main if relative_path = ''
-                        route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
-                        controller_name)    # contoller_name is like PostController
-            else:
-                is_successful, message = \
-                    route_make_directory_and_register_blueprint(
-                        relative_path,      # this is everything before the last part of dotted_path_with_name replacing . with /
-                        action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_name
-                        route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
-                        blueprint_name,     # posts or mains or posts_comments
-                        route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
-                        controller_name)    # contoller_name is like PostController
-            click.echo(message)
-        except Exception as exception:
-            click.secho(f"💣 Error:\n {exception}", fg="red")
 
     # If a model_name was provided or inferred
     if model_name:
@@ -172,3 +118,7 @@ def make_view(
         is_successful, message = model_make_file(
             model_name, model_init_path, model_file_path)
         click.echo(message)
+        all_successful = all_successful and is_successful
+
+    if not all_successful:
+        click.secho("⚠️  Warning: One or more make view steps failed.", fg="yellow", bold=True)

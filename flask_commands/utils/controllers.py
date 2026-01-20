@@ -3,8 +3,14 @@ import re
 import click
 from typing import Tuple
 from .files import append_file, write_file
-from .naming import camel_to_snake, singularize
-from .routes import parse_route_name_for_params_and_types
+from .naming import camel_to_snake, pluralize, singularize
+from .routes import(
+    generate_route_folder_path_and_blueprint_name,
+    parse_route_name_for_params_and_types,
+    route_add_method,
+    route_make_directory_and_register_blueprint
+)
+from .views import view_make_file
 
 
 def controller_add_method(controller_name: str, method_name: str, relative_view_file_path: str, route_name: str | None = None) -> Tuple[bool, str]:
@@ -15,8 +21,8 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
         with open(controller_file_path, "r", encoding="utf-8") as f:
             source = f.read()
 
-        method_pattern = rf"def\s+{re.escape(method_name)}\s*\(\)\s*(?:->\s*[^:]+)?\s*:"
         # If method already exists, do nothing and warn user
+        method_pattern = rf"def\s+{re.escape(method_name)}\s*\([^)]*\)\s*(?:->\s*[^:]+)?\s*:"
         if re.search(method_pattern, source):
             message = (
                 click.style("⚠️  Warning: Method Already Exists\n", fg="yellow", bold=True) +
@@ -30,22 +36,30 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
         lines = source.splitlines()
         insert_index = None
         # 1. Find the class
-        for i, line in enumerate(lines):
+        for start_index, line in enumerate(lines):
             if re.match(class_pattern, line):
                 # 2. find end of class (next top-level def/class or EOF)
-                j = i + 1
-                while j < len(lines):
+                end_index = start_index + 1
+                while end_index < len(lines):
                     # skip blank lines inside the class
-                    if lines[j].strip() == "":
-                        j += 1
+                    if lines[end_index].strip() == "":
+                        end_index += 1
                         continue
                     # top-level (no indent)
-                    if len(lines[j]) - len(lines[j].lstrip()) == 0 and \
-                            re.match(r"^(class|def)\b", lines[j]):
+                    if len(lines[end_index]) - len(lines[end_index].lstrip()) == 0 and \
+                            re.match(r"^(class|def)\b", lines[end_index]):
                         break
-                    j += 1
-                insert_index = j
+                    end_index += 1
+                insert_index = end_index
                 break
+        # If the controller class isn’t found do nothing and warn user
+        if insert_index is None:
+            message = (
+                click.style("⚠️  Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
+                click.style(f"    - Could not locate class '{controller_name}' inside {controller_file_path}\n", fg="yellow") +
+                click.style("    - No method was added.", fg="cyan")
+            )
+            return False, message
 
         # 3. Build the new static method block
         parameters = ""
@@ -60,15 +74,28 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
             f"        return render_template('{relative_view_file_path}')"
         ]
 
-        # If the controller class isn’t found do nothing and warn user
-        if insert_index is None:
-            message = (
-                click.style("⚠️  Warning: Controller Class Not Found\n", fg="yellow", bold=True) +
-                click.style(f"    - Could not locate class '{controller_name}' inside {controller_file_path}\n", fg="yellow") +
-                click.style("    - No method was added.", fg="cyan")
-            )
-            return False, message
+        # check for just the class with only a pass and remove the pass
+        class_body = lines[start_index + 1:insert_index]
+        non_blank = [line for line in class_body if line.strip() != ""]
+        if non_blank and all(line.strip() == "pass" for line in non_blank):
+            lines = lines[:start_index + 1] + lines[insert_index:]
+            insert_index = start_index + 1
 
+        if not re.search(r"from\s+flask\s+import\s+.*\brender_template\b", source):
+            insert_at = 0
+            for idx, line in enumerate(lines):
+                stripped = line.strip()
+                if stripped.startswith("import ") or stripped.startswith("from "):
+                    insert_at = idx + 1
+                    continue
+                if stripped == "":
+                    if insert_at == 0:
+                        continue
+                    break
+                break
+            lines.insert(insert_at, "from flask import render_template")
+            if insert_at + 1 < len(lines) and lines[insert_at + 1].strip() != "":
+                lines.insert(insert_at + 1, "")
 
         # 4. Insert new static method block
         for line in reversed(method_block):
@@ -90,6 +117,10 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
 def controller_infer_name_from(relative_path: str) -> str:
     return ''.join([singularize(part).title()
                     for part in relative_path.split('/')]) + "Controller"
+
+def extract_relative_path_from(controller_name: str) -> str:
+    parts = camel_to_snake(controller_name).split('_')[:-1]
+    return '.'.join(list(map(lambda part: pluralize(part), parts)))
 
 def controller_make_file(
         controller_name: str,
