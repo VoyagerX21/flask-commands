@@ -4,7 +4,10 @@ import click
 from .controllers import controller_add_method, controller_make_file
 from .naming import camel_to_snake
 from .routes import (
+    parse_route_name_for_params_and_types,
     route_add_method,
+    route_build_parameter_reference,
+    route_http_method_for_action,
     route_make_directory_and_register_blueprint,
     generate_route_folder_path_and_blueprint_name
 )
@@ -19,13 +22,21 @@ def wire_controller_route_view(
 ) -> tuple[bool, list[str]]:
     messages = []
     all_successful = True
-    relative_view_file_path = os.path.join(relative_path, f"{action}.html")
-    destination_file_path = \
-        os.path.join("app", "templates", relative_view_file_path)
 
-    is_successful, message = view_make_file(destination_file_path)
-    all_successful = all_successful and is_successful
-    messages.append(message)
+    method = route_http_method_for_action(action)
+    if method == "GET":
+        relative_view_file_path = os.path.join(relative_path, f"{action}.html")
+        destination_file_path = \
+            os.path.join("app", "templates", relative_view_file_path)
+
+        is_successful, message = view_make_file(destination_file_path)
+        all_successful = all_successful and is_successful
+        messages.append(message)
+    else:
+        _, parameters = parse_route_name_for_params_and_types(route_name)
+        parameter_reference = route_build_parameter_reference(parameters)
+        route_reference = relative_path.replace("/", ".")
+
 
     # If a controller_name was provided or inferred
     if controller_name:

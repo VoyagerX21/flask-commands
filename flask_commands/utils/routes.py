@@ -9,16 +9,6 @@ from .scaffold import (
     crud_mapping_route,
     split_dotted_path)
 
-def _build_parameter_reference(parameters: list[str]) -> str:
-    if not parameters:
-        return ""
-    return ", " + ", ".join(
-        f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
-    )
-
-def _http_method_for_action(action: str) -> str:
-    return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
-
 def generate_route_folder_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
     """
     Generate a file path and blueprint name for a Flask route module.
@@ -138,7 +128,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     try:
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
-        method = _http_method_for_action(action)
+        method = route_http_method_for_action(action)
         parameters_with_types, parameters = \
             parse_route_name_for_params_and_types(route_name)
         route_content = [
@@ -171,7 +161,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
 
-    parameter_reference = _build_parameter_reference(parameters)
+    parameter_reference = route_build_parameter_reference(parameters)
 
     message = (
         click.style(f"✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
@@ -180,6 +170,16 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{relative_path.replace('/', '.')}.{action}'{parameter_reference})\n", fg="green", bold=True)
     )
     return True, message
+
+def route_build_parameter_reference(parameters: list[str]) -> str:
+    if not parameters:
+        return ""
+    return ", " + ", ".join(
+        f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
+    )
+
+def route_http_method_for_action(action: str) -> str:
+    return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
 
 def route_infer_name_from(dotted_path_with_name: str) -> str:
     """
@@ -320,7 +320,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
     #   3) routes.py file - check
         route_file_path = os.path.join(route_folder_path, "routes.py")
         using_controller_name = controller_name if controller_name else 'MainController'
-        method = _http_method_for_action(action)
+        method = route_http_method_for_action(action)
         parameters_with_types, parameters = parse_route_name_for_params_and_types(route_name)
         route_content = [
             f"from app.controllers import {using_controller_name}",
@@ -377,7 +377,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
     if is_nested_blueprint:
         registered_location = parent_init_path
     route_reference = relative_path.replace("/", ".")
-    parameter_reference = _build_parameter_reference(parameters)
+    parameter_reference = route_build_parameter_reference(parameters)
 
 
     message = (
