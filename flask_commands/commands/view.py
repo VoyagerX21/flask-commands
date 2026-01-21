@@ -6,9 +6,9 @@ from flask_commands.utils.models import (
     model_infer_name_from,
     model_make_file
 )
+from flask_commands.utils.files import is_project_root
 from flask_commands.utils.routes import route_infer_name_from
 from flask_commands.utils.scaffold import split_dotted_path
-from flask_commands.utils.files import is_project_root
 from flask_commands.utils.wirings import wire_controller_route_view
 
 @click.command(name="make:view")

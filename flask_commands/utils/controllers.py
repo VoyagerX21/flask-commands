@@ -119,6 +119,11 @@ def controller_infer_name_from(relative_path: str) -> str:
                     for part in relative_path.split('/')]) + "Controller"
 
 def extract_relative_path_from(controller_name: str) -> str:
+    """Return dotted, pluralized path from a controller class name.
+
+    Example:
+        PostCommentImageController -> posts.comments.images
+    """
     parts = camel_to_snake(controller_name).split('_')[:-1]
     return '.'.join(list(map(lambda part: pluralize(part), parts)))
 
