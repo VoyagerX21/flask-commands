@@ -149,9 +149,9 @@ def controller_make_file(
         controller_name: str,
         route_name: str | None = None) -> Tuple[bool, str]:
     if action and relative_path is None:
-        return False, click.style("💣 Error: action requires relative_path", fg="red")
+        return False, click.style("💣 Error: relative_path required when action present", fg="red")
     if relative_path and action is None:
-        return False, click.style("💣 Error: relative_path path requires action", fg="red")
+        return False, click.style("💣 Error: action required when relative_path present", fg="red")
 
     parameters_with_types_joined = ""
     parameters = []

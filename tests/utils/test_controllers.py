@@ -1,4 +1,5 @@
 import os
+import re
 import pytest
 import builtins
 from pathlib import Path
@@ -47,9 +48,9 @@ def test_controller_add_method_already_exists(controller_project):
 
     # Act
     is_successful, message = controller_add_method(
-        controller_name="PostController",
-        method_name="index",
-        relative_view_file_path="posts/index.html"
+        relative_path="posts",
+        action="index",
+        controller_name="PostController"
     )
 
     # Assert
@@ -67,9 +68,9 @@ def test_controller_add_method_no_controller_class(controller_project):
     )
 
     is_successful, message = controller_add_method(
-        controller_name="PostController",
-        method_name="index",
-        relative_view_file_path="posts/index.html"
+        relative_path="posts",
+        action="index",
+        controller_name="PostController"
     )
 
     assert is_successful is False
@@ -91,9 +92,9 @@ def test_controller_add_method_success(controller_project):
 
     # Act
     is_successful, message = controller_add_method(
+        relative_path="posts",
+        action="index",
         controller_name="PostController",
-        method_name="index",
-        relative_view_file_path="posts/index.html",
         route_name="/posts"
     )
 
@@ -121,9 +122,9 @@ def test_controller_add_method_success_with_relation(controller_project):
 
     # Act
     is_successful, message = controller_add_method(
+        relative_path="users/posts",
+        action="show",
         controller_name="UserPostController",
-        method_name="show",
-        relative_view_file_path="users/posts/index.html",
         route_name="/users/<int:user_id>/posts/<int:post_id>"
     )
 
@@ -162,9 +163,9 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
 
     # Act
     is_successful, message = controller_add_method(
-        controller_name="PostController",
-        method_name="index",
-        relative_view_file_path="posts/index.html"
+        relative_path="posts",
+        action="index",
+        controller_name="PostController"
     )
 
     assert is_successful is False
@@ -178,9 +179,9 @@ def test_controller_infer_name_from():
 def test_controller_make_file_success(controller_project):
 
     is_successful, message = controller_make_file(
-        controller_name="PostController",
-        method_name="index",
-        relative_view_file_path="posts/index.html"
+        relative_path="posts",
+        action="index",
+        controller_name="PostController"
     )
 
     assert is_successful == True
@@ -188,9 +189,9 @@ def test_controller_make_file_success(controller_project):
 
 def test_controller_make_file_success_with_route_name(controller_project):
     is_successful, message = controller_make_file(
+        relative_path="posts",
+        action="index",
         controller_name="PostController",
-        method_name="index",
-        relative_view_file_path="posts/index.html",
         route_name="/posts"
     )
 
@@ -207,9 +208,9 @@ def test_controller_make_file_file_already_exists(controller_project):
 
     # Act
     is_successful, message = controller_make_file(
-        controller_name="PostController",
-        method_name="index",
-        relative_view_file_path="posts/index.html",
+        relative_path="posts",
+        action="index",
+        controller_name="PostController"
     )
 
     # Assert
@@ -243,9 +244,9 @@ def test_controller_make_file_write_file_exception(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
     is_successful, message = controller_make_file(
-        controller_name="Post",
-        method_name="index",
-        relative_view_file_path="posts/index.html"
+        relative_path="posts",
+        action="index",
+        controller_name="Post" #TODO: i think this should be PostController
     )
 
     assert is_successful is False
@@ -259,9 +260,9 @@ def test_controller_make_file_init_missing(tmp_path, monkeypatch):
     monkeypatch.chdir(project_root)
 
     is_successful, message = controller_make_file(
-        controller_name="PostController",
-        method_name="index",
-        relative_view_file_path="posts/index.html"
+        relative_path="posts",
+        action="index",
+        controller_name="PostController"
     )
 
     assert is_successful is False
@@ -278,9 +279,9 @@ def test_controller_make_file_init_exception(controller_project, monkeypatch):
     )
 
     is_successful, message = controller_make_file(
-        controller_name="Post",
-        method_name="index",
-        relative_view_file_path="posts/index.html"
+        relative_path="posts",
+        action="index",
+        controller_name="Post"
     )
 
     assert is_successful is False
@@ -289,20 +290,20 @@ def test_controller_make_file_init_exception(controller_project, monkeypatch):
 
 def test_controller_make_file_method_name_no_relative_view_file_path():
     is_successful, message = controller_make_file(
-        controller_name="Post",
-        method_name=None,
-        relative_view_file_path="posts/index.html"
+        relative_path="posts",
+        action=None,
+        controller_name="PostController"
     )
     assert is_successful == False
-    assert "view path requires method" in message
+    assert "action required when relative_path present" in message
 
 
 def test_controller_make_file_relative_view_file_path_no_method_name():
     is_successful, message = controller_make_file(
-        controller_name="Post",
-        method_name="index",
-        relative_view_file_path=None
+        relative_path=None,
+        action="index",
+        controller_name="PostController"
     )
     assert is_successful == False
-    assert "method requires view path" in message
+    assert "relative_path required when action present" in message
 
