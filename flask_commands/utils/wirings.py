@@ -32,11 +32,6 @@ def wire_controller_route_view(
         is_successful, message = view_make_file(destination_file_path)
         all_successful = all_successful and is_successful
         messages.append(message)
-    else:
-        _, parameters = parse_route_name_for_params_and_types(route_name)
-        parameter_reference = route_build_parameter_reference(parameters)
-        route_reference = relative_path.replace("/", ".")
-
 
     # If a controller_name was provided or inferred
     if controller_name:
@@ -49,11 +44,17 @@ def wire_controller_route_view(
         # if controller exist just add the method
         if os.path.exists(controller_file_path):
             is_successful, message = controller_add_method(
-                controller_name, action, relative_view_file_path, route_name)
+                relative_path,
+                action,
+                controller_name,
+                route_name)
         # else create the controller and the method
         else:
             is_successful, message = controller_make_file(
-                controller_name, action, relative_view_file_path, route_name)
+                relative_path,
+                action,
+                controller_name,
+                route_name)
         all_successful = all_successful and is_successful
         messages.append(message)
 

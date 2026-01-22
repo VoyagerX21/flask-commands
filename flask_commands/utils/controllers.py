@@ -1,3 +1,4 @@
+from calendar import c
 import os
 import re
 import click
@@ -7,13 +8,18 @@ from .naming import camel_to_snake, pluralize, singularize
 from .routes import(
     generate_route_folder_path_and_blueprint_name,
     parse_route_name_for_params_and_types,
+    route_http_method_for_action,
     route_add_method,
     route_make_directory_and_register_blueprint
 )
 from .views import view_make_file
 
 
-def controller_add_method(controller_name: str, method_name: str, relative_view_file_path: str, route_name: str | None = None) -> Tuple[bool, str]:
+def controller_add_method(
+        relative_path: str,
+        action: str,
+        controller_name: str,
+        route_name: str | None = None) -> Tuple[bool, str]:
     try:
         controller_file_path = os.path.join(
             "app", "controllers", f"{camel_to_snake(controller_name)}.py")
@@ -22,7 +28,7 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
             source = f.read()
 
         # If method already exists, do nothing and warn user
-        method_pattern = rf"def\s+{re.escape(method_name)}\s*\([^)]*\)\s*(?:->\s*[^:]+)?\s*:"
+        method_pattern = rf"def\s+{re.escape(action)}\s*\([^)]*\)\s*(?:->\s*[^:]+)?\s*:"
         if re.search(method_pattern, source):
             message = (
                 click.style("⚠️  Warning: Method Already Exists\n", fg="yellow", bold=True) +
@@ -62,16 +68,33 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
             return False, message
 
         # 3. Build the new static method block
-        parameters = ""
+        method_parameters = ""
+        parameters = None
         if route_name:
-            parameters_with_types, _ = \
+            parameters_with_types, parameters = \
                 parse_route_name_for_params_and_types(route_name)
-            parameters = ", ".join(parameters_with_types)
+            method_parameters = ", ".join(parameters_with_types)
+
+        is_redirect = route_http_method_for_action(action) == "POST"
+        if is_redirect:
+            parameter_reference = ", " + \
+                ", ".join(f"{parameter}={parameter}"
+                          for parameter in parameters) if parameters else ""
+            redirect_route_reference = relative_path.replace("/", ".")
+            return_line = " "*8 +\
+                f"return redirect(url_for('{redirect_route_reference}" + \
+                f".index'{parameter_reference})"
+        else:
+            relative_view_file_path = \
+                os.path.join(relative_path, f"{action}.html")
+            return_line = " "*8 +\
+                f"return render_template('{relative_view_file_path}')"
+
         method_block = [
             "",
             "    @staticmethod",
-            f"    def {method_name}({parameters}) -> str:",
-            f"        return render_template('{relative_view_file_path}')"
+            f"    def {action}({method_parameters}) -> str:",
+            return_line
         ]
 
         # check for just the class with only a pass and remove the pass
@@ -81,21 +104,40 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
             lines = lines[:start_index + 1] + lines[insert_index:]
             insert_index = start_index + 1
 
-        if not re.search(r"from\s+flask\s+import\s+.*\brender_template\b", source):
-            insert_at = 0
-            for idx, line in enumerate(lines):
-                stripped = line.strip()
-                if stripped.startswith("import ") or stripped.startswith("from "):
-                    insert_at = idx + 1
-                    continue
-                if stripped == "":
-                    if insert_at == 0:
+        if is_redirect:
+            if not re.search(r"from\s+flask\s+import\s+.*\bredirect\b", source) or \
+                    not re.search(r"from\s+flask\s+import\s+.*\burl_for\b", source):
+                insert_at = 0
+                for idx, line in enumerate(lines):
+                    stripped = line.strip()
+                    if stripped.startswith("import ") or stripped.startswith("from "):
+                        insert_at = idx + 1
                         continue
+                    if stripped == "":
+                        if insert_at == 0:
+                            continue
+                        break
                     break
-                break
-            lines.insert(insert_at, "from flask import render_template")
-            if insert_at + 1 < len(lines) and lines[insert_at + 1].strip() != "":
-                lines.insert(insert_at + 1, "")
+                lines.insert(insert_at, "from flask import redirect, url_for")
+                if insert_at + 1 < len(lines) and lines[insert_at + 1].strip() != "":
+                    lines.insert(insert_at + 1, "")
+
+        else:
+            if not re.search(r"from\s+flask\s+import\s+.*\brender_template\b", source):
+                insert_at = 0
+                for idx, line in enumerate(lines):
+                    stripped = line.strip()
+                    if stripped.startswith("import ") or stripped.startswith("from "):
+                        insert_at = idx + 1
+                        continue
+                    if stripped == "":
+                        if insert_at == 0:
+                            continue
+                        break
+                    break
+                lines.insert(insert_at, "from flask import render_template")
+                if insert_at + 1 < len(lines) and lines[insert_at + 1].strip() != "":
+                    lines.insert(insert_at + 1, "")
 
         # 4. Insert new static method block
         for line in reversed(method_block):
@@ -109,7 +151,7 @@ def controller_add_method(controller_name: str, method_name: str, relative_view_
         return False, message
     message = (
         click.style("✅ Success: Method Added To Controller\n", fg="green", bold=True) +
-        click.style(f"    - Added method {click.style(method_name, bold=True)}", fg="green") + click.style(f" to controller {click.style(controller_name, bold=True)}\n", fg="green") +
+        click.style(f"    - Added method {click.style(action, bold=True)}", fg="green") + click.style(f" to controller {click.style(controller_name, bold=True)}\n", fg="green") +
         click.style(f"    - Controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
     )
     return True, message
@@ -128,13 +170,15 @@ def extract_relative_path_from(controller_name: str) -> str:
     return '.'.join(list(map(lambda part: pluralize(part), parts)))
 
 def controller_make_file(
+        relative_path: str,
+        action: str, # method_name
         controller_name: str,
-        method_name: str | None,
-        relative_view_file_path: str | None,
+        # method_name: str,
+        # relative_view_file_path: str, # os.path.join(relative_path, f"{action}.html")
         route_name: str | None = None) -> Tuple[bool, str]:
-    if method_name and not relative_view_file_path:
+    if action and not relative_view_file_path:
         return False, click.style("💣 Error: method requires view path", fg="red")
-    if relative_view_file_path and not method_name:
+    if relative_view_file_path and not action:
         return False, click.style("💣 Error: view path requires method", fg="red")
 
     parameters_with_types_joined = ""
@@ -144,13 +188,13 @@ def controller_make_file(
         parameters_with_types_joined = ", ".join(parameters_with_types)
 
     contents = []
-    if method_name:
+    if action:
         contents.extend(["from flask import render_template", ""])
     contents.append(f"class {controller_name}:")
-    if method_name:
+    if action:
         contents.extend([
             "    @staticmethod",
-            f"    def {method_name}({parameters_with_types_joined}) -> str:",
+            f"    def {action}({parameters_with_types_joined}) -> str:",
             f"        return render_template('{relative_view_file_path}')"
         ])
     else:
@@ -186,11 +230,11 @@ def controller_make_file(
         return False, click.style(
             f"💣 Error: Failed to update __init__.py:\n{exception}", fg="red")
 
-    if method_name:
+    if action:
         message = (
             click.style(f"✅ Success: Created Controller Class With Method\n", fg="green", bold=True) +
             click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
-            click.style(f"    - Added method {click.style(method_name, bold=True)}", fg="green") + click.style(" to controller\n", fg="green") +
+            click.style(f"    - Added method {click.style(action, bold=True)}", fg="green") + click.style(" to controller\n", fg="green") +
             click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style('app/controllers/__init__.py', bold=True, fg='green')}\n", fg="green") +
             click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
         )
