@@ -34,12 +34,14 @@ def make_controller(
         click.secho("    - No changes were made", fg="yellow")
         return
     # create the controller
+    all_successful = True
     is_successful, message = controller_make_file(
-        controller_name,
-        method_name=None,
-        relative_view_file_path=None,
+        relative_path=None,
+        action=None,
+        controller_name=controller_name,
         route_name=None)
     click.echo(message)
+    all_successful = all_successful and is_successful
 
     if crud:
         restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
@@ -48,7 +50,7 @@ def make_controller(
             dotted_path_with_name = f"{relative_path}.{action}"
             route_name = route_infer_name_from(dotted_path_with_name)
 
-            all_successful = True
+
             is_successful, messages = wire_controller_route_view(
                 dotted_path_with_name,
                 relative_path,
@@ -59,3 +61,7 @@ def make_controller(
 
             for message in messages:
                 click.echo(message)
+
+    if not all_successful:
+        click.secho("⚠️  Warning: One or more make controller steps failed.", fg="yellow", bold=True)
+

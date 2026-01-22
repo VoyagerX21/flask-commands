@@ -3,16 +3,13 @@ import os
 import re
 import click
 from typing import Tuple
-from .files import append_file, write_file
+from .files import append_file, write_file, insert_import_into_lines
 from .naming import camel_to_snake, pluralize, singularize
 from .routes import(
-    generate_route_folder_path_and_blueprint_name,
     parse_route_name_for_params_and_types,
     route_http_method_for_action,
-    route_add_method,
-    route_make_directory_and_register_blueprint
+    route_build_parameter_reference
 )
-from .views import view_make_file
 
 
 def controller_add_method(
@@ -69,7 +66,7 @@ def controller_add_method(
 
         # 3. Build the new static method block
         method_parameters = ""
-        parameters = None
+        parameters = []
         if route_name:
             parameters_with_types, parameters = \
                 parse_route_name_for_params_and_types(route_name)
@@ -77,9 +74,7 @@ def controller_add_method(
 
         is_redirect = route_http_method_for_action(action) == "POST"
         if is_redirect:
-            parameter_reference = ", " + \
-                ", ".join(f"{parameter}={parameter}"
-                          for parameter in parameters) if parameters else ""
+            parameter_reference = route_build_parameter_reference(parameters)
             redirect_route_reference = relative_path.replace("/", ".")
             return_line = " "*8 +\
                 f"return redirect(url_for('{redirect_route_reference}" + \
@@ -87,8 +82,8 @@ def controller_add_method(
         else:
             relative_view_file_path = \
                 os.path.join(relative_path, f"{action}.html")
-            return_line = " "*8 +\
-                f"return render_template('{relative_view_file_path}')"
+            return_line = \
+                f"        return render_template('{relative_view_file_path}')"
 
         method_block = [
             "",
@@ -105,39 +100,18 @@ def controller_add_method(
             insert_index = start_index + 1
 
         if is_redirect:
-            if not re.search(r"from\s+flask\s+import\s+.*\bredirect\b", source) or \
-                    not re.search(r"from\s+flask\s+import\s+.*\burl_for\b", source):
-                insert_at = 0
-                for idx, line in enumerate(lines):
-                    stripped = line.strip()
-                    if stripped.startswith("import ") or stripped.startswith("from "):
-                        insert_at = idx + 1
-                        continue
-                    if stripped == "":
-                        if insert_at == 0:
-                            continue
-                        break
-                    break
-                lines.insert(insert_at, "from flask import redirect, url_for")
-                if insert_at + 1 < len(lines) and lines[insert_at + 1].strip() != "":
-                    lines.insert(insert_at + 1, "")
+            import_redirect_pattern = r"from\s+flask\s+import\s+.*\bredirect\b"
+            import_ulr_for_pattern = r"from\s+flask\s+import\s+.*\burl_for\b"
+            if not re.search(import_redirect_pattern, source) or \
+                    not re.search(import_ulr_for_pattern, source):
+                lines =insert_import_into_lines(
+                    lines, "from flask import redirect, url_for")
 
         else:
-            if not re.search(r"from\s+flask\s+import\s+.*\brender_template\b", source):
-                insert_at = 0
-                for idx, line in enumerate(lines):
-                    stripped = line.strip()
-                    if stripped.startswith("import ") or stripped.startswith("from "):
-                        insert_at = idx + 1
-                        continue
-                    if stripped == "":
-                        if insert_at == 0:
-                            continue
-                        break
-                    break
-                lines.insert(insert_at, "from flask import render_template")
-                if insert_at + 1 < len(lines) and lines[insert_at + 1].strip() != "":
-                    lines.insert(insert_at + 1, "")
+            import_render_template_pattern = r"from\s+flask\s+import\s+.*\brender_template\b"
+            if not re.search(import_render_template_pattern, source):
+                lines =insert_import_into_lines(
+                    lines, "from flask import render_template")
 
         # 4. Insert new static method block
         for line in reversed(method_block):
@@ -170,33 +144,47 @@ def extract_relative_path_from(controller_name: str) -> str:
     return '.'.join(list(map(lambda part: pluralize(part), parts)))
 
 def controller_make_file(
-        relative_path: str,
-        action: str, # method_name
+        relative_path: str | None,
+        action: str | None, # method_name
         controller_name: str,
-        # method_name: str,
-        # relative_view_file_path: str, # os.path.join(relative_path, f"{action}.html")
         route_name: str | None = None) -> Tuple[bool, str]:
-    if action and not relative_view_file_path:
-        return False, click.style("💣 Error: method requires view path", fg="red")
-    if relative_view_file_path and not action:
-        return False, click.style("💣 Error: view path requires method", fg="red")
+    if action and relative_path is None:
+        return False, click.style("💣 Error: action requires relative_path", fg="red")
+    if relative_path and action is None:
+        return False, click.style("💣 Error: relative_path path requires action", fg="red")
 
     parameters_with_types_joined = ""
+    parameters = []
     if route_name:
-        parameters_with_types, _ = \
+        parameters_with_types, parameters = \
             parse_route_name_for_params_and_types(route_name)
         parameters_with_types_joined = ", ".join(parameters_with_types)
 
+
+    is_redirect = route_http_method_for_action(action) == "POST"
     contents = []
     if action:
-        contents.extend(["from flask import render_template", ""])
+        if is_redirect:
+            contents.extend(["from flask import redirect, url_for", ""])
+        else:
+            contents.extend(["from flask import render_template", ""])
     contents.append(f"class {controller_name}:")
     if action:
         contents.extend([
             "    @staticmethod",
             f"    def {action}({parameters_with_types_joined}) -> str:",
-            f"        return render_template('{relative_view_file_path}')"
         ])
+        if is_redirect:
+            parameter_reference = route_build_parameter_reference(parameters)
+            redirect_route_reference = relative_path.replace("/", ".")
+            contents.append(
+                f"        return redirect(url_for('{redirect_route_reference}"
+                f".index'{parameter_reference}))")
+        else:
+            relative_view_file_path = \
+                os.path.join(relative_path, f"{action}.html")
+            contents.append(f"        return render_template('"
+                            f"{relative_view_file_path}')")
     else:
         contents.append("    pass")
     try:

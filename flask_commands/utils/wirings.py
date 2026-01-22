@@ -4,9 +4,7 @@ import click
 from .controllers import controller_add_method, controller_make_file
 from .naming import camel_to_snake
 from .routes import (
-    parse_route_name_for_params_and_types,
     route_add_method,
-    route_build_parameter_reference,
     route_http_method_for_action,
     route_make_directory_and_register_blueprint,
     generate_route_folder_path_and_blueprint_name

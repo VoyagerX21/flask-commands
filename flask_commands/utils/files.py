@@ -96,6 +96,23 @@ def write_file(file_path: str, contents: list[str]) -> None:
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(normalized_content)
 
+def insert_import_into_lines(lines, import_statement) -> list:
+    insert_at = 0
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("import ") or stripped.startswith("from "):
+            insert_at = idx + 1
+            continue
+        if stripped == "":
+            if insert_at == 0:
+                continue
+            break
+        break
+    lines.insert(insert_at, import_statement)
+    if insert_at + 1 < len(lines) and lines[insert_at + 1].strip() != "":
+        lines.insert(insert_at + 1, "")
+    return lines
+
 # Helper Functions
 def _read_template(file_path):
     """Read a template file and return its content as a string."""

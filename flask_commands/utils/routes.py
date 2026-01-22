@@ -161,7 +161,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
 
-    parameter_reference = route_build_parameter_reference(parameters)
+    parameter_reference = _build_parameter_reference_example(parameters)
 
     message = (
         click.style(f"✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
@@ -171,12 +171,18 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     )
     return True, message
 
-def route_build_parameter_reference(parameters: list[str]) -> str:
+def _build_parameter_reference_example(parameters: list[str]) -> str:
     if not parameters:
         return ""
     return ", " + ", ".join(
         f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
     )
+
+def route_build_parameter_reference(parameters: list[str]) -> str:
+    if not parameters:
+        return ""
+    return ", " + ", ".join(
+        f"{parameter}={parameter}" for parameter in parameters)
 
 def route_http_method_for_action(action: str) -> str:
     return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
@@ -377,7 +383,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
     if is_nested_blueprint:
         registered_location = parent_init_path
     route_reference = relative_path.replace("/", ".")
-    parameter_reference = route_build_parameter_reference(parameters)
+    parameter_reference = _build_parameter_reference_example(parameters)
 
 
     message = (
