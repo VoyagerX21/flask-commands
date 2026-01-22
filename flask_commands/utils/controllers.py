@@ -29,7 +29,7 @@ def controller_add_method(
         if re.search(method_pattern, source):
             message = (
                 click.style("⚠️  Warning: Method Already Exists\n", fg="yellow", bold=True) +
-                click.style(f"    - Controller {click.style(controller_name, bold=True)}", fg="yellow") +  click.style(f" already has a method named {click.style(method_name, bold=True)}.\n", fg="yellow") +
+                click.style(f"    - Controller {click.style(controller_name, bold=True)}", fg="yellow") +  click.style(f" already has a method named {click.style(action, bold=True)}.\n", fg="yellow") +
                 click.style("    - No changes were made to controller's method\n", fg="yellow")
             )
             return False, message
