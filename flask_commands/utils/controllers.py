@@ -37,6 +37,24 @@ def controller_add_method(
         # Try to find class definition to insert method into
         class_pattern = rf"^class\s+{re.escape(controller_name)}\b.*:\s*$"
         lines = source.splitlines()
+
+        is_redirect = route_http_method_for_action(action) == "POST"
+
+        if is_redirect:
+            import_redirect_pattern = r"from\s+flask\s+import\s+.*\bredirect\b"
+            import_url_for_pattern = r"from\s+flask\s+import\s+.*\burl_for\b"
+            if not re.search(import_redirect_pattern, source) or \
+                    not re.search(import_url_for_pattern, source):
+                lines =insert_import_into_lines(
+                    lines, "from flask import redirect, url_for")
+
+        else:
+            import_render_template_pattern = r"from\s+flask\s+import\s+.*\brender_template\b"
+            if not re.search(import_render_template_pattern, source):
+                lines =insert_import_into_lines(
+                    lines, "from flask import render_template")
+
+
         insert_index = None
         # 1. Find the class
         for start_index, line in enumerate(lines):
@@ -71,14 +89,14 @@ def controller_add_method(
             parameters_with_types, parameters = \
                 parse_route_name_for_params_and_types(route_name)
             method_parameters = ", ".join(parameters_with_types)
-
-        is_redirect = route_http_method_for_action(action) == "POST"
         if is_redirect:
+            if action != "store":
+                parameters = parameters[:-1]
             parameter_reference = route_build_parameter_reference(parameters)
             redirect_route_reference = relative_path.replace("/", ".")
             return_line = " "*8 +\
                 f"return redirect(url_for('{redirect_route_reference}" + \
-                f".index'{parameter_reference})"
+                f".index'{parameter_reference}))"
         else:
             relative_view_file_path = \
                 os.path.join(relative_path, f"{action}.html")
@@ -98,20 +116,6 @@ def controller_add_method(
         if non_blank and all(line.strip() == "pass" for line in non_blank):
             lines = lines[:start_index + 1] + lines[insert_index:]
             insert_index = start_index + 1
-
-        if is_redirect:
-            import_redirect_pattern = r"from\s+flask\s+import\s+.*\bredirect\b"
-            import_ulr_for_pattern = r"from\s+flask\s+import\s+.*\burl_for\b"
-            if not re.search(import_redirect_pattern, source) or \
-                    not re.search(import_ulr_for_pattern, source):
-                lines =insert_import_into_lines(
-                    lines, "from flask import redirect, url_for")
-
-        else:
-            import_render_template_pattern = r"from\s+flask\s+import\s+.*\brender_template\b"
-            if not re.search(import_render_template_pattern, source):
-                lines =insert_import_into_lines(
-                    lines, "from flask import render_template")
 
         # 4. Insert new static method block
         for line in reversed(method_block):
@@ -190,6 +194,7 @@ def controller_make_file(
     try:
         controller_file_path = os.path.join(
             "app", "controllers", f"{camel_to_snake(controller_name)}.py")
+        click.secho(f"{contents}", fg="blue", bold=True)
         write_file(controller_file_path, contents)
     except FileExistsError:
         message = (
