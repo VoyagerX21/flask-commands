@@ -139,13 +139,13 @@ def controller_infer_name_from(relative_path: str) -> str:
                     for part in relative_path.split('/')]) + "Controller"
 
 def extract_relative_path_from(controller_name: str) -> str:
-    """Return dotted, pluralized path from a controller class name.
+    """Return pluralized path from a controller class name.
 
     Example:
-        PostCommentImageController -> posts.comments.images
+        PostCommentImageController -> posts/comments/images
     """
     parts = camel_to_snake(controller_name).split('_')[:-1]
-    return '.'.join(list(map(lambda part: pluralize(part), parts)))
+    return '/'.join(list(map(lambda part: pluralize(part), parts)))
 
 def controller_make_file(
         relative_path: str | None,
@@ -194,7 +194,6 @@ def controller_make_file(
     try:
         controller_file_path = os.path.join(
             "app", "controllers", f"{camel_to_snake(controller_name)}.py")
-        click.secho(f"{contents}", fg="blue", bold=True)
         write_file(controller_file_path, contents)
     except FileExistsError:
         message = (
