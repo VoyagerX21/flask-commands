@@ -140,6 +140,86 @@ class PostController:
     pass
 ```
 
+Use `--crud` to scaffold all seven RESTful actions, routes/blueprints, and matching templates.
+
+```bash
+flask make:controller PostController --crud
+```
+
+With `--crud`, `app/controllers/post_controller.py` looks like:
+
+```python
+from flask import render_template
+from flask import redirect, url_for
+
+class PostController:
+
+    @staticmethod
+    def index() -> str:
+        return render_template('posts/index.html')
+
+    @staticmethod
+    def show(post_id: int) -> str:
+        return render_template('posts/show.html')
+
+    @staticmethod
+    def create() -> str:
+        return render_template('posts/create.html')
+
+    @staticmethod
+    def store() -> str:
+        return redirect(url_for('posts.index'))
+
+    @staticmethod
+    def edit(post_id: int) -> str:
+        return render_template('posts/edit.html')
+
+    @staticmethod
+    def update(post_id: int) -> str:
+        return redirect(url_for('posts.index'))
+
+    @staticmethod
+    def destroy(post_id: int) -> str:
+        return redirect(url_for('posts.index'))
+```
+
+It also generates and wires up routes and templates:
+
+```python
+from app.controllers import PostController
+from app.routes.posts import bp
+
+@bp.route('/posts', methods=['GET'])
+def index():
+    return PostController.index()
+
+@bp.route('/posts/<int:post_id>', methods=['GET'])
+def show(post_id: int):
+    return PostController.show(post_id)
+
+@bp.route('/posts/create', methods=['GET'])
+def create():
+    return PostController.create()
+
+@bp.route('/posts', methods=['POST'])
+def store():
+    return PostController.store()
+
+@bp.route('/posts/<int:post_id>/edit', methods=['GET'])
+def edit(post_id: int):
+    return PostController.edit(post_id)
+
+@bp.route('/posts/<int:post_id>', methods=['POST'])
+def update(post_id: int):
+    return PostController.update(post_id)
+
+@bp.route('/posts/<int:post_id>/delete', methods=['POST'])
+def destroy(post_id: int):
+    return PostController.destroy(post_id)
+```
+
+And creates four view templates under `app/templates/posts/`: `index.html`, `show.html`, `create.html`, `edit.html`.
+
 ## Contributing
 
 I’m keeping development closed for now, but feedback is welcome.

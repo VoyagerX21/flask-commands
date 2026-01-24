@@ -345,4 +345,86 @@ This creates ``app/controllers/recipe_controller.py`` with a class stub:
    class RecipeController:
        pass
 
-In fact, if you are following this tutorial from the beginning, you should receive a warning that this controller already exists. It does, and it's much better than a simple class with a ``pass``. So why would we use the ``make:controller`` command? It's all about the options like ``--RESTfull`` which will produce a controller with seven methods pre-stubbed (work in progress)...
+In fact, if you are following this tutorial from the beginning, you should receive a warning that this controller already exists. It does, and it's much better than a simple class with a ``pass``. So why would we use the ``make:controller`` command? It's all about the options like ``--crud`` which will produce a controller with the whole set of seven RESTful actions, the routes, an the matching templates wired up for you.  For our cooking website suppose we need to have an object for 'ingredients'. Here is how we can wire up a ton of content ready to use right away with the following command:
+
+
+.. code-block:: bash
+
+   flask make:controller IngredientController --crud
+
+
+.. code-block:: python
+
+   from flask import render_template
+   from flask import redirect, url_for
+
+   class IngredientController:
+
+       @staticmethod
+       def index() -> str:
+           return render_template('ingredients/index.html')
+
+       @staticmethod
+       def show(ingredient_id: int) -> str:
+           return render_template('ingredients/show.html')
+
+       @staticmethod
+       def create() -> str:
+           return render_template('ingredients/create.html')
+
+       @staticmethod
+       def store() -> str:
+           return redirect(url_for('ingredients.index'))
+
+       @staticmethod
+       def edit(ingredient_id: int) -> str:
+           return render_template('ingredients/edit.html')
+
+       @staticmethod
+       def update(ingredient_id: int) -> str:
+           return redirect(url_for('ingredients.index'))
+
+       @staticmethod
+       def destroy(ingredient_id: int) -> str:
+           return redirect(url_for('ingredients.index'))
+
+With the ``--crud`` flag you will also receive:
+
+- A routes file under ``app/routes/ingredients`` with all seven RESTful routes.
+- Four templates under ``app/templates/ingredients`` (``index``, ``show``, ``create``, ``edit``).
+- The controller registered in ``app/controllers/__init__.py``.
+
+Here is what that routes file looks like:
+
+.. code-block:: python
+
+   from app.controllers import IngredientController
+   from app.routes.ingredients import bp
+
+   @bp.route('/ingredients', methods=['GET'])
+   def index():
+       return IngredientController.index()
+
+   @bp.route('/ingredients/<int:ingredient_id>', methods=['GET'])
+   def show(ingredient_id: int):
+       return IngredientController.show(ingredient_id)
+
+   @bp.route('/ingredients/create', methods=['GET'])
+   def create():
+       return IngredientController.create()
+
+   @bp.route('/ingredients', methods=['POST'])
+   def store():
+       return IngredientController.store()
+
+   @bp.route('/ingredients/<int:ingredient_id>/edit', methods=['GET'])
+   def edit(ingredient_id: int):
+       return IngredientController.edit(ingredient_id)
+
+   @bp.route('/ingredients/<int:ingredient_id>', methods=['POST'])
+   def update(ingredient_id: int):
+       return IngredientController.update(ingredient_id)
+
+   @bp.route('/ingredients/<int:ingredient_id>/delete', methods=['POST'])
+   def destroy(ingredient_id: int):
+       return IngredientController.destroy(ingredient_id)

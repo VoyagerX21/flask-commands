@@ -19,6 +19,30 @@ Fixed
 ~~~~~
 -
 
+0.2.1 - 2026-01-24
+-------------------
+Added
+~~~~~
+- Add wiring utility module and refactor view wiring to use it.
+- Add ``--crud`` flag to ``flask make:controller`` for full RESTful scaffolding.
+- Add test coverage for CRUD controller generation, nested routes/templates, and controller init exports.
+- Add tests for nested CRUD controllers, import insertion edge cases, and updated controller parameters.
+- Document ``--crud`` controller scaffolding with full examples and routes output.
+
+Changed
+~~~~~~~
+- Refactor route utility functions and update wiring to reuse them; limit view creation to GET routes.
+- Refactor controller and route creation logic (parameter handling, import insertion, method block creation).
+- Update controller path handling to use slashes and convert to dotted names for RESTful route inference.
+- Move import insertion earlier in ``controller_add_method`` and add controller file debug output.
+- Update controller method creation and wiring signatures; remove unused wiring code.
+- Expand ``flask make:controller`` docs with a cooking-site example and route details.
+
+Fixed
+~~~~~
+- Fix redirect parameter handling and a typo in import pattern matching.
+- Update error messaging in ``controllers.py`` for new controller parameters.
+
 0.2.0 - 2026-01-19
 -------------------
 Added
