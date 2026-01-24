@@ -184,7 +184,7 @@ def test_controller_make_file_success(controller_project):
         controller_name="PostController"
     )
 
-    assert is_successful == True
+    assert is_successful is True
     assert "Created Controller" in message
 
 def test_controller_make_file_success_with_route_name(controller_project):
@@ -195,7 +195,7 @@ def test_controller_make_file_success_with_route_name(controller_project):
         route_name="/posts"
     )
 
-    assert is_successful == True
+    assert is_successful is True
     assert "Created Controller" in message
 
 def test_controller_make_file_file_already_exists(controller_project):
@@ -287,16 +287,14 @@ def test_controller_make_file_init_exception(controller_project, monkeypatch):
     assert is_successful is False
     assert "Failed to update __init__.py" in message
 
-
 def test_controller_make_file_method_name_no_relative_view_file_path():
     is_successful, message = controller_make_file(
         relative_path="posts",
         action=None,
         controller_name="PostController"
     )
-    assert is_successful == False
+    assert is_successful is False
     assert "action required when relative_path present" in message
-
 
 def test_controller_make_file_relative_view_file_path_no_method_name():
     is_successful, message = controller_make_file(
@@ -304,6 +302,28 @@ def test_controller_make_file_relative_view_file_path_no_method_name():
         action="index",
         controller_name="PostController"
     )
-    assert is_successful == False
+    assert is_successful is False
     assert "relative_path required when action present" in message
 
+def test_controller_make_file_with_a_post(tmp_path, controller_project):
+    is_successful, message = controller_make_file(
+        relative_path="posts",
+        action="store",
+        controller_name="PostController"
+    )
+
+    assert is_successful is True
+    assert "Created Controller" in message
+
+    post_controller_file_path = tmp_path / "app" / "controllers" / "post_controller.py"
+    assert post_controller_file_path.exists()
+    expected_content = (
+        "from flask import redirect, url_for\n"
+        "\n"
+        "class PostController:\n"
+        "    @staticmethod\n"
+        "    def store() -> str:\n"
+        "        return redirect(url_for('posts.index'))\n"
+    )
+    content = post_controller_file_path.read_text(encoding="utf-8")
+    assert content == expected_content

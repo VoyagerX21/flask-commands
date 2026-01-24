@@ -59,6 +59,23 @@ def copy_templates(project_path: str, include_db: bool, replacements: Optional[D
 
             write_file(destination_path, content.splitlines())
 
+def insert_import_into_lines(lines, import_statement) -> list:
+    insert_at = 0
+    for idx, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("import ") or stripped.startswith("from "):
+            insert_at = idx + 1
+            continue
+        if stripped == "":
+            if insert_at == 0:
+                continue
+            break
+        break
+    lines.insert(insert_at, import_statement)
+    if insert_at + 1 < len(lines) and lines[insert_at + 1].strip() != "":
+        lines.insert(insert_at + 1, "")
+    return lines
+
 def is_project_root() -> bool:
     if os.path.isdir("app") and os.path.isfile("run.py"):
         return True
@@ -96,22 +113,6 @@ def write_file(file_path: str, contents: list[str]) -> None:
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(normalized_content)
 
-def insert_import_into_lines(lines, import_statement) -> list:
-    insert_at = 0
-    for idx, line in enumerate(lines):
-        stripped = line.strip()
-        if stripped.startswith("import ") or stripped.startswith("from "):
-            insert_at = idx + 1
-            continue
-        if stripped == "":
-            if insert_at == 0:
-                continue
-            break
-        break
-    lines.insert(insert_at, import_statement)
-    if insert_at + 1 < len(lines) and lines[insert_at + 1].strip() != "":
-        lines.insert(insert_at + 1, "")
-    return lines
 
 # Helper Functions
 def _read_template(file_path):

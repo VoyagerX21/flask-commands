@@ -1,6 +1,10 @@
 import os
 import pytest
-from flask_commands.utils.files import append_file, is_project_root, write_file
+from flask_commands.utils.files import (
+    append_file,
+    insert_import_into_lines,
+    is_project_root,
+    write_file)
 
 def test_append_file_success(tmp_path):
     file_path = tmp_path / "test.txt"
@@ -45,3 +49,7 @@ def test_write_file_fails_if_file_exists(tmp_path):
     # Ensure the original content is still intact
     assert file_path.read_text(encoding="utf-8") == "I already exist don't write over me"
 
+def test_insert_import_into_lines_with_blank_at_the_start():
+    lines = ["", "from flask import redirect, url_for"]
+    import_statement = 'from flask import render_template'
+    insert_import_into_lines(lines=lines, import_statement=import_statement)
