@@ -2,7 +2,8 @@ import os
 import pytest
 from pathlib import Path
 from flask_commands.utils.models import (
-    model_infer_name_from,
+    model_infer_name_from_controller,
+    model_infer_name_from_dotted_view_path,
     model_make_file
 )
 
@@ -20,13 +21,17 @@ def model_project(tmp_path, monkeypatch):
 
     return project_root
 
-def test_model_infer_name_from_relative_path():
-    model_name = model_infer_name_from("posts", "posts.index")
+def test_model_infer_name_from_dotted_view_path_with_dot():
+    model_name = model_infer_name_from_dotted_view_path("posts.index")
     assert model_name == "Post"
 
-def test_model_infer_name_from_dotted_path_with_name():
-    model_name = model_infer_name_from("", "posts")
+def test_model_infer_name_from_dotted_view_path_without_dot():
+    model_name = model_infer_name_from_dotted_view_path("posts")
     assert model_name == "Post"
+
+def test_model_infer_name_from_controller():
+    model_name = model_infer_name_from_controller("PostCommentImageController")
+    assert model_name == "Image"
 
 def test_model_make_file_success(model_project):
     is_successful, message = model_make_file(

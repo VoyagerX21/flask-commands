@@ -154,7 +154,6 @@ def test_make_controller_component_only(project):
     contents = controller_init_file_path.read_text(encoding="utf-8")
     assert "from .recipe_controller import RecipeController" in contents
 
-
 def test_make_controller_file_exists(project):
     runner = CliRunner()
     result = runner.invoke(make_controller, ["MainController"])
@@ -278,7 +277,6 @@ def test_make_controller_with_crud(project):
     assert index_template_file_path.exists()
     show_template_file_path = project / "app" / "templates" / "comments" / "show.html"
     assert show_template_file_path.exists()
-
 
 def test_make_controller_with_crud_nested_relationship(project):
     runner = CliRunner()
@@ -407,6 +405,18 @@ def test_make_controller_with_crud_nested_relationship(project):
     assert index_template_file_path.exists()
     show_template_file_path = project / "app" / "templates" / "posts" / "comments" / "show.html"
     assert show_template_file_path.exists()
+
+def test_make_controller_with_generate_model(project):
+    runner = CliRunner()
+    result = runner.invoke(make_controller, ["PostCommentImageController", "-m"])
+
+    assert result.exit_code == 0
+    model_file_path = project / "app" / "models" / "image.py"
+    assert model_file_path.exists()
+
+    init_file_path = project / "app" / "models" / "__init__.py"
+    init_contents = init_file_path.read_text(encoding="utf-8")
+    assert "from .image import Image" in init_contents
 
 def test_make_controller_warns_when_init_missing(project):
     controller_init_path = project / "app" / "controllers" / "__init__.py"

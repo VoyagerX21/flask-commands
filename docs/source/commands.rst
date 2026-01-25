@@ -66,8 +66,8 @@ You can review this structure directly in the Flask-Commands source by exploring
 flask make:view
 ---------------
 
-Now for the fun (and powerful) part of this package.  First make sure you are
-at the root of your new project.
+Now for the fun (and powerful) part of this package.  **First make sure you are
+at the root of your new project.**
 
 The ``flask make:view`` command generates template files under ``app/templates/``.
 It supports *dot notation* for nested folders. For example, ``posts.index`` creates:
@@ -103,7 +103,7 @@ Suppose you want an ``about`` view for your company:
 
 That’s it — you now have a new template at ``app/templates/about.html``.
 
-The issue is that this page is not appearing in your application. You can’t just
+The issue is that this page does not appear anywhere in your application. You can’t just
 type ``/about`` or ``about.html`` into the browser and expect it to work because
 the view is not wired up to a route or controller class.
 
@@ -128,8 +128,8 @@ This command:
 - updates the ``mains`` routes file
   (``app/routes/mains/routes.py``) with a ``GET`` route at ``/about``
 
-This works great — but it’s a lot of typing 😵‍💫. Don’t worry, in come the
-generator flags ``-r`` and ``-c`` (or combined as ``-rc``).
+This works great — but it’s a lot of typing 😵‍💫. Don’t worry,
+generator flags to the rescue ``-r`` and ``-c`` (or combined as ``-rc``).
 
 Adding a Route and Controller (Generators)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -140,17 +140,19 @@ The same result as above, using generator flags:
 
    flask make:view about -rc
 
-Much shorter and easy to remember just think i need to wire this up
-with a **route** (url) and have the **controller** serve the page.  So
-**route** is the **r** and **controller** is the *c*
+Much shorter and easy to remember just think I need to wire this up
+with a **route** (url) and have a **controller** (logic serving the route) to
+serve the page.  So **route** is shortened to **r** and **controller** is
+shortend to *c*
 
 Nesting Views
 ~~~~~~~~~~~~~
 
-The view name uses dot notation to represent nested structures.
+The view naming convention uses dot notation to represent nested structures.
+This is similar to how an ORM (object relational mapping, like SQLAlchemy) works.
 
 If you want to create reusable component views, you might keep them in
-a ``components`` directory. To do this, just prefix the view name
+a ``components`` directory. To nest your styled tages, just prefix the view name
 with ``components.``:
 
 .. code-block:: bash
@@ -167,18 +169,26 @@ These commands create:
 
 You might use these files to house reusable macros. Notice that these views are
 *not* wired up to any controller class or route because we didn’t specify any
-generator flags.
+generator flags.  In this case this is what you want because the files will be
+called from within other view files.
 
-In the ``about`` example from Adding a Route and Controller (Generators) I
-would actually nest this because ``mains`` has it's own folder in
-templates.  To keep you templates folder nice and tidy I would have used
-the command:
+In the ``about`` example above, where we added the route and controller generator
+to wire up the page I would actually nest this in the ``mains`` folder to keep
+my templates folder everything nice and tidy. In other words, I would use the command:
 
 .. code-block:: bash
 
    flask make:view mains.about -rc
 
-but we didn't know about nesting at the time (now we do).
+This will keep everything in a ``mains`` theme directory or class structure.
+
+- creates ``app/templates/mains/about.html`` (new)
+- adds an ``about`` method to the ``MainController`` class
+  (``app/controllers/main_controller.py``) (happens with our without adding ``mains.``)
+- updates the ``mains`` routes file
+  (``app/routes/mains/routes.py``) with a ``GET`` route at ``/about`` (happens with our without adding ``mains.``)
+
+I would have said this earlier, but we didn't know about nesting at the time (now we do).
 
 Adding Models
 ~~~~~~~~~~~~~
@@ -195,7 +205,7 @@ actions:
 - ``store``
 - ``edit``
 - ``update``
-- ``destroy`` (or ``delete`` — frankly, I would have called it ``nuke`` 😜)
+- ``destroy`` (or ``delete`` — frankly, I would have called it *nuke* 😜)
 
 If you’re new to these actions (or just need a refresher), here’s a quick review
 of what each one does and which HTTP method it uses.
@@ -231,7 +241,7 @@ This means we need:
 
 - a ``recipes.index`` view
 - a ``Recipe`` model
-- a ``RecipeController`` controller class to handle the actions
+- a ``RecipeController`` controller class to handle the logic of what is viewed
 
 To create the index page and wire up the route, controller, and model:
 
@@ -239,7 +249,7 @@ To create the index page and wire up the route, controller, and model:
 
    flask make:view recipes.index --route /recipes --controller RecipeController --model Recipe
 
-This one command creates **five files** and updates **three more** 😮
+This one (really lonnnnng....) command creates **five files** and updates **three more** 😮
 
 Created files
 ^^^^^^^^^^^^^
@@ -257,10 +267,11 @@ Updated files
 - ``app/models/__init__.py`` — registers ``Recipe``
 - ``app/__init__.py`` — registers the recipes blueprint in ``create_app``
 
+Ha ha, you didn't think I was going to make you keep putting everything in ``mains`` did you?
 Now you know why I wrote this package — that’s a *lot* to wire up just to get one
 model-backed view.
 
-But wait it get's better!!! The above is just to much to type so I shortened it to the command
+But wait it get's better!!! The above is just to much to type so I shortened it be able to infer the **route**, **controller**, and **model** based off of the dotted name.  So the really long command just become:
 
 .. code-block:: bash
 
@@ -281,9 +292,13 @@ Or, using the generators:
 
    flask make:view recipes.show -rc
 
-Notice we didn’t include ``-m`` here because the model already exists. In this
-case, the only new file is the view template — the route and controller class
-are updated in place.  If you forgot and added the ``-m`` then you would have received a warning saying that the recipe model already exists and was left alone (which is what you want expecally if you have gone in and made changes to the model)
+Notice, we didn’t include ``-m`` here.  This is because the Recipe model
+already exists. In this case, the only new file is the view template — the
+route and controller class are updated to include the show logic.  If you
+forgot and added the ``-m`` then you would have received a warning saying
+that the recipe model already exists and was left alone (which is what you
+want, expecally if you have gone in and made changes to the model to include
+specific columns).
 
 Nesting Models
 ~~~~~~~~~~~~~~
@@ -299,13 +314,21 @@ will provide the shortened version.
    flask make:view recipes.comments.index --route '/recipes/<int:recipe_id>/comments' --controller RecipeCommentController --model Comment
 
 When you run that command, Flask-Commands sets up the nested comments view and
-route under recipes, creates the RecipeCommentController, and seeds the Comment
+route under recipes, creates the RecipeCommentController, and builds the Comment
 model. The key part of the story is that the comments blueprint gets registered
-inside the recipes blueprint (in ``app/routes/recipes/__init__.py``), which is
-why you can reference the route as
+inside the recipes blueprint (in ``app/routes/recipes/__init__.py``). So weired
+🤪, who would have thought to register a blueprint in another blueprint!!!!
+That is one of the cool things I love about the Flask framework it's not
+opinionated which gives you the freedom to try new things.  Ok your saying,
+that's great but why would I do this?  By register the ``comments`` blueprint
+in the ``recipes`` blueprint we get to use the dotted naming convention when
+reference a route such as
 ``url_for('recipes.comments.index', recipe_id=1)``.
 
-Here is the shortened command for the same thing:
+Again the above is a lot to type and I don't know that people will remember
+all the formating.  Because I want to make everyone's life easier (myself
+included) the generates come to save the day. Here is the shortened command
+that produces the same behavior.
 
 .. code-block:: bash
 
@@ -313,10 +336,22 @@ Here is the shortened command for the same thing:
 
 Let’s dive a little deeper down this rabbit hole with another relationship.
 Suppose that on our cooking website we allow users to upload images when they
-make a comment. In this case, we need a new Image model and an ``images``
-blueprint. The cool thing that Flask-Commands does is register the ``images``
-blueprint inside ``comments`` at
-``app/routes/recipes/comments/__init__.py``, and ``comments`` is already
+make a comment.  Three level, what **Recipes → Comments → Images** that's
+hurts my brain just thinking about it 🧐. Here is how I would think about this.
+
+
+.. epigraph::
+
+    Ok what do we need to have o have **Recipes → Comments → Images**? Let's see,
+    we need a new **Image model**, an **image controller**, an **images blueprint**,
+    and **images view** folder for file like create.html. O ya, and I want to
+    make sure I wire up the blueprint in such a way that I get my dotted
+    naming convention to work like so ``url_for('recipes.comments.images.something', recipe_id=#, comment_id=#)``
+
+
+The cool thing that Flask-Commands does for you is handle the nesting for you.
+In order to have the dotted naming convention we register the ``images`` blueprint
+inside ``comments`` at ``app/routes/recipes/comments/__init__.py``, and ``comments`` is already
 registered in ``recipes``, which is registered with the application. That chain
 gives you natural dot notation (similar to SQLAlchemy’s relationships) when you
 reference the view as ``recipes.comments.images``, so your ``url_for`` looks
@@ -327,10 +362,16 @@ Here is the simple command that sets everything up:
 
    flask make:view recipes.comments.images.index -rcm
 
+That's it that is all you have to remember tell Flask-Commands that you want
+a view and how the structure/relationship should look with dots and throw in
+your generated flags of route -r, controller -c, and model -m (then preso 🪄
+everything is built for you).  But wait, it get's better with controllers
+because we can make multiple views with one command!!!!
 
 flask make:controller
 ---------------------
-
+A Simple Controller
+~~~~~~~~~~~~~~~~~~~
 Use ``flask make:controller`` to scaffold a controller class under
 ``app/controllers/`` and register it in ``app/controllers/__init__.py``.
 
@@ -345,13 +386,28 @@ This creates ``app/controllers/recipe_controller.py`` with a class stub:
    class RecipeController:
        pass
 
-In fact, if you are following this tutorial from the beginning, you should receive a warning that this controller already exists. It does, and it's much better than a simple class with a ``pass``. So why would we use the ``make:controller`` command? It's all about the options like ``--crud`` which will produce a controller with the whole set of seven RESTful actions, the routes, an the matching templates wired up for you.  For our cooking website suppose we need to have an object for 'ingredients'. Here is how we can wire up a ton of content ready to use right away with the following command:
+In fact, if you are following this tutorial from the beginning, you should receive a warning that this controller already exists. It does, and it's much better than a simple class with a ``pass``. So why would we use the ``make:controller`` command? You might create a new set of routes that you need a plain controller for the logic.  But I love flags so let's see some real magic come into play.
+
+A Controller with RESTful actions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It's all about the options like ``--crud`` which will produce a controller with the whole set of seven RESTful actions, the routes, an the matching templates wired up for you.  For our cooking website suppose we need to have an object for 'ingredients'. Here is how we can wire up a ton of content ready to use right away with the following command:
 
 
 .. code-block:: bash
 
    flask make:controller IngredientController --crud
 
+With the ``--crud`` flag you will also receive:
+
+- A controller file under ``app/controllers/ingredient_controller.py``  with all seven RESTful methods ready for you.
+    - The controller file registered propertly in ``app/controllers/__init__.py``.
+- A blueprint routes file under ``app/routes/ingredients``
+    - The routes file contains all seven RESTful routes.
+    - The new blueprint registered with the create_app in ``app/__init__.py``
+- Four templates under ``app/templates/ingredients`` (``index``, ``show``, ``create``, ``edit``).
+
+Here is what the controller file looks like.
 
 .. code-block:: python
 
@@ -388,11 +444,6 @@ In fact, if you are following this tutorial from the beginning, you should recei
        def destroy(ingredient_id: int) -> str:
            return redirect(url_for('ingredients.index'))
 
-With the ``--crud`` flag you will also receive:
-
-- A routes file under ``app/routes/ingredients`` with all seven RESTful routes.
-- Four templates under ``app/templates/ingredients`` (``index``, ``show``, ``create``, ``edit``).
-- The controller registered in ``app/controllers/__init__.py``.
 
 Here is what that routes file looks like:
 
@@ -428,3 +479,176 @@ Here is what that routes file looks like:
    @bp.route('/ingredients/<int:ingredient_id>/delete', methods=['POST'])
    def destroy(ingredient_id: int):
        return IngredientController.destroy(ingredient_id)
+
+This is awesome!!! I can litterly see you jumping up and down shouting with
+celebration for joy 🥳.  But wait, what about an **Ingrediant model**?
+
+A Controller with Model
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Often a controller is tied to a model like in your ingredient example.  You
+have two options here you can either use an optional variable ``--model`` or
+have Flask-Commands infer your model with a generator flag ``-m``.  The
+following two commands are equivlant
+
+.. code-block:: bash
+
+   flask make:controller IngredientController --model Ingredient
+
+and
+
+.. code-block:: bash
+
+   flask make:controller IngredientController -m
+
+both will sub out a plain Ingredient controller class and an Ingrediant model.
+
+Here is what the controller file looks like.
+
+.. code-block:: python
+
+    class IngredientController:
+        pass
+
+
+Here is what the model file looks like.
+
+.. code-block:: python
+
+    from app import db
+    from datetime import datetime, timezone
+
+    class Ingredient(db.Model):
+        __tablename__ = 'ingredients'
+        # Columns
+        id = db.Column(db.Integer, primary_key=True)
+        created_at = db.Column(db.DateTime(timezone=True),
+                            index=True,
+                            default=lambda: datetime.now(timezone.utc))
+        updated_at = db.Column(db.DateTime(timezone=True),
+                            default=lambda: datetime.now(timezone.utc),
+                            onupdate=lambda: datetime.now(timezone.utc))
+
+        def store_in_database(self):
+            db.session.add(self)
+            db.session.commit()
+
+        def delete_from_database(self):
+            db.session.delete(self)
+            db.session.commit()
+
+        def __repr__(self):
+            """Model representation for Code Debugging"""
+            return f'<Ingredient id:{self.id}>'
+
+Ok now you are all set to combine these optional variables and create nested
+datastructures, right 🤔?  What did I hear you say, you want all the RESTful
+actions nested over multiple models!!!!  Ya, of course you want to connect a
+recipe to it's ingrediants.
+
+Ok Ok, you can nest...
+
+A Controller Nesting with --crud
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If we wanted to build the relationship **Recipe → Ingrediant** Flask-Commands
+is up for the task.  In this case we would PascalCase case (UppserCamelCase)
+the controller and then add the crud flag as in this command:
+
+.. code-block:: bash
+
+   flask make:controller RecipeIngredientController --crud
+
+With this small change you recieve a lot of structure benefits in your code.
+
+- A controller file under ``app/controllers/recipe_ingredient_controller.py``  with all seven RESTful methods ready for you.
+    - The controller file registered propertly in ``app/controllers/__init__.py``.
+- A blueprint routes folder under ``app/routes/recipes/ingredients``
+    - The routes file contains all seven RESTful routes.
+    - The new ingredients blueprint registered in the recipes blueprint
+- Four templates under ``app/templates/recipes/ingredients`` (``index``, ``show``, ``create``, ``edit``).
+
+
+Here is what the controller file looks like.
+
+.. code-block:: python
+
+    from flask import render_template
+    from flask import redirect, url_for
+
+    class RecipeIngredientController:
+
+        @staticmethod
+        def index(recipe_id: int) -> str:
+            return render_template('recipes/ingredients/index.html')
+
+        @staticmethod
+        def show(recipe_id: int, ingredient_id: int) -> str:
+            return render_template('recipes/ingredients/show.html')
+
+        @staticmethod
+        def create(recipe_id: int) -> str:
+            return render_template('recipes/ingredients/create.html')
+
+        @staticmethod
+        def store(recipe_id: int) -> str:
+            return redirect(url_for('recipes.ingredients.index', recipe_id=recipe_id))
+
+        @staticmethod
+        def edit(recipe_id: int, ingredient_id: int) -> str:
+            return render_template('recipes/ingredients/edit.html')
+
+        @staticmethod
+        def update(recipe_id: int, ingredient_id: int) -> str:
+            return redirect(url_for('recipes.ingredients.index', recipe_id=recipe_id))
+
+        @staticmethod
+        def destroy(recipe_id: int, ingredient_id: int) -> str:
+            return redirect(url_for('recipes.ingredients.index', recipe_id=recipe_id))
+
+Here is what that routes file looks like:
+
+.. code-block:: python
+
+    from app.controllers import RecipeIngredientController
+    from app.routes.recipes.ingredients import bp
+
+    @bp.route('/recipes/<int:recipe_id>/ingredients', methods=['GET'])
+    def index(recipe_id: int):
+        return RecipeIngredientController.index(recipe_id)
+
+    @bp.route('/recipes/<int:recipe_id>/ingredients/<int:ingredient_id>', methods=['GET'])
+    def show(recipe_id: int, ingredient_id: int):
+        return RecipeIngredientController.show(recipe_id, ingredient_id)
+
+    @bp.route('/recipes/<int:recipe_id>/ingredients/create', methods=['GET'])
+    def create(recipe_id: int):
+        return RecipeIngredientController.create(recipe_id)
+
+    @bp.route('/recipes/<int:recipe_id>/ingredients', methods=['POST'])
+    def store(recipe_id: int):
+        return RecipeIngredientController.store(recipe_id)
+
+    @bp.route('/recipes/<int:recipe_id>/ingredients/<int:ingredient_id>/edit', methods=['GET'])
+    def edit(recipe_id: int, ingredient_id: int):
+        return RecipeIngredientController.edit(recipe_id, ingredient_id)
+
+    @bp.route('/recipes/<int:recipe_id>/ingredients/<int:ingredient_id>', methods=['POST'])
+    def update(recipe_id: int, ingredient_id: int):
+        return RecipeIngredientController.update(recipe_id, ingredient_id)
+
+    @bp.route('/recipes/<int:recipe_id>/ingredients/<int:ingredient_id>/delete', methods=['POST'])
+    def destroy(recipe_id: int, ingredient_id: int):
+        return RecipeIngredientController.destroy(recipe_id, ingredient_id)
+
+If you are missing all the recipe_id's it's because you are missing the recipe
+model.  From the top you would do
+
+.. code-block:: bash
+
+   flask make:controller RecipeController --crud -m
+
+Notice the ``-m`` generator flag to create the Recipe Model, and then you would follow it with the command from above (probably with a model generator flag)
+
+.. code-block:: bash
+
+   flask make:controller RecipeIngredientController --crud -m

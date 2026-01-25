@@ -1,37 +1,52 @@
 import click
 from typing import Tuple
 from .files import append_file, write_file
-from .naming import pluralize, singularize
+from .naming import camel_to_snake, pluralize, singularize
+from .scaffold import split_dotted_path
 
-def model_infer_name_from(relative_path: str, dotted_path_with_name: str) -> str:
+def model_infer_name_from_dotted_view_path(dotted_path_with_name: str) -> str:
     """
-    Infer a model name from either a relative file path or a dotted path.
+    Infer a model name from a dotted view path.
 
-    Extracts the last component from the relative path (or uses the dotted path as fallback),
-    singularizes it, and converts it to title case.
+    Uses split_dotted_path to derive the relative path, then
+    singularizes the final segment and converts it to title case.
 
     Args:
-        relative_path (str): The relative file path to the model. If empty, dotted_path_with_name is used.
-        dotted_path_with_name (str): The dotted module path or name to use as fallback.
+        dotted_path_with_name (str): The dotted module path or name.
 
     Returns:
-        A tuple containing:
-            - str: A formatted message indicating the inferred model name with bold styling.
-            - str: The inferred model name in title case.
+        str: The inferred model name in title case.
 
     Example:
-        >>> message, name = model_infer_name_from("posts", "posts.index")
+        >>> name = model_infer_name_from_dotted_view_path("posts.index")
         >>> name
         'Post'
-        >>> message, name = model_infer_name_from("", "posts")
+        >>> name = model_infer_name_from_dotted_view_path("posts")
         >>> name
         'Post'
     """
+    relative_path, _ = split_dotted_path(dotted_path_with_name)
     if relative_path != "":
         model_name = singularize(relative_path.split('/')[-1]).title()
     else:
         model_name = singularize(dotted_path_with_name).title()
     return model_name
+
+def model_infer_name_from_controller(controller_name: str) -> str:
+    """
+    Infer a model name from a controller class name.
+
+    Examples:
+        PostController -> Post
+        PostCommentImageController -> Image
+        AdminUserController -> User
+    """
+    name_without_suffix = controller_name
+    if controller_name.endswith("Controller"):
+        name_without_suffix = controller_name[:-len("Controller")]
+    snake = camel_to_snake(name_without_suffix)
+    last_segment = snake.split("_")[-1] if snake else ""
+    return singularize(last_segment).title()
 
 def model_make_file(model_name: str, model_init_path: str, model_file_path: str) -> Tuple[bool, str]:
     """

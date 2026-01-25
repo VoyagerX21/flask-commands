@@ -3,7 +3,7 @@ import click
 
 from flask_commands.utils.controllers import controller_infer_name_from
 from flask_commands.utils.models import (
-    model_infer_name_from,
+    model_infer_name_from_dotted_view_path,
     model_make_file
 )
 from flask_commands.utils.files import is_project_root
@@ -93,7 +93,7 @@ def make_view(
 
     # Infer model name if not provided
     if generate_model and model_name is None:
-        model_name = model_infer_name_from(relative_path, dotted_path_with_name)
+        model_name = model_infer_name_from_dotted_view_path(dotted_path_with_name)
         click.secho(f"💡 Info: Inferred model name as "
                    f"{click.style(model_name, bold=True)}", fg="cyan")
 

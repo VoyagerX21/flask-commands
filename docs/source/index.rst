@@ -6,12 +6,14 @@
 ================
 Flask-Commands
 ================
-|pypi| |tests| |docs| |license| |stars|
+|pypi| |tests| |coverage| |docs| |license| |stars|
 
 .. |pypi| image:: https://img.shields.io/pypi/v/flask-commands.svg?cacheSeconds=300&v=|release|
    :target: https://pypi.org/project/flask-commands/
 .. |tests| image:: https://img.shields.io/github/actions/workflow/status/drewbutcher/flask-commands/tests.yml?branch=main
    :target: https://github.com/drewbutcher/flask-commands/actions
+.. |coverage| image:: https://codecov.io/gh/drewbutcher/flask-commands/branch/main/graph/badge.svg
+   :target: https://codecov.io/gh/drewbutcher/flask-commands
 .. |docs| image:: https://img.shields.io/readthedocs/flask-commands/latest
    :target: https://flask-commands.readthedocs.io/
 .. |license| image:: https://img.shields.io/pypi/l/flask-commands.svg

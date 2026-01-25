@@ -9,11 +9,12 @@ Unreleased
 ----------
 Added
 ~~~~~
--
+- Add ``--model`` and ``-m`` support to ``flask make:controller`` for inferred or explicit model creation.
+- Add model inference from controller names and cover it with tests.
 
 Changed
 ~~~~~~~
--
+- Refactor view model inference to accept dotted view paths and use ``split_dotted_path`` internally.
 
 Fixed
 ~~~~~

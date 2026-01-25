@@ -6,6 +6,10 @@ from flask_commands.utils.controllers import (
     extract_relative_path_from
 )
 from flask_commands.utils.files import is_project_root
+from flask_commands.utils.models import (
+    model_infer_name_from_controller,
+    model_make_file
+)
 from flask_commands.utils.naming import camel_to_snake
 from flask_commands.utils.routes import route_infer_name_from
 from flask_commands.utils.wirings import wire_controller_route_view
@@ -14,12 +18,22 @@ from flask_commands.utils.wirings import wire_controller_route_view
 @click.command(name="make:controller")
 @click.argument("controller_name")
 @click.option("--crud", is_flag=True,
-              help="Optional CRUD flag to generate all seven RESTful actions.")
+              help="Optional CRUD flag to generate all seven RESTful actions routes and controller methods along with get views.")
+@click.option("--model", "model_name", default=None,
+              help="Optional model name (example Post which makes the database table 'posts').")
+@click.option("-m", "--generate-model", is_flag=True,
+              help="Optional model flag to generate an inferred model from the controller name.")
 def make_controller(
     controller_name: str,
-    crud: bool) -> None:
+    crud: bool,
+    model_name: str | None,
+    generate_model: bool) -> None:
     if not is_project_root():
         return
+    # Infer model name if not provided
+    if generate_model and model_name is None:
+        model_name = model_infer_name_from_controller(controller_name)
+        click.secho(f"💡 Info: Inferred model name as {click.style(model_name, bold=True)}", fg="cyan")
     controller_file_path = \
         os.path.join(
             "app",
@@ -62,6 +76,14 @@ def make_controller(
             for message in messages:
                 click.echo(message)
 
+    # If a model_name was provided or inferred
+    if model_name:
+        model_init_path = os.path.join("app", "models", "__init__.py")
+        model_file_path = os.path.join("app", "models", f"{model_name.lower()}.py")
+        is_successful, message = model_make_file(
+            model_name, model_init_path, model_file_path)
+        click.echo(message)
+        all_successful = all_successful and is_successful
+
     if not all_successful:
         click.secho("⚠️  Warning: One or more make controller steps failed.", fg="yellow", bold=True)
-
