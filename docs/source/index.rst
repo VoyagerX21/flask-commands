@@ -21,7 +21,14 @@ Flask-Commands
 .. |stars| image:: https://img.shields.io/github/stars/drewbutcher/flask-commands
    :target: https://github.com/drewbutcher/flask-commands/stargazers
 
-**Flask-Commands** is a local-first CLI tool that scaffolds Flask projects and keeps generating views, routes, controllers, and models for you so you can stay in flow.  This is still very much in a beta stage, so try it out at your own risk!
+**Flask-Commands** is a local-first CLI tool that scaffolds Flask projects and
+generates views, routes, controllers, and models so you can stay in flow (and
+spend less time wiring the same things together, impeccably, for the hundredth
+time).
+
+This is still very much in beta, so do try it out with the usual sensible
+precautions: preferably not one you *need* by in the next two days; however,
+my hope is you will be able use this package for this very reason in the near future.
 
 Current Release: |release|
 
@@ -30,5 +37,5 @@ Current Release: |release|
    :caption: Contents:
 
    introduction
-   commands
+   commands/index
    changelog
