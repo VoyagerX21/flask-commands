@@ -21,6 +21,7 @@ Out of the box, Flask-Commands provides:
   - optional SQLite database with migrations
 
 - ``flask make:view`` — generates HTML views and can optionally scaffold:
+
   - controllers
   - routes / blueprints
   - SQLAlchemy models
@@ -29,6 +30,7 @@ Out of the box, Flask-Commands provides:
 
 - ``flask make:controller`` — generates controller files and can optionally
   scaffold routes / blueprints.
+
   - controllers
   - RESTful routes / blueprints
   - SQLAlchemy models
@@ -37,6 +39,7 @@ Out of the box, Flask-Commands provides:
 
 - ``flask make:model`` — generates SQLAlchemy models and can optionally
   scaffold migrations.
+
   - controllers
   - RESTful routes / blueprints
   - SQLAlchemy models
