@@ -35,3 +35,7 @@ Common patterns
      - Create a controller, routes, and templates for the seven RESTful actions.
    * - ``flask make:controller CONTROLLER_NAME --crud -m``
      - Create a controller, routes, and templates for the seven RESTful actions, plus a model.
+   * - ``flask make:model MODEL_NAME``
+     - Create a model and register it in ``app/models/__init__.py``.
+   * - ``flask make:model MODEL_NAME --crud``
+     - Create a model plus RESTful controller, routes, and views.

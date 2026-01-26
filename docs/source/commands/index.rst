@@ -20,3 +20,4 @@ enter.
    rest_actions
    nested_resources
    make_controller
+   make_model

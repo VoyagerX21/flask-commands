@@ -19,6 +19,17 @@ Fixed
 ~~~~~
 -
 
+0.2.3 - 2026-01-25
+-------------------
+Added
+~~~~~
+- Add ``flask make:model`` command with optional ``--crud`` scaffolding for controller, routes, and views.
+- Add tests covering model creation, CRUD scaffolding, and missing init warnings.
+
+Changed
+~~~~~~~
+- Refresh README with docs links, a compact cheat sheet, and example-driven messaging.
+
 0.2.2 - 2026-01-25
 -------------------
 Added

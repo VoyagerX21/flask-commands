@@ -9,18 +9,20 @@
 [![license](https://img.shields.io/pypi/l/flask-commands.svg)](https://github.com/drewbutcher/flask-commands/blob/main/LICENSE)
 [![stars](https://img.shields.io/github/stars/drewbutcher/flask-commands)](https://github.com/drewbutcher/flask-commands/stargazers)
 
-**Flask-Commands** is a local-first CLI tool that scaffolds Flask projects and keeps generating views, routes, controllers, and models for you so you can stay in flow. This is still very much in a beta stage, so try it out at your own risk.
+**Flask-Commands** is a local-first CLI that scaffolds Flask projects and automates the wiring between views, routes, controllers, and models so you ship faster with consistent structure.
+
 
 ## Getting Started
 
-Flask-Commands bundles a few opinionated conveniences:
+Flask-Commands bundles opinionated, productivity-focused generators:
 
-- `flask new` bootstraps a ready-to-run Flask project with virtualenv, dotenv, Tailwind wiring, and optional SQLite + migrations (prompted unless you pass `--db/--no-db`).
-- `flask make:view` generates HTML views and can optionally add controllers, routes/blueprints, and SQLAlchemy models.
+- `flask new` boots a ready-to-run Flask project with virtualenv, dotenv, Tailwind wiring, and optional SQLite + migrations (use `--db/--no-db`).
+- `flask make:view` generates HTML views and can optionally wire controllers, routes/blueprints, and SQLAlchemy models.
 - `flask make:controller` scaffolds a controller class and registers it in `app/controllers/__init__.py`.
+- `flask make:model` scaffolds a SQLAlchemy model and can optionally wire RESTful controllers, routes, and views.
 
 All generated code is plain Flask with no hidden runtime layers; every file is created on disk.
-The goal is to remove the repetitive setup work while keeping everything local and transparent.
+The goal is to remove repetitive setup work while keeping everything local and transparent.
 
 ## Installation
 
@@ -29,8 +31,6 @@ Flask-Commands is designed to be installed globally so you can create new Flask 
 ```bash
 pip install Flask-Commands
 ```
-
-> The published console script is `flask`. If you have a clash with Flask’s own CLI, run with `python -m flask_commands.cli ...` or rename the script in `pyproject.toml`.
 
 ## Quick Start
 
@@ -54,172 +54,51 @@ flask run --debug
 
 `run.sh` opens a Flask shell, starts the dev server, rebuilds `tailwind.css` and `tailwind.min.css`, opens VS Code and Safari, and hot-reloads changes in `templates/`, `controllers/`, `forms/`, `models/`, and `routes/`.
 
-Add a first page with controller and route wiring:
+
+## Docs quick links
+
+- Commands book: https://flask-commands.readthedocs.io/en/latest/commands/index.html
+- Concepts: https://flask-commands.readthedocs.io/en/latest/commands/concepts.html
+- REST actions: https://flask-commands.readthedocs.io/en/latest/commands/rest_actions.html
+- Nested resources: https://flask-commands.readthedocs.io/en/latest/commands/nested_resources.html
+- Changelog: https://flask-commands.readthedocs.io/en/latest/changelog.html
+
+## Cheat sheet
+
+- `flask new myproject` — Scaffold a new Flask project.
+- `flask make:view posts.index -rcm` — View + route + controller + model. Nested paths supported.
+- `flask make:controller PostController --crud -m` — RESTful controller, routes, templates, and a model scaffold.  Nested supported.
+- `flask make:model Post --crud` — Model plus RESTful controller, routes, and views. No nesting.
+
+## Examples
+
+Here are a few commands and what they do so you can see the speed and consistency gains.
 
 ```bash
-flask make:view posts.index -cr
-flask make:view admin.users.show -cr   # nested example
+flask make:view about -rc
 ```
-
-Tailwind is installed automatically when `npm` is available; otherwise the tool skips it with a warning.
-
-## Commands
-
-### flask new
-
-After installing Flask-Commands globally, you'll have access to a new command called `flask`, which lets you quickly scaffold Flask applications from the terminal.
+Creates a new template, adds a controller method, and wires up a route in one step.
 
 ```bash
-flask new myproject
+flask make:view posts.index -rcm
 ```
-
-Once the command completes, you'll see a new directory called `myproject/` that contains everything you need to get a Flask application up and running.
-
-If you do not pass `--db` or `--no-db`, the command prompts you to include a SQLite database (default yes).
-
-What you get:
-
-- A Python virtual environment `venv/` with core Flask dependencies pre-installed and listed in `requirements.txt`.
-- When using `--db` (enabled by default unless `--no-db` is specified), the following are also included:
-  - Flask-Migrate
-  - Flask-SQLAlchemy
-  - A seeded SQLite database with a users table
-  - An initial migration already applied
-- A blueprint-based application skeleton under `app/`, organized by responsibility:
-  - **Model** `app/models/` defining all your application’s data models/structure along with their methods.
-  - **View** `app/templates/` containing all HTML templates (including macros/components) used by the application.
-  - **Controller** `app/controllers/` housing controller classes responsible for the logic to gather and serve the requested data.
-  - **URL** `app/routes/` declaring URL paths and connecting them to controllers.
-- The project entry point at `run.py`.
-- Centralized configuration files under `config/`.
-- If `npm` is installed, a Tailwind-ready static asset pipeline at `app/static/src/`, including npm scripts for watching and building CSS.
-- Environment configuration files:
-  - `.env`
-  - `.env.example`
-- A default blueprint named `mains`, defined in `app/__init__.py`:
-  - Routes at `app/routes/mains`
-  - A controller at `app/controllers/main_controller` named `MainController`
-  - A starter “Hello World” template at `app/templates/mains/index.html`
-- A macOS-friendly helper script `run.sh` for starting the application with a single command:
+Generates the view, controller method, route, and a matching model scaffold with consistent naming.
 
 ```bash
-./run.sh
+flask make:view recipes.comments.index -rcm
 ```
-
-You can review this structure directly in the Flask-Commands source under `flask_commands/project`.
-
-### flask make:view
-
-Generates template files under `app/templates/` from dotted paths (for example, `posts.index` maps to `app/templates/posts/index.html`). Optional flags wire up matching components:
-
-- `-c/--generate-controller` or `--controller NAME` creates or extends the controller class.
-- `-r/--generate-route` or `--route PATH` adds blueprint routes and supports RESTful actions (`index`, `show`, `create`, `store`, `edit`, `update`, `destroy`, or `delete`).
-- `-m/--generate-model` or `--model NAME` seeds a SQLAlchemy model with `id`, `created_at`, and `updated_at` columns plus an import stub.
-
-Examples:
-
-```bash
-flask make:view button                         # view-only snippet
-flask make:view components.buttons             # reusable component template
-flask make:view posts.index -crm               # view + controller + route + model
-flask make:view recipes.comments.index -rcm    # nested relationship
-flask make:view posts.show --route '/posts/<int:post_id>' --controller PostController
-```
-
-### flask make:controller
-
-Creates a controller class under `app/controllers/` and registers it in `app/controllers/__init__.py`.
-
-```bash
-flask make:controller PostController
-```
-
-This creates `app/controllers/post_controller.py` with a class stub:
-
-```python
-class PostController:
-    pass
-```
-
-Use `--crud` to scaffold all seven RESTful actions, routes/blueprints, and matching templates.
+Scaffolds nested resources with dotted notation, keeping folders and routes consistent.
 
 ```bash
 flask make:controller PostController --crud
 ```
+Builds a full RESTful controller, routes, and templates so you do not hand-write seven actions.
 
-With `--crud`, `app/controllers/post_controller.py` looks like:
-
-```python
-from flask import render_template
-from flask import redirect, url_for
-
-class PostController:
-
-    @staticmethod
-    def index() -> str:
-        return render_template('posts/index.html')
-
-    @staticmethod
-    def show(post_id: int) -> str:
-        return render_template('posts/show.html')
-
-    @staticmethod
-    def create() -> str:
-        return render_template('posts/create.html')
-
-    @staticmethod
-    def store() -> str:
-        return redirect(url_for('posts.index'))
-
-    @staticmethod
-    def edit(post_id: int) -> str:
-        return render_template('posts/edit.html')
-
-    @staticmethod
-    def update(post_id: int) -> str:
-        return redirect(url_for('posts.index'))
-
-    @staticmethod
-    def destroy(post_id: int) -> str:
-        return redirect(url_for('posts.index'))
+```bash
+flask make:model Comment --crud
 ```
+Creates a model and wires a RESTful controller, routes, and views for a complete resource.
 
-It also generates and wires up routes and templates:
-
-```python
-from app.controllers import PostController
-from app.routes.posts import bp
-
-@bp.route('/posts', methods=['GET'])
-def index():
-    return PostController.index()
-
-@bp.route('/posts/<int:post_id>', methods=['GET'])
-def show(post_id: int):
-    return PostController.show(post_id)
-
-@bp.route('/posts/create', methods=['GET'])
-def create():
-    return PostController.create()
-
-@bp.route('/posts', methods=['POST'])
-def store():
-    return PostController.store()
-
-@bp.route('/posts/<int:post_id>/edit', methods=['GET'])
-def edit(post_id: int):
-    return PostController.edit(post_id)
-
-@bp.route('/posts/<int:post_id>', methods=['POST'])
-def update(post_id: int):
-    return PostController.update(post_id)
-
-@bp.route('/posts/<int:post_id>/delete', methods=['POST'])
-def destroy(post_id: int):
-    return PostController.destroy(post_id)
-```
-
-And creates four view templates under `app/templates/posts/`: `index.html`, `show.html`, `create.html`, `edit.html`.
 
 ## Contributing
 

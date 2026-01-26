@@ -64,7 +64,6 @@ def make_controller(
             dotted_path_with_name = f"{relative_path.replace('/', '.')}.{action}"
             route_name = route_infer_name_from(dotted_path_with_name)
 
-
             is_successful, messages = wire_controller_route_view(
                 dotted_path_with_name,
                 relative_path,
