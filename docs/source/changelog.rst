@@ -17,7 +17,7 @@ Changed
 
 Fixed
 ~~~~~
--
+- Updating Documentation
 
 0.2.3 - 2026-01-25
 -------------------

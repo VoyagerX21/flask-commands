@@ -21,10 +21,26 @@ Out of the box, Flask-Commands provides:
   - optional SQLite database with migrations
 
 - ``flask make:view`` — generates HTML views and can optionally scaffold:
-
   - controllers
   - routes / blueprints
   - SQLAlchemy models
+  - view templates
+  - supports nesting
+
+- ``flask make:controller`` — generates controller files and can optionally
+  scaffold routes / blueprints.
+  - controllers
+  - RESTful routes / blueprints
+  - SQLAlchemy models
+  - RESTful view templates
+  - supports nesting
+
+- ``flask make:model`` — generates SQLAlchemy models and can optionally
+  scaffold migrations.
+  - controllers
+  - RESTful routes / blueprints
+  - SQLAlchemy models
+  - RESTful view templates
 
 Safeguard: ``flask make:...`` commands only run from a Flask project root (the
 current directory must include ``app/`` and ``run.py``). ``flask new`` can be
