@@ -1,6 +1,6 @@
 [project]
 name = "flask-commands"
-version = "0.2.3"
+version = "0.2.4"
 description = "A set of command line tools that help you scaffold out your flask application quickly."
 authors = [
     {name = "Drew Butcher",email = "drewlbutcher@gmail.com"}

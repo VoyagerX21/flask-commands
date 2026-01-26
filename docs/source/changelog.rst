@@ -17,7 +17,22 @@ Changed
 
 Fixed
 ~~~~~
+-
+
+0.2.4 - 2026-01-26
+-------------------
+Added
+~~~~~
+-
+
+Changed
+~~~~~~~
+-
+
+Fixed
+~~~~~
 - Updating Documentation
+- Fixed flask new error 💣 Error: Project Creation Failed 😤 Error: exception: 'utf-8' codec can't decode byte 0xe3 in position 16: invalid continuation byte
 
 0.2.3 - 2026-01-25
 -------------------

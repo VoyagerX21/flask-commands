@@ -35,7 +35,10 @@ def copy_templates(project_path: str, include_db: bool, replacements: Optional[D
     package_root = os.path.dirname(os.path.dirname(__file__))
     templates_directory = os.path.join(package_root, "project")
     for root, directories, files in os.walk(templates_directory):
+        directories[:] = [d for d in directories if d != "__pycache__"]
         for filename in files:
+            if filename == ".DS_Store" or filename.endswith(".pyc"):
+                continue
             source_path = os.path.join(root, filename)
             relative_path = os.path.relpath(source_path, templates_directory)
 
