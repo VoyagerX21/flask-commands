@@ -9,7 +9,8 @@ Unreleased
 ----------
 Added
 ~~~~~
--
+- Add YouTube tutorial: "Flask Commands - Part 1 - Installing Flask Commands"
+  (https://youtu.be/8O4FeEU_IhM).
 
 Changed
 ~~~~~~~
@@ -21,14 +22,6 @@ Fixed
 
 0.2.4 - 2026-01-26
 -------------------
-Added
-~~~~~
--
-
-Changed
-~~~~~~~
--
-
 Fixed
 ~~~~~
 - Updating Documentation

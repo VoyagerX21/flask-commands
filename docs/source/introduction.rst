@@ -65,6 +65,32 @@ new Flask applications from any directory on your machine.
    pip install Flask-Commands
 
 
+Video Tutorial
+--------------
+
+Prefer a walkthrough? Expand to watch the YouTube tutorial.
+
+.. raw:: html
+
+   <details>
+     <summary><strong>Flask Commands - Part 1 - Installing Flask Commands</strong></summary>
+     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem;">
+       <iframe
+         src="https://www.youtube-nocookie.com/embed/8O4FeEU_IhM?rel=0"
+         title="Flask Commands - Part 1 - Installing Flask Commands"
+         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+         referrerpolicy="strict-origin-when-cross-origin"
+         allowfullscreen
+         loading="lazy"
+       ></iframe>
+     </div>
+   </details>
+
+If the embed does not load, watch on YouTube:
+`Flask Commands - Part 1 - Installing Flask Commands <https://youtu.be/8O4FeEU_IhM>`_.
+
+
 Quick Start
 -----------
 
