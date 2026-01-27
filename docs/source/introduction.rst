@@ -66,7 +66,7 @@ new Flask applications from any directory on your machine.
 
 
 Video Tutorial
---------------
+~~~~~~~~~~~~~~
 
 Prefer a walkthrough? Expand to watch the YouTube tutorial.
 
@@ -74,7 +74,7 @@ Prefer a walkthrough? Expand to watch the YouTube tutorial.
 
    <details>
      <summary><strong>Flask Commands - Part 1 - Installing Flask Commands</strong></summary>
-     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem;">
+     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem; border-radius: 16px; overflow: hidden;">
        <iframe
          src="https://www.youtube-nocookie.com/embed/8O4FeEU_IhM?rel=0"
          title="Flask Commands - Part 1 - Installing Flask Commands"
