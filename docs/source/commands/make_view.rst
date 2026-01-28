@@ -82,6 +82,31 @@ with a **route** (url) and have a **controller** (logic serving the route) to
 serve the page.  So **route** is shortened to **r** and **controller** is
 shortend to *c*
 
+Video Tutorial
+~~~~~~~~~~~~~~
+
+Prefer a walkthrough? Expand to watch the YouTube tutorial.
+
+.. raw:: html
+
+   <details>
+     <summary><strong>Flask Commands - Part 4 - Adding  View No Dots</strong></summary>
+     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem; border-radius: 16px; overflow: hidden;">
+       <iframe
+         src="https://www.youtube-nocookie.com/embed/3uZEtSSAUzE?rel=0"
+         title="Flask Commands - Part 4 - Adding  View No Dots"
+         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+         referrerpolicy="strict-origin-when-cross-origin"
+         allowfullscreen
+         loading="lazy"
+       ></iframe>
+     </div>
+   </details>
+
+If the embed does not load, watch on YouTube:
+`Flask Commands - Part 4 - Adding  View No Dots <https://youtu.be/3uZEtSSAUzE>`_.
+
 Nesting Views
 -------------
 
@@ -117,7 +142,7 @@ would use the command:
 
 .. code-block:: bash
 
-   flask make:view mains.about -rc
+   flask make:view mains.about --route /about -c
 
 This will keep everything in a ``mains`` theme directory or class structure.
 
@@ -129,6 +154,38 @@ This will keep everything in a ``mains`` theme directory or class structure.
 
 I would have said this earlier, but we didn't know about nesting at the time (now we do).
 
+Notice that if we wrote the command
+
+.. code-block:: bash
+
+   flask make:view mains.about -rc
+
+Then we would have all the same behavior as above; however, the url would be ``/mains/about``.  This is by design as the infered generator flags will use your dot notation to sturucture your route and controller.
+
+Video Tutorial
+~~~~~~~~~~~~~~
+
+Prefer a walkthrough? Expand to watch the YouTube tutorial.
+
+.. raw:: html
+
+   <details>
+     <summary><strong>Flask Commands - Part 5 - Nesting Views</strong></summary>
+     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem; border-radius: 16px; overflow: hidden;">
+       <iframe
+         src="https://www.youtube-nocookie.com/embed/r6NmtDCquoE?rel=0"
+         title="Flask Commands - Part 5 - Nesting Views"
+         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
+         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+         referrerpolicy="strict-origin-when-cross-origin"
+         allowfullscreen
+         loading="lazy"
+       ></iframe>
+     </div>
+   </details>
+
+If the embed does not load, watch on YouTube:
+`Flask Commands - Part 5 - Nesting Views <https://youtu.be/r6NmtDCquoE>`_.
 
 Adding models (and why REST shows up here)
 ------------------------------------------
