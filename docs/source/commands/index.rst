@@ -10,7 +10,7 @@ Begin with :doc:`concepts` if you like knowing what will happen before you press
 enter.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Commands
 
    cheat_sheet
