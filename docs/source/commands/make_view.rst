@@ -85,27 +85,8 @@ shortend to *c*
 Video Tutorial
 ~~~~~~~~~~~~~~
 
-Prefer a walkthrough? Expand to watch the YouTube tutorial.
+.. youtube_embed:: 3uZEtSSAUzE "Flask Commands – Part 4: Adding a View (No Dot Notation)"
 
-.. raw:: html
-
-   <details>
-     <summary><strong>Flask Commands - Part 4 - Adding  View No Dots</strong></summary>
-     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem; border-radius: 16px; overflow: hidden;">
-       <iframe
-         src="https://www.youtube-nocookie.com/embed/3uZEtSSAUzE?rel=0"
-         title="Flask Commands - Part 4 - Adding  View No Dots"
-         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
-         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-         referrerpolicy="strict-origin-when-cross-origin"
-         allowfullscreen
-         loading="lazy"
-       ></iframe>
-     </div>
-   </details>
-
-If the embed does not load, watch on YouTube:
-`Flask Commands - Part 4 - Adding  View No Dots <https://youtu.be/3uZEtSSAUzE>`_.
 
 Nesting Views
 -------------
@@ -165,27 +146,7 @@ Then we would have all the same behavior as above; however, the url would be ``/
 Video Tutorial
 ~~~~~~~~~~~~~~
 
-Prefer a walkthrough? Expand to watch the YouTube tutorial.
-
-.. raw:: html
-
-   <details>
-     <summary><strong>Flask Commands - Part 5 - Nesting Views</strong></summary>
-     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem; border-radius: 16px; overflow: hidden;">
-       <iframe
-         src="https://www.youtube-nocookie.com/embed/r6NmtDCquoE?rel=0"
-         title="Flask Commands - Part 5 - Nesting Views"
-         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
-         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-         referrerpolicy="strict-origin-when-cross-origin"
-         allowfullscreen
-         loading="lazy"
-       ></iframe>
-     </div>
-   </details>
-
-If the embed does not load, watch on YouTube:
-`Flask Commands - Part 5 - Nesting Views <https://youtu.be/r6NmtDCquoE>`_.
+.. youtube_embed:: r6NmtDCquoE "Flask Commands – Part 5: Nesting Views (Dot Notation & Folder Structure in Flask)"
 
 Adding models (and why REST shows up here)
 ------------------------------------------

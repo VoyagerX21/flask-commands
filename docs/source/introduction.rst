@@ -67,27 +67,7 @@ new Flask applications from any directory on your machine.
 Video Tutorial
 ~~~~~~~~~~~~~~
 
-Prefer a walkthrough? Expand to watch the YouTube tutorial.
-
-.. raw:: html
-
-   <details>
-     <summary><strong>Flask Commands - Part 1 - Installing</strong></summary>
-     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem; border-radius: 16px; overflow: hidden;">
-       <iframe
-         src="https://www.youtube-nocookie.com/embed/nrFk9fAaiII?rel=0"
-         title="Flask Commands - Part 1 - Installing"
-         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
-         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-         referrerpolicy="strict-origin-when-cross-origin"
-         allowfullscreen
-         loading="lazy"
-       ></iframe>
-     </div>
-   </details>
-
-If the embed does not load, watch on YouTube:
-`Flask Commands - Part 1 - Installing <https://youtu.be/nrFk9fAaiII>`_.
+.. youtube_embed:: nrFk9fAaiII "Flask Commands - Part 1 - Installing"
 
 Quick Start
 -----------
@@ -177,27 +157,7 @@ If you prefer to start the application manually (not using ``run.sh``) or are no
 Video Tutorial
 ~~~~~~~~~~~~~~
 
-Prefer a walkthrough? Expand to watch the YouTube tutorial.
-
-.. raw:: html
-
-   <details>
-     <summary><strong>Flask Commands - Part 2 - Installing Your First Project</strong></summary>
-     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem; border-radius: 16px; overflow: hidden;">
-       <iframe
-         src="https://www.youtube-nocookie.com/embed/_bFQ9TUULWA?rel=0"
-         title="Flask Commands - Part 2 - Installing Your First Project"
-         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
-         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-         referrerpolicy="strict-origin-when-cross-origin"
-         allowfullscreen
-         loading="lazy"
-       ></iframe>
-     </div>
-   </details>
-
-If the embed does not load, watch on YouTube:
-`Flask Commands - Part 2 - Installing Your First Project <https://youtu.be/_bFQ9TUULWA>`_.
+.. youtube_embed:: _bFQ9TUULWA "Flask Commands – Part 2: Installing Your First Project"
 
 
 Your New Project in Action
@@ -287,24 +247,4 @@ For a deeper dive into flags, behavior, and examples, head over to the
 Video Tutorial
 ~~~~~~~~~~~~~~
 
-Prefer a walkthrough? Expand to watch the YouTube tutorial.
-
-.. raw:: html
-
-   <details>
-     <summary><strong>Flask Commands - Part 3 - Your New Project in Action</strong></summary>
-     <div style="position: relative; padding-bottom: 56.25%; height: 0; margin-top: 0.75rem; border-radius: 16px; overflow: hidden;">
-       <iframe
-         src="https://www.youtube-nocookie.com/embed/wDsC5OCgsgU?rel=0"
-         title="Flask Commands - Part 3 - Your New Project in Action"
-         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;"
-         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-         referrerpolicy="strict-origin-when-cross-origin"
-         allowfullscreen
-         loading="lazy"
-       ></iframe>
-     </div>
-   </details>
-
-If the embed does not load, watch on YouTube:
-`Flask Commands - Part 3 - Your New Project in Action <https://youtu.be/wDsC5OCgsgU>`_.
+.. youtube_embed:: wDsC5OCgsgU "Flask Commands – Part 3: Your New Project in Action"

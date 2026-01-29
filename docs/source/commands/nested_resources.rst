@@ -49,6 +49,11 @@ name. That means this really long command can be written as:
 If you use ``-r``, ``-c``, and ``-m`` (in any order), Flask-Commands assumes the
 standard setup above and does exactly the same thing.
 
+Video Tutorial
+~~~~~~~~~~~~~~
+
+.. youtube_embed:: e_rhD1al8A4 "Flask Commands – Part 8: Our First RESTful View"
+
 To create the ``show`` page for a single recipe, you could write:
 
 .. code-block:: bash
@@ -68,6 +73,11 @@ forgot to remove the ``-m`` then you would receive a warning saying
 that the recipe model already exists and was left alone (which is what you
 want, expecally if you have gone in and made changes to the model to include
 specific columns).
+
+Video Tutorial
+~~~~~~~~~~~~~~
+
+.. youtube_embed:: b9WqM3Wi1J8 "Flask Commands – Part 9: A Second RESTful View"
 
 Nesting Models
 --------------
@@ -102,6 +112,11 @@ that produces the same behavior.
 
    flask make:view recipes.comments.index -rcm
 
+Video Tutorial
+~~~~~~~~~~~~~~
+
+.. youtube_embed:: ar7tdbvqVSc "Flask Commands – Part 10: Nesting Relationships (Nested RESTful Routes in Flask)"
+
 Let’s dive a little deeper down this rabbit hole with another relationship.
 Suppose that on our cooking website we allow users to upload images when they
 make a comment.  Three level, what **Recipes → Comments → Images** that's
@@ -133,3 +148,8 @@ a view and how the structure/relationship should look with dots and throw in
 your generated flags of route -r, controller -c, and model -m (then preso 🪄
 everything is built for you).  But wait, it get's better with controllers
 because we can make multiple views with one command!!!!
+
+Video Tutorial
+~~~~~~~~~~~~~~
+
+.. youtube_embed:: 9PpSvadbKIc "Flask Commands – Part 11: Nesting Relationships 3 Levels Deep"

@@ -82,3 +82,8 @@ defaults:
 
 You can review this structure directly in the Flask-Commands source by exploring
 the files and folders under: ``flask_commands/project``.
+
+When you come back to your project after closing everything down the
+``./run.sh`` will quickly get you back up and and running quickly.
+
+.. youtube_embed:: p4Fk141vAjc "Flask Commands – Part 6: How to Restart Your Project Quickly"

@@ -2,7 +2,7 @@ RESTful actions
 ===============
 
 ``Flask-Commands`` follows the seven RESTful actions. They is one for each
-day of the week and they are forgivable 77 time over over.
+day of the week and they are forgivable 77 time over.
 
 - ``index``
 - ``show``
@@ -36,3 +36,6 @@ give feedback about what just happened.
    update  POST   /users/<int:user_id>/edit     Update an instance (then redirect)
    destroy POST   /users/<int:user_id>/delete   Delete an instance (then redirect)
    ======= ====== ============================= ============================================================
+
+
+.. youtube_embed:: 7M8sVz5rjZ4 "Flask Commands – Part 7: RESTful Actions"

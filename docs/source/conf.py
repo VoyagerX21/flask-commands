@@ -36,11 +36,14 @@ _project_data = _read_project_data()
 release = _project_data.get("version", "0.0.0")
 project_description = _project_data.get("description", "")
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "_ext")))
+
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
     "sphinx_copybutton",
+    "youtube_embed",
 ]
 
 templates_path = ['_templates']
