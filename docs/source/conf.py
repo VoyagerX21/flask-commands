@@ -73,9 +73,8 @@ html_css_files = ["theme-overrides.css"]
 source_suffix = ".rst"
 
 rst_prolog = """
-.. raw:: html
+.. container:: page-logo
 
-    <div class="page-logo">
-        <img src="_static/flask-commands-logo.png" alt="Logo of Flask-Commands">
-    </div>
+   .. image:: /_static/flask-commands-logo.png
+      :alt: Logo of Flask-Commands
 """
