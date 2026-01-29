@@ -33,7 +33,7 @@ my hope is you will be able use this package for this very reason in the near fu
 Current Release: |release|
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
    :caption: Contents:
 
    introduction
