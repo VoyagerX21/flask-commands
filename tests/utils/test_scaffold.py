@@ -4,7 +4,7 @@ from flask_commands.utils.scaffold import (
     check_dotted_path_with_action_for_models,
     crud_mapping_route,
     normalize_dotted_path_with_action,
-    split_dotted_path
+    split_dotted_path_with_action_into_relative_path_and_action
 )
 
 @pytest.fixture
@@ -64,23 +64,23 @@ def test_crud_mapping_route_case_with_path_like_resource():
 def test_normalize_dotted_path_with_action_lowercase_and_hyphen_to_underscore():
     assert normalize_dotted_path_with_action("Admin.Posts-Index") == "admin.posts_index"
 
-def test_split_dotted_path_with_no_dot():
-    relative_path, action = split_dotted_path("index")
+def test_split_dotted_path_with_action_into_relative_path_and_action_with_no_dot():
+    relative_path, action = split_dotted_path_with_action_into_relative_path_and_action("index")
     assert relative_path == ""
     assert action == "index"
 
-def test_split_dotted_path_with_one_dot():
-    relative_path, action = split_dotted_path("posts.show")
+def test_split_dotted_path_with_action_into_relative_path_and_action_with_one_dot():
+    relative_path, action = split_dotted_path_with_action_into_relative_path_and_action("posts.show")
     assert relative_path == "posts"
     assert action == "show"
 
-def test_split_dotted_path_with_two_dot():
-    relative_path, action = split_dotted_path("posts.images.index")
+def test_split_dotted_path_with_action_into_relative_path_and_action_with_two_dot():
+    relative_path, action = split_dotted_path_with_action_into_relative_path_and_action("posts.images.index")
     assert relative_path == "posts/images"
     assert action == "index"
 
-def test_split_dotted_path_with_capital_letters():
-    relative_path, action = split_dotted_path("admin.users.show")
+def test_split_dotted_path_with_action_into_relative_path_and_action_with_capital_letters():
+    relative_path, action = split_dotted_path_with_action_into_relative_path_and_action("admin.users.show")
     assert relative_path == "admin/users"
     assert action == "show"
 

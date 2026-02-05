@@ -7,7 +7,7 @@ from .naming import pluralize, singularize
 from .scaffold import (
     check_dotted_path_with_action_for_models,
     crud_mapping_route,
-    split_dotted_path)
+    split_dotted_path_with_action_into_relative_path_and_action)
 
 def generate_route_folder_path_and_blueprint_name(dotted_path_with_action: str, relative_path: str) -> Tuple[str, str]:
     """
@@ -235,7 +235,7 @@ def route_infer_name_from(dotted_path_with_action: str) -> str:
     models = check_dotted_path_with_action_for_models(dotted_path_with_action)
     if "." not in dotted_path_with_action:
         return '/' + dotted_path_with_action
-    relative_path, action = split_dotted_path(dotted_path_with_action)
+    relative_path, action = split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action)
     if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
         return '/' + dotted_path_with_action.replace('.', '/')
     if "/" in relative_path:

@@ -4,13 +4,46 @@ import click
 from typing import Tuple
 from .files import append_file, write_file
 from .naming import camel_to_snake, pluralize, singularize
-from .scaffold import split_dotted_path
+from .scaffold import split_dotted_path_with_action_into_relative_path_and_action
+
+def _model_finalize_child_model(parent_models: list[str], remaining_relative_path_segments: list[str], joiner: str) -> str:
+    if remaining_relative_path_segments:
+        return parent_models, joiner.join(remaining_relative_path_segments)
+    if parent_models:
+        return parent_models[:-1], parent_models[-1]
+    return parent_models, ""
+
+def model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action: str) -> Tuple[list[str], list[str], str]:
+    registered_models = model_get_registered_models()
+    relative_path, action = split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action)
+
+    relative_path_segments = relative_path.split("/")
+    namespace: list[str] = []
+    parent_models: list[str] = []
+    index = 0
+
+    # 1) Namespace prefix
+    while index < len(relative_path_segments) and singularize(relative_path_segments[index]) not in model_slugs:
+        namespace.append(relative_path_segments[index])
+        index += 1
+
+    # 2) Contiguous chain of models
+    while index < len(relative_path_segments) and singularize(relative_path_segments[index]) in model_slugs:
+        parent_models.append(relative_path_segments[index])
+        index += 1
+
+    # 3) Remainder becomes child segment
+    parent_models, child_model = _model_finalize_child_model(
+        parent_models, relative_path_segments[index:], "/")
+
+    return namespace, parent_models, child_model
+
 
 def model_infer_name_from_dotted_view_path(dotted_path_with_action: str) -> str:
     """
     Infer a model name from a dotted view path.
 
-    Uses split_dotted_path to derive the relative path, then
+    Uses split_dotted_path_with_action_into_relative_path_and_action to derive the relative path, then
     singularizes the final segment and converts it to title case.
 
     Args:
@@ -27,7 +60,7 @@ def model_infer_name_from_dotted_view_path(dotted_path_with_action: str) -> str:
         >>> name
         'Post'
     """
-    relative_path, _ = split_dotted_path(dotted_path_with_action)
+    relative_path, _ = split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action)
     if relative_path != "":
         model_name = singularize(relative_path.split('/')[-1]).title()
     else:

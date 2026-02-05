@@ -55,7 +55,7 @@ def normalize_dotted_path_with_action(dotted_path_with_action: str) -> str:
     """
     return dotted_path_with_action.replace("-", "_").lower()
 
-def split_dotted_path(dotted_path_with_action: str) -> Tuple[str, str]:
+def split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action: str) -> Tuple[str, str]:
     """
     Split a dotted path like 'posts.index' -> (relative_path, action).
     Examples:

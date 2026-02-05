@@ -10,7 +10,7 @@ from flask_commands.utils.files import is_project_root
 from flask_commands.utils.routes import route_infer_name_from
 from flask_commands.utils.scaffold import (
     normalize_dotted_path_with_action,
-    split_dotted_path
+    split_dotted_path_with_action_into_relative_path_and_action
 )
 from flask_commands.utils.wirings import wire_controller_route_view
 
@@ -80,7 +80,7 @@ def make_view(
 
     dotted_path_with_action = \
         normalize_dotted_path_with_action(dotted_path_with_action)
-    relative_path, action = split_dotted_path(dotted_path_with_action)
+    relative_path, action = split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action)
 
     # Infer controller name if not provided
     if generate_controller and controller_name is None:

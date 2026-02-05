@@ -18,7 +18,7 @@ Added
 Changed
 ~~~~~~~
 - Normalize dotted path handling across `make:view`, route inference, and wiring using `dotted_path_with_action`.
-- Update `split_dotted_path` to accept pre-normalized input instead of lowercasing internally.
+- Update `split_dotted_path_with_action_into_relative_path_and_action` to accept pre-normalized input instead of lowercasing internally.
 - Rename internal `copy_templates` template root variable for clarity.
 
 Fixed
@@ -53,7 +53,7 @@ Added
 
 Changed
 ~~~~~~~
-- Refactor view model inference to accept dotted view paths and use ``split_dotted_path`` internally.
+- Refactor view model inference to accept dotted view paths and use ``split_dotted_path_with_action_into_relative_path_and_action`` internally.
 - Split the commands documentation into a multi-page book and point the legacy commands page at it.
 
 
