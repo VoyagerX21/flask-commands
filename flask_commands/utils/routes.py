@@ -5,16 +5,16 @@ from typing import Tuple
 from .files import append_file, write_file
 from .naming import pluralize, singularize
 from .scaffold import (
-    check_dotted_path_with_name_for_models,
+    check_dotted_path_with_action_for_models,
     crud_mapping_route,
     split_dotted_path)
 
-def generate_route_folder_path_and_blueprint_name(dotted_path_with_name: str, relative_path: str) -> Tuple[str, str]:
+def generate_route_folder_path_and_blueprint_name(dotted_path_with_action: str, relative_path: str) -> Tuple[str, str]:
     """
     Generate a file path and blueprint name for a Flask route module.
 
     Args:
-        dotted_path_with_name (str): A dotted path notation string that may contain
+        dotted_path_with_action (str): A dotted path notation string that may contain
             a dot separator and a name component (e.g., 'auth.login' or 'dashboard').
         relative_path (str): A relative path string representing the route directory
             structure (e.g., 'auth/login' or 'users/profile').
@@ -38,7 +38,7 @@ def generate_route_folder_path_and_blueprint_name(dotted_path_with_name: str, re
         >>> generate_route_folder_path_and_blueprint_name('recipe.comments.images.index', 'recipe/comments/images')
         ('app/routes/recipe/comments/images', 'mains')
     """
-    if "." not in dotted_path_with_name:
+    if "." not in dotted_path_with_action:
         return os.path.join("app", "routes", "mains"), 'mains'
     top_level = relative_path.split("/", 1)[0]
     return os.path.join("app", "routes", relative_path), top_level
@@ -187,7 +187,7 @@ def route_build_parameter_reference(parameters: list[str]) -> str:
 def route_http_method_for_action(action: str) -> str:
     return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
 
-def route_infer_name_from(dotted_path_with_name: str) -> str:
+def route_infer_name_from(dotted_path_with_action: str) -> str:
     """
     Infer a route path from a dotted path notation with an action name.
 
@@ -195,7 +195,7 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
     a RESTful route path. It handles both custom routes and CRUD operation mappings.
 
     Args:
-        dotted_path_with_name (str): A dotted path string optionally ending with a CRUD action.
+        dotted_path_with_action (str): A dotted path string optionally ending with a CRUD action.
                                      Format: 'parent_resource.resource.action' or 'resource.action'
 
     Returns:
@@ -222,22 +222,22 @@ def route_infer_name_from(dotted_path_with_name: str) -> str:
         'update', 'destroy', 'delete'. Resource names are singularized for CRUD routes.
     """
 
-    # dotted_path_with_name = 'posts.comments.show'
+    # dotted_path_with_action = 'posts.comments.show'
     # relative_path = posts/comments
     # action = show
     # child_object = comment
 
-    # dotted_path_with_name = 'posts.show'
+    # dotted_path_with_action = 'posts.show'
     # relative_path = posts
     # action = show
     # child_object = post
 
-    models = check_dotted_path_with_name_for_models(dotted_path_with_name)
-    if "." not in dotted_path_with_name:
-        return '/' + dotted_path_with_name
-    relative_path, action = split_dotted_path(dotted_path_with_name)
+    models = check_dotted_path_with_action_for_models(dotted_path_with_action)
+    if "." not in dotted_path_with_action:
+        return '/' + dotted_path_with_action
+    relative_path, action = split_dotted_path(dotted_path_with_action)
     if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
-        return '/' + dotted_path_with_name.replace('.', '/')
+        return '/' + dotted_path_with_action.replace('.', '/')
     if "/" in relative_path:
         child_object = singularize(relative_path.rsplit("/", 1)[-1])
         resource = ''

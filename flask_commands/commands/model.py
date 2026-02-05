@@ -28,11 +28,11 @@ def make_model(model_name: str, crud:bool) -> None:
         for action in restful_actions:
             controller_name = model_name + "Controller"
             relative_path = pluralize(model_name.lower())
-            dotted_path_with_name = relative_path + '.' + action
-            route_name = route_infer_name_from(dotted_path_with_name)
+            dotted_path_with_action = relative_path + '.' + action
+            route_name = route_infer_name_from(dotted_path_with_action)
 
             is_successful, messages = wire_controller_route_view(
-                dotted_path_with_name,
+                dotted_path_with_action,
                 relative_path,
                 action,
                 controller_name,

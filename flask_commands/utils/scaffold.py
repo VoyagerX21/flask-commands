@@ -3,7 +3,7 @@ from typing import Tuple
 from .naming import singularize
 
 
-def check_dotted_path_with_name_for_models(dotted_path_with_name: str) -> list[str]:
+def check_dotted_path_with_action_for_models(dotted_path_with_action: str) -> list[str]:
     """
     Return path segments that map to registered models.
 
@@ -22,7 +22,7 @@ def check_dotted_path_with_name_for_models(dotted_path_with_name: str) -> list[s
             model_init_content = f.read()
     except FileNotFoundError:
         return models
-    for part_name in dotted_path_with_name.lower().split("."):
+    for part_name in dotted_path_with_action.lower().split("."):
         if singularize(part_name) in model_init_content:
             models.append(part_name)
     return models
@@ -46,7 +46,16 @@ def crud_mapping_route(action: str, resource: str, child_object: str) -> str:
     }
     return mapping[action](resource, child_object)
 
-def split_dotted_path(dotted_path_with_name: str) -> Tuple[str, str]:
+def normalize_dotted_path_with_action(dotted_path_with_action: str) -> str:
+    """
+    Normalize a dotted path/action by lowercasing and replacing '-' with '_'.
+
+    Example:
+        "Admin.Posts-Index" -> "admin.posts_index"
+    """
+    return dotted_path_with_action.replace("-", "_").lower()
+
+def split_dotted_path(dotted_path_with_action: str) -> Tuple[str, str]:
     """
     Split a dotted path like 'posts.index' -> (relative_path, action).
     Examples:
@@ -56,7 +65,7 @@ def split_dotted_path(dotted_path_with_name: str) -> Tuple[str, str]:
       'admin.posts.comments' -> ('admin/posts', 'comments')
     The action is always the last segment; the rest form a relative path.
     """
-    parts = dotted_path_with_name.lower().split(".")
+    parts = dotted_path_with_action.split(".")
     action = parts[-1]
     relative_path = '' if len(parts) == 1 else '/'.join(parts[:-1])
     return relative_path, action

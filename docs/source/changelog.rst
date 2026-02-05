@@ -11,10 +11,15 @@ Added
 ~~~~~
 - Add YouTube tutorial: "Flask Commands - Part 1 - Installing Flask Commands"
   (https://youtu.be/8O4FeEU_IhM).
+- Add `normalize_dotted_path_with_action` helper for standardizing dotted view inputs.
+- Add `model_get_registered_models` to parse `app/models/__init__.py` imports via AST.
+- Add tests for model registry parsing edge cases, dotted path normalization, and template copy ignores.
 
 Changed
 ~~~~~~~
--
+- Normalize dotted path handling across `make:view`, route inference, and wiring using `dotted_path_with_action`.
+- Update `split_dotted_path` to accept pre-normalized input instead of lowercasing internally.
+- Rename internal `copy_templates` template root variable for clarity.
 
 Fixed
 ~~~~~

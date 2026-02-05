@@ -1,7 +1,9 @@
 import os
 import pytest
+import flask_commands.utils.files as files_module
 from flask_commands.utils.files import (
     append_file,
+    copy_templates,
     insert_import_into_lines,
     is_project_root,
     write_file)
@@ -16,6 +18,31 @@ def test_append_file_fails_if_file_does_not_exists(tmp_path):
     file_path = tmp_path / "test.txt"
     with pytest.raises(FileNotFoundError):
         append_file(str(file_path), ["I'm here!"])
+
+def test_copy_templates_skips_ds_store_and_pyc(tmp_path, monkeypatch):
+    calls = []
+    project_root_directory_path = os.path.join(
+        os.path.dirname(os.path.dirname(files_module.__file__)),
+        "project",
+    )
+
+    def fake_walk(_):
+        yield (project_root_directory_path, [], [".DS_Store", "compiled.pyc", "keep.txt"])
+
+    monkeypatch.setattr(files_module.os, "walk", fake_walk)
+    monkeypatch.setattr(files_module, "_read_template", lambda _: "content")
+
+
+    def fake_write_file(path, contents):
+        calls.append((path, contents))
+
+    monkeypatch.setattr(files_module, "write_file", fake_write_file)
+
+    copy_templates(str(tmp_path), include_db=True, replacements=None)
+
+    assert len(calls) == 1
+    assert calls[0][0].endswith("keep.txt")
+
 
 def test_is_project_root_true(tmp_path, monkeypatch):
     app_directory = tmp_path / "app"

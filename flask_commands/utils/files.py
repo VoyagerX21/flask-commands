@@ -33,14 +33,14 @@ def copy_templates(project_path: str, include_db: bool, replacements: Optional[D
     string replacements to file contents (e.g. {'project_name': name}).
     """
     package_root = os.path.dirname(os.path.dirname(__file__))
-    templates_directory = os.path.join(package_root, "project")
-    for root, directories, files in os.walk(templates_directory):
+    project_root_directory = os.path.join(package_root, "project")
+    for root, directories, files in os.walk(project_root_directory):
         directories[:] = [d for d in directories if d != "__pycache__"]
         for filename in files:
             if filename == ".DS_Store" or filename.endswith(".pyc"):
                 continue
             source_path = os.path.join(root, filename)
-            relative_path = os.path.relpath(source_path, templates_directory)
+            relative_path = os.path.relpath(source_path, project_root_directory)
 
             # Skip over models folder when setup does not include a database
             if not include_db and relative_path.startswith(os.path.join("app", "models")):

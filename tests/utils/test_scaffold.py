@@ -1,8 +1,9 @@
 from re import split
 import pytest
 from flask_commands.utils.scaffold import (
-    check_dotted_path_with_name_for_models,
+    check_dotted_path_with_action_for_models,
     crud_mapping_route,
+    normalize_dotted_path_with_action,
     split_dotted_path
 )
 
@@ -20,38 +21,17 @@ def model_builder(tmp_path, monkeypatch):
 
     return project_root
 
-def test_check_dotted_path_with_name_for_models_no_models_init():
-    models = check_dotted_path_with_name_for_models("posts.index")
+def test_check_dotted_path_with_action_for_models_no_models_init():
+    models = check_dotted_path_with_action_for_models("posts.index")
     assert models == []
 
-def test_check_dotted_path_with_name_for_models_empty(model_builder):
-    models = check_dotted_path_with_name_for_models("posts.index")
+def test_check_dotted_path_with_action_for_models_empty(model_builder):
+    models = check_dotted_path_with_action_for_models("posts.index")
     assert models == []
 
-def test_check_dotted_path_with_name_for_models_intersection(model_builder):
-    models = check_dotted_path_with_name_for_models("users.index")
+def test_check_dotted_path_with_action_for_models_intersection(model_builder):
+    models = check_dotted_path_with_action_for_models("users.index")
     assert models == ['users']
-
-def test_split_dotted_path_with_no_dot():
-    relative_path, action = split_dotted_path("index")
-    assert relative_path == ""
-    assert action == "index"
-
-def test_split_dotted_path_with_one_dot():
-    relative_path, action = split_dotted_path("posts.show")
-    assert relative_path == "posts"
-    assert action == "show"
-
-def test_split_dotted_path_with_two_dot():
-    relative_path, action = split_dotted_path("posts.images.index")
-    assert relative_path == "posts/images"
-    assert action == "index"
-
-def test_split_dotted_path_with_capital_letters():
-    relative_path, action = split_dotted_path("Admin.Users.Show")
-    assert relative_path == "admin/users"
-    assert action == "show"
-
 
 def test_crud_mapping_route_case_index():
     assert crud_mapping_route('index', 'posts', 'post') == '/posts'
@@ -80,4 +60,27 @@ def test_crud_mapping_route_case_delete():
 def test_crud_mapping_route_case_with_path_like_resource():
     'admin.posts.comments.show'
     assert crud_mapping_route('show', 'admin/posts/comments', 'comment') == '/admin/posts/comments/<int:comment_id>'
+
+def test_normalize_dotted_path_with_action_lowercase_and_hyphen_to_underscore():
+    assert normalize_dotted_path_with_action("Admin.Posts-Index") == "admin.posts_index"
+
+def test_split_dotted_path_with_no_dot():
+    relative_path, action = split_dotted_path("index")
+    assert relative_path == ""
+    assert action == "index"
+
+def test_split_dotted_path_with_one_dot():
+    relative_path, action = split_dotted_path("posts.show")
+    assert relative_path == "posts"
+    assert action == "show"
+
+def test_split_dotted_path_with_two_dot():
+    relative_path, action = split_dotted_path("posts.images.index")
+    assert relative_path == "posts/images"
+    assert action == "index"
+
+def test_split_dotted_path_with_capital_letters():
+    relative_path, action = split_dotted_path("admin.users.show")
+    assert relative_path == "admin/users"
+    assert action == "show"
 

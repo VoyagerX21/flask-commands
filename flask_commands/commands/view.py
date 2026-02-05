@@ -8,11 +8,14 @@ from flask_commands.utils.models import (
 )
 from flask_commands.utils.files import is_project_root
 from flask_commands.utils.routes import route_infer_name_from
-from flask_commands.utils.scaffold import split_dotted_path
+from flask_commands.utils.scaffold import (
+    normalize_dotted_path_with_action,
+    split_dotted_path
+)
 from flask_commands.utils.wirings import wire_controller_route_view
 
 @click.command(name="make:view")
-@click.argument("dotted_path_with_name")
+@click.argument("dotted_path_with_action")
 @click.option("--controller", "controller_name", default=None,
               help="Optional controller class name (example PostController).")
 @click.option("-c", "--generate-controller", is_flag=True,
@@ -26,7 +29,7 @@ from flask_commands.utils.wirings import wire_controller_route_view
 @click.option("-m", "--generate-model", is_flag=True,
               help="Optional model flag to generate an inferred model from the dotted path name.")
 def make_view(
-    dotted_path_with_name: str,
+    dotted_path_with_action: str,
     controller_name: str | None,
     generate_controller: bool,
     route_name: str | None,
@@ -75,7 +78,9 @@ def make_view(
     if not is_project_root():
         return
 
-    relative_path, action = split_dotted_path(dotted_path_with_name)
+    dotted_path_with_action = \
+        normalize_dotted_path_with_action(dotted_path_with_action)
+    relative_path, action = split_dotted_path(dotted_path_with_action)
 
     # Infer controller name if not provided
     if generate_controller and controller_name is None:
@@ -87,13 +92,13 @@ def make_view(
 
     # Infer route name if not provided
     if generate_route and route_name is None:
-        route_name = route_infer_name_from(dotted_path_with_name)
+        route_name = route_infer_name_from(dotted_path_with_action)
         click.secho("💡 Info: Inferred route name as "
                    f"{click.style(route_name, bold=True)}", fg="cyan")
 
     # Infer model name if not provided
     if generate_model and model_name is None:
-        model_name = model_infer_name_from_dotted_view_path(dotted_path_with_name)
+        model_name = model_infer_name_from_dotted_view_path(dotted_path_with_action)
         click.secho(f"💡 Info: Inferred model name as "
                    f"{click.style(model_name, bold=True)}", fg="cyan")
 
@@ -101,7 +106,7 @@ def make_view(
 
     all_successful = True
     is_successful, messages = wire_controller_route_view(
-        dotted_path_with_name,
+        dotted_path_with_action,
         relative_path,
         action,
         controller_name,

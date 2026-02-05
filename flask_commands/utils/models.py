@@ -1,10 +1,12 @@
+import os
+import ast
 import click
 from typing import Tuple
 from .files import append_file, write_file
 from .naming import camel_to_snake, pluralize, singularize
 from .scaffold import split_dotted_path
 
-def model_infer_name_from_dotted_view_path(dotted_path_with_name: str) -> str:
+def model_infer_name_from_dotted_view_path(dotted_path_with_action: str) -> str:
     """
     Infer a model name from a dotted view path.
 
@@ -12,7 +14,7 @@ def model_infer_name_from_dotted_view_path(dotted_path_with_name: str) -> str:
     singularizes the final segment and converts it to title case.
 
     Args:
-        dotted_path_with_name (str): The dotted module path or name.
+        dotted_path_with_action (str): The dotted module path or name.
 
     Returns:
         str: The inferred model name in title case.
@@ -25,11 +27,11 @@ def model_infer_name_from_dotted_view_path(dotted_path_with_name: str) -> str:
         >>> name
         'Post'
     """
-    relative_path, _ = split_dotted_path(dotted_path_with_name)
+    relative_path, _ = split_dotted_path(dotted_path_with_action)
     if relative_path != "":
         model_name = singularize(relative_path.split('/')[-1]).title()
     else:
-        model_name = singularize(dotted_path_with_name).title()
+        model_name = singularize(dotted_path_with_action).title()
     return model_name
 
 def model_infer_name_from_controller(controller_name: str) -> str:
@@ -47,6 +49,49 @@ def model_infer_name_from_controller(controller_name: str) -> str:
     snake = camel_to_snake(name_without_suffix)
     last_segment = snake.split("_")[-1] if snake else ""
     return singularize(last_segment).title()
+
+def model_get_registered_models() -> list[str]:
+    """
+    Return the list of registered model class names from `app/models/__init__.py`.
+
+    The function parses the file’s import statements (relative imports or
+    `app.models.*` absolute imports) and collects any imported names that start
+    with an uppercase letter, treating them as model classes.
+
+    Returns:
+        list[str]: Sorted model class names. Returns an empty list if the file
+            is missing or contains invalid Python syntax.
+
+    Examples:
+        # app/models/__init__.py:
+        #   from .post import Post
+        #   from app.models.comment import Comment
+        #   from .helpers import format_slug
+        #
+        # model_get_registered_models()
+        # -> ['Comment', 'Post']
+    """
+    models_init_file_path = os.path.join("app", "models", "__init__.py")
+    try:
+        with open(models_init_file_path, "r", encoding="utf-8") as file:
+            init_content = file.read()
+    except FileNotFoundError:
+        return []
+    try:
+        tree = ast.parse(init_content, filename=models_init_file_path)
+    except SyntaxError:
+        return []
+    models: set[str] = set()
+    for node in tree.body:
+        if not isinstance(node, ast.ImportFrom):
+           continue
+        # allow relative imports OR absolute app.models import
+        if node.level == 0 and not (node.module and node.module.startswith("app.models.")):
+            continue
+        for alias in node.names:
+            if alias.name and alias.name[0].isupper():
+                models.add(alias.name)
+    return sorted(models)
 
 def model_make_file(model_name: str, model_init_path: str, model_file_path: str) -> Tuple[bool, str]:
     """

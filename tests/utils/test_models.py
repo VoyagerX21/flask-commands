@@ -4,6 +4,7 @@ from pathlib import Path
 from flask_commands.utils.models import (
     model_infer_name_from_controller,
     model_infer_name_from_dotted_view_path,
+    model_get_registered_models,
     model_make_file
 )
 
@@ -21,6 +22,10 @@ def model_project(tmp_path, monkeypatch):
 
     return project_root
 
+def test_model_infer_name_from_controller():
+    model_name = model_infer_name_from_controller("PostCommentImageController")
+    assert model_name == "Image"
+
 def test_model_infer_name_from_dotted_view_path_with_dot():
     model_name = model_infer_name_from_dotted_view_path("posts.index")
     assert model_name == "Post"
@@ -29,9 +34,74 @@ def test_model_infer_name_from_dotted_view_path_without_dot():
     model_name = model_infer_name_from_dotted_view_path("posts")
     assert model_name == "Post"
 
-def test_model_infer_name_from_controller():
-    model_name = model_infer_name_from_controller("PostCommentImageController")
-    assert model_name == "Image"
+def test_model_get_registered_models_parses_imports(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(
+        "from .post import Post\n"
+        "from app.models.comment import Comment\n"
+        "from .helpers import format_slug\n"
+        "from app.models.user import User, admin\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == ["Comment", "Post", "User"]
+
+
+def test_model_get_registered_models_with_missing_init(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == []
+
+def test_model_get_registered_models_returns_empty_on_syntax_error(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    init_file = models_dir / "__init__.py"
+    init_file.write_text("from .post import Post\nthis is not valid python(", encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == []
+
+def test_model_get_registered_models_ignores_non_importfrom_nodes(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(
+        "import os\n"
+        "x = 1\n"
+        "from .post import Post\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == ["Post"]
+
+def test_model_get_registered_models_ignores_non_models_absolute_imports(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(
+        "from app.controllers.users import UsersController\n"
+        "from app.models.post import Post\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == ["Post"]
+
 
 def test_model_make_file_success(model_project):
     is_successful, message = model_make_file(
@@ -110,7 +180,6 @@ def test_model_make_file_init_missing(tmp_path, monkeypatch):
 
     assert is_successful is False
     assert " Model __init__.py Missing" in message
-
 
 def test_model_make_file_append_file_exception(model_project, monkeypatch):
     def boom(*args, **kwargs):

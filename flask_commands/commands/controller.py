@@ -61,11 +61,11 @@ def make_controller(
         restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
         relative_path = extract_relative_path_from(controller_name)
         for action in restful_actions:
-            dotted_path_with_name = f"{relative_path.replace('/', '.')}.{action}"
-            route_name = route_infer_name_from(dotted_path_with_name)
+            dotted_path_with_action = f"{relative_path.replace('/', '.')}.{action}"
+            route_name = route_infer_name_from(dotted_path_with_action)
 
             is_successful, messages = wire_controller_route_view(
-                dotted_path_with_name,
+                dotted_path_with_action,
                 relative_path,
                 action,
                 controller_name,

@@ -91,7 +91,7 @@ def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypat
     route_dir.mkdir(parents=True)
 
     monkeypatch.chdir(project_root)
-    # dotted_path_with_name = users.index
+    # dotted_path_with_action = users.index
     is_successful, message = route_make_directory_and_register_blueprint(
         relative_path='users',
         action='index',
@@ -138,7 +138,7 @@ def test_route_make_directory_and_register_blueprint_success_nested_routes(tmp_p
     )
 
     monkeypatch.chdir(project_root)
-    # dotted_path_with_name = recipes.comments.index
+    # dotted_path_with_action = recipes.comments.index
     is_successful, message = route_make_directory_and_register_blueprint(
         relative_path='recipes/comments',
         action='index',
@@ -174,7 +174,7 @@ def test_route_make_directory_and_register_blueprint_app_init_missing_return(tmp
     route_dir.mkdir(parents=True)
 
     monkeypatch.chdir(project_root)
-    # dotted_path_with_name = users.index
+    # dotted_path_with_action = users.index
     is_successful, message = route_make_directory_and_register_blueprint(
         relative_path='users',
         action='index',
@@ -192,7 +192,7 @@ def test_route_make_directory_and_register_blueprint_route_already_exists(tmp_pa
     route_dir.mkdir(parents=True)
     monkeypatch.chdir(project_root)
 
-    # dotted_path_with_name = users.index
+    # dotted_path_with_action = users.index
     is_successful, message = route_make_directory_and_register_blueprint(
         relative_path='users',
         action='index',
@@ -215,7 +215,7 @@ def test_route_make_directory_and_register_blueprint_exception(tmp_path, monkeyp
 
     project_root = tmp_path
     monkeypatch.chdir(project_root)
-    # dotted_path_with_name = users.index
+    # dotted_path_with_action = users.index
     is_successful, message = route_make_directory_and_register_blueprint(
         relative_path='users',
         action='index',
