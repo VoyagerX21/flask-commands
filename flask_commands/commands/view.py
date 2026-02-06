@@ -1,13 +1,13 @@
 import os
 import click
 
-from flask_commands.utils.controllers import controller_infer_name_from
+from flask_commands.utils.controllers import controller_generate_controller_name_from_relative_path
 from flask_commands.utils.models import (
     model_infer_name_from_dotted_view_path,
     model_make_file
 )
 from flask_commands.utils.files import is_project_root
-from flask_commands.utils.routes import route_infer_name_from
+from flask_commands.utils.routes import route_generate_route_name_from_dotted_path_with_action
 from flask_commands.utils.scaffold import (
     normalize_dotted_path_with_action,
     split_dotted_path_with_action_into_relative_path_and_action
@@ -85,14 +85,17 @@ def make_view(
     # Infer controller name if not provided
     if generate_controller and controller_name is None:
         if relative_path != '':
-            controller_name = controller_infer_name_from(relative_path)
-            click.secho(f"💡 Info: Inferred controller name as {click.style(controller_name, bold=True)}", fg="cyan")
+            controller_name = controller_generate_controller_name_from_relative_path(relative_path)
+            click.secho(f"💡 Info - Generated controller: {click.style(controller_name, bold=True)}", fg="cyan")
         else:
             controller_name = 'MainController'
 
     # Infer route name if not provided
     if generate_route and route_name is None:
-        route_name = route_infer_name_from(dotted_path_with_action)
+        # EDIT MARK STOPPED
+        route_name = \
+            route_generate_route_name_from_dotted_path_with_action(
+                dotted_path_with_action)
         click.secho("💡 Info: Inferred route name as "
                    f"{click.style(route_name, bold=True)}", fg="cyan")
 

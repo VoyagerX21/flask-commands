@@ -46,6 +46,9 @@ def crud_mapping_route(action: str, resource: str, child_object: str) -> str:
     }
     return mapping[action](resource, child_object)
 
+def filter_falsy(items: list[str]) -> list[str]:
+    return [item for item in items if item]
+
 def normalize_dotted_path_with_action(dotted_path_with_action: str) -> str:
     """
     Normalize a dotted path/action by lowercasing and replacing '-' with '_'.

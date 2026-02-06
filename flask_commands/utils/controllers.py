@@ -134,11 +134,11 @@ def controller_add_method(
     )
     return True, message
 
-def controller_infer_name_from(relative_path: str) -> str:
-    return ''.join([singularize(part).title()
+def controller_generate_controller_name_from_relative_path(relative_path: str) -> str:
+    return ''.join([singularize(part).title().replace('_', '')
                     for part in relative_path.split('/')]) + "Controller"
 
-def extract_relative_path_from(controller_name: str) -> str:
+def controller_generate_relative_path_from_controller_name(controller_name: str) -> str:
     """Return pluralized path from a controller class name.
 
     Example:

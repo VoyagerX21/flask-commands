@@ -4,40 +4,53 @@ import click
 from typing import Tuple
 from .files import append_file, write_file
 from .naming import camel_to_snake, pluralize, singularize
-from .scaffold import split_dotted_path_with_action_into_relative_path_and_action
+from .scaffold import (
+    filter_falsy,
+    split_dotted_path_with_action_into_relative_path_and_action
+)
 
-def _model_finalize_child_model(parent_models: list[str], remaining_relative_path_segments: list[str], joiner: str) -> str:
-    if remaining_relative_path_segments:
-        return parent_models, joiner.join(remaining_relative_path_segments)
-    if parent_models:
-        return parent_models[:-1], parent_models[-1]
-    return parent_models, ""
+def model_get_registered_models() -> list[str]:
+    """
+    Return the list of registered model class names from `app/models/__init__.py`.
 
-def model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action: str) -> Tuple[list[str], list[str], str]:
-    registered_models = model_get_registered_models()
-    relative_path, action = split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action)
+    The function parses the file’s import statements (relative imports or
+    `app.models.*` absolute imports) and collects any imported names that start
+    with an uppercase letter, treating them as model classes.
 
-    relative_path_segments = relative_path.split("/")
-    namespace: list[str] = []
-    parent_models: list[str] = []
-    index = 0
+    Returns:
+        list[str]: Sorted model class names. Returns an empty list if the file
+            is missing or contains invalid Python syntax.
 
-    # 1) Namespace prefix
-    while index < len(relative_path_segments) and singularize(relative_path_segments[index]) not in model_slugs:
-        namespace.append(relative_path_segments[index])
-        index += 1
-
-    # 2) Contiguous chain of models
-    while index < len(relative_path_segments) and singularize(relative_path_segments[index]) in model_slugs:
-        parent_models.append(relative_path_segments[index])
-        index += 1
-
-    # 3) Remainder becomes child segment
-    parent_models, child_model = _model_finalize_child_model(
-        parent_models, relative_path_segments[index:], "/")
-
-    return namespace, parent_models, child_model
-
+    Examples:
+        # app/models/__init__.py:
+        #   from .post import Post
+        #   from app.models.comment import Comment
+        #   from .helpers import format_slug
+        #
+        # model_get_registered_models()
+        # -> ['Comment', 'Post']
+    """
+    models_init_file_path = os.path.join("app", "models", "__init__.py")
+    try:
+        with open(models_init_file_path, "r", encoding="utf-8") as file:
+            init_content = file.read()
+    except FileNotFoundError:
+        return []
+    try:
+        tree = ast.parse(init_content, filename=models_init_file_path)
+    except SyntaxError:
+        return []
+    models: set[str] = set()
+    for node in tree.body:
+        if not isinstance(node, ast.ImportFrom):
+           continue
+        # allow relative imports OR absolute app.models import
+        if node.level == 0 and not (node.module and node.module.startswith("app.models.")):
+            continue
+        for alias in node.names:
+            if alias.name and alias.name[0].isupper():
+                models.add(alias.name)
+    return sorted(models)
 
 def model_infer_name_from_dotted_view_path(dotted_path_with_action: str) -> str:
     """
@@ -82,49 +95,6 @@ def model_infer_name_from_controller(controller_name: str) -> str:
     snake = camel_to_snake(name_without_suffix)
     last_segment = snake.split("_")[-1] if snake else ""
     return singularize(last_segment).title()
-
-def model_get_registered_models() -> list[str]:
-    """
-    Return the list of registered model class names from `app/models/__init__.py`.
-
-    The function parses the file’s import statements (relative imports or
-    `app.models.*` absolute imports) and collects any imported names that start
-    with an uppercase letter, treating them as model classes.
-
-    Returns:
-        list[str]: Sorted model class names. Returns an empty list if the file
-            is missing or contains invalid Python syntax.
-
-    Examples:
-        # app/models/__init__.py:
-        #   from .post import Post
-        #   from app.models.comment import Comment
-        #   from .helpers import format_slug
-        #
-        # model_get_registered_models()
-        # -> ['Comment', 'Post']
-    """
-    models_init_file_path = os.path.join("app", "models", "__init__.py")
-    try:
-        with open(models_init_file_path, "r", encoding="utf-8") as file:
-            init_content = file.read()
-    except FileNotFoundError:
-        return []
-    try:
-        tree = ast.parse(init_content, filename=models_init_file_path)
-    except SyntaxError:
-        return []
-    models: set[str] = set()
-    for node in tree.body:
-        if not isinstance(node, ast.ImportFrom):
-           continue
-        # allow relative imports OR absolute app.models import
-        if node.level == 0 and not (node.module and node.module.startswith("app.models.")):
-            continue
-        for alias in node.names:
-            if alias.name and alias.name[0].isupper():
-                models.add(alias.name)
-    return sorted(models)
 
 def model_make_file(model_name: str, model_init_path: str, model_file_path: str) -> Tuple[bool, str]:
     """
@@ -210,3 +180,85 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
         click.style(f"    - Registered {click.style(model_name, bold=True)}", fg="green") + click.style(f" model at {click.style(model_init_path, bold=True)}\n", fg="green")
     )
     return True, message
+
+def model_model_names_to_snake_case_names(model_names:list[str]) -> list[str]:
+    """
+    Convert a list of PascalCase model class names to snake_case slugs.
+
+    Args:
+        model_names: Model class names in PascalCase, e.g. ["Post", "UserAPI"].
+
+    Returns:
+        A list of snake_case names in the same order, e.g. ["post", "user_api"].
+
+    Examples:
+        >>> model_model_names_to_snake_case_names(["Post", "Comment"])
+        ['post', 'comment']
+        >>> model_model_names_to_snake_case_names(["RecipeCommentImage"])
+        ['recipe_comment_image']
+    """
+    return [camel_to_snake(model) for model in model_names]
+
+def model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action: str) -> Tuple[list[str], list[str], str]:
+    """
+    Split a dotted path into namespace, parent_models, and child_model segments.
+
+    This uses a left-to-right scan of the dotted path segments. Leading segments
+    that do not match registered models become the namespace. The first
+    contiguous run of matched model segments becomes parent_models. Any remaining
+    unmatched segments are collapsed into a single compound child_model.
+
+    Args:
+        dotted_path_with_action: A dotted path like
+            "admin.posts.shop.images.show".
+
+    Returns:
+        A tuple of (namespace, parent_models, child_model), where:
+        - namespace: list of unmatched leading segments
+        - parent_models: list of contiguous matched model segments
+        - child_model: a single segment (possibly compound) for the child model
+
+    Examples:
+        >>> model_split_hierarchy_from_dotted_path_with_action("admin.posts.comments.show")
+        (['admin'], ['posts'], 'comments')
+        >>> model_split_hierarchy_from_dotted_path_with_action("admin.posts.shop.images.show")
+        (['admin'], ['posts'], 'shop_images')
+        >>> model_split_hierarchy_from_dotted_path_with_action("reports.index")
+        ([], [], 'reports')
+    """
+    registered_models = model_get_registered_models()
+    registered_snake_case_models = \
+        model_model_names_to_snake_case_names(registered_models)
+    relative_path, _ = \
+        split_dotted_path_with_action_into_relative_path_and_action(
+            dotted_path_with_action)
+
+    relative_path_segments = relative_path.split("/")
+    relative_path_segments = filter_falsy(relative_path_segments)
+    namespace: list[str] = []
+    parent_models: list[str] = []
+    index = 0
+
+    # 1) Namespace prefix
+    while index < len(relative_path_segments) and singularize(relative_path_segments[index]) not in registered_snake_case_models:
+        namespace.append(relative_path_segments[index])
+        index += 1
+
+    # 2) Contiguous chain of models
+    while index < len(relative_path_segments) and singularize(relative_path_segments[index]) in registered_snake_case_models:
+        parent_models.append(relative_path_segments[index])
+        index += 1
+
+    # 3) Remainder becomes child segment
+    parent_models, child_model = _model_finalize_child_model(
+        parent_models, relative_path_segments[index:], "_")
+
+    return namespace, parent_models, child_model
+
+def _model_finalize_child_model(parent_models: list[str], remaining_relative_path_segments: list[str], joiner: str) -> str:
+    if remaining_relative_path_segments:
+        return parent_models, joiner.join(remaining_relative_path_segments)
+    if parent_models:
+        return parent_models[:-1], parent_models[-1]
+    return parent_models, ""
+

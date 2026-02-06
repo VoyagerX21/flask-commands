@@ -14,6 +14,7 @@ Added
 - Add `normalize_dotted_path_with_action` helper for standardizing dotted view inputs.
 - Add `model_get_registered_models` to parse `app/models/__init__.py` imports via AST.
 - Add tests for model registry parsing edge cases, dotted path normalization, and template copy ignores.
+- Document future command goals, routing prompts, and naming conventions in package_goals.md.
 
 Changed
 ~~~~~~~
@@ -23,7 +24,7 @@ Changed
 
 Fixed
 ~~~~~
--
+- Clarify model/namespace detection rules and compound child model routing behavior.
 
 0.2.4 - 2026-01-26
 -------------------

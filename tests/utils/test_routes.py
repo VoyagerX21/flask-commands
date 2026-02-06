@@ -2,7 +2,7 @@ import pytest
 from flask_commands.utils.routes import (
     route_add_method,
     route_make_directory_and_register_blueprint,
-    route_infer_name_from,
+    route_generate_route_name_from_dotted_path_with_action,
     generate_route_folder_path_and_blueprint_name)
 
 @pytest.fixture
@@ -20,25 +20,25 @@ def model_builder(tmp_path, monkeypatch):
     return project_root
 
 
-def test_route_infer_name_from_crud(model_builder):
-    assert route_infer_name_from('posts.index') == '/posts'
-    assert route_infer_name_from('posts.create') == '/posts/create'
-    assert route_infer_name_from('posts.store') == '/posts'
-    assert route_infer_name_from('posts.show') == '/posts/<int:post_id>'
-    assert route_infer_name_from('posts.edit') == '/posts/<int:post_id>/edit'
-    assert route_infer_name_from('posts.update') == '/posts/<int:post_id>'
-    assert route_infer_name_from('posts.destroy') == '/posts/<int:post_id>/delete'
-    assert route_infer_name_from('posts.delete') == '/posts/<int:post_id>/delete'
-    assert route_infer_name_from('admin.posts.create') == '/admin/posts/create'
-    assert route_infer_name_from('admin.posts.comments.show') == '/admin/posts/<int:post_id>/comments/<int:comment_id>'
-    assert route_infer_name_from('admin.posts.comments.index') == '/admin/posts/<int:post_id>/comments'
+def test_route_generate_route_name_from_dotted_path_with_action_crud(model_builder):
+    assert route_generate_route_name_from_dotted_path_with_action('posts.index') == '/posts'
+    assert route_generate_route_name_from_dotted_path_with_action('posts.create') == '/posts/create'
+    assert route_generate_route_name_from_dotted_path_with_action('posts.store') == '/posts'
+    assert route_generate_route_name_from_dotted_path_with_action('posts.show') == '/posts/<int:post_id>'
+    assert route_generate_route_name_from_dotted_path_with_action('posts.edit') == '/posts/<int:post_id>/edit'
+    assert route_generate_route_name_from_dotted_path_with_action('posts.update') == '/posts/<int:post_id>'
+    assert route_generate_route_name_from_dotted_path_with_action('posts.destroy') == '/posts/<int:post_id>/delete'
+    assert route_generate_route_name_from_dotted_path_with_action('posts.delete') == '/posts/<int:post_id>/delete'
+    assert route_generate_route_name_from_dotted_path_with_action('admin.posts.create') == '/admin/posts/create'
+    assert route_generate_route_name_from_dotted_path_with_action('admin.posts.comments.show') == '/admin/posts/<int:post_id>/comments/<int:comment_id>'
+    assert route_generate_route_name_from_dotted_path_with_action('admin.posts.comments.index') == '/admin/posts/<int:post_id>/comments'
 
-def test_route_infer_name_from_non_crud():
-    assert route_infer_name_from('posts') == '/posts'
-    assert route_infer_name_from('admin.posts') == '/admin/posts'
-    assert route_infer_name_from('post') == '/post'
-    assert route_infer_name_from('admin.post') == '/admin/post'
-    assert route_infer_name_from('admin.posts.comments') == '/admin/posts/comments'
+def test_route_generate_route_name_from_dotted_path_with_action_non_crud():
+    assert route_generate_route_name_from_dotted_path_with_action('posts') == '/posts'
+    assert route_generate_route_name_from_dotted_path_with_action('admin.posts') == '/admin/posts'
+    assert route_generate_route_name_from_dotted_path_with_action('post') == '/post'
+    assert route_generate_route_name_from_dotted_path_with_action('admin.post') == '/admin/post'
+    assert route_generate_route_name_from_dotted_path_with_action('admin.posts.comments') == '/admin/posts/comments'
 
 def test_generate_route_folder_path_and_blueprint_name_crud():
     route_folder_path, blueprint_name = \

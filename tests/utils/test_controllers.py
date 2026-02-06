@@ -5,7 +5,8 @@ import builtins
 from pathlib import Path
 from flask_commands.utils.controllers import (
     controller_add_method,
-    controller_infer_name_from,
+    controller_generate_controller_name_from_relative_path,
+    controller_generate_relative_path_from_controller_name,
     controller_make_file
 )
 
@@ -171,10 +172,18 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
     assert is_successful is False
     assert "Failed to add Controller Method" in message
 
-def test_controller_infer_name_from():
-    assert controller_infer_name_from('posts') == 'PostController'
-    assert controller_infer_name_from('admin/posts') == 'AdminPostController'
-    assert controller_infer_name_from('posts/comments') == 'PostCommentController'
+def test_controller_generate_controller_name_from_relative_path():
+    assert controller_generate_controller_name_from_relative_path('posts') == 'PostController'
+    assert controller_generate_controller_name_from_relative_path('admin/posts') == 'AdminPostController'
+    assert controller_generate_controller_name_from_relative_path('posts/comments') == 'PostCommentController'
+    assert controller_generate_controller_name_from_relative_path('admin/users/user_profiles') == 'AdminUserUserProfileController'
+
+def test_controller_generate_relative_path_from_controller_name():
+    assert controller_generate_relative_path_from_controller_name("PostController") == 'posts'
+    assert controller_generate_relative_path_from_controller_name("PostCommentController") == 'posts/comments'
+    assert controller_generate_relative_path_from_controller_name("PostCommentImageController") == 'posts/comments/images'
+    assert controller_generate_relative_path_from_controller_name("UserAPIController") == 'users/apis'
+
 
 def test_controller_make_file_success(controller_project):
 

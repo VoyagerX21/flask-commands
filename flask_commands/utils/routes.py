@@ -2,6 +2,10 @@ import re
 import os
 import click
 from typing import Tuple
+
+from flask_commands.utils.models import (
+    model_get_registered_models,
+    model_model_names_to_snake_case_names)
 from .files import append_file, write_file
 from .naming import pluralize, singularize
 from .scaffold import (
@@ -187,7 +191,7 @@ def route_build_parameter_reference(parameters: list[str]) -> str:
 def route_http_method_for_action(action: str) -> str:
     return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
 
-def route_infer_name_from(dotted_path_with_action: str) -> str:
+def route_generate_route_name_from_dotted_path_with_action(dotted_path_with_action: str) -> str:
     """
     Infer a route path from a dotted path notation with an action name.
 
@@ -204,17 +208,17 @@ def route_infer_name_from(dotted_path_with_action: str) -> str:
              - For CRUD actions: returns a RESTful path based on the resource hierarchy
 
     Examples:
-        >>> route_infer_name_from('posts')
+        >>> route_generate_route_name_from_dotted_path_with_action('posts')
         '/posts'
-        >>> route_infer_name_from('posts.show')
+        >>> route_generate_route_name_from_dotted_path_with_action('posts.show')
         '/posts/<int:post_id>'
-        >>> route_infer_name_from('admin.posts.comments.index')
+        >>> route_generate_route_name_from_dotted_path_with_action('admin.posts.comments.index')
         '/admin/posts/<int:posts_id>/comments'
-        >>> route_infer_name_from('admin.posts.comments.show')
+        >>> route_generate_route_name_from_dotted_path_with_action('admin.posts.comments.show')
         '/admin/posts/<int:post_id>/comments/<int:comment_id>'
-        >>> route_infer_name_from('posts.comments.show')
+        >>> route_generate_route_name_from_dotted_path_with_action('posts.comments.show')
         '/posts/<int:post_id>/comments/<int:comment_id>'
-        >>> route_infer_name_from('posts.custom_action')
+        >>> route_generate_route_name_from_dotted_path_with_action('posts.custom_action')
         '/posts/custom_action'
 
     Note:
@@ -233,6 +237,9 @@ def route_infer_name_from(dotted_path_with_action: str) -> str:
     # child_object = post
 
     models = check_dotted_path_with_action_for_models(dotted_path_with_action)
+    registered_models = model_get_registered_models()
+    registered_snake_case_models = model_model_names_to_snake_case_names(registered_models)
+
     if "." not in dotted_path_with_action:
         return '/' + dotted_path_with_action
     relative_path, action = split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action)

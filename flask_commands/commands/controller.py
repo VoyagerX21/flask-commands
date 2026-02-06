@@ -3,7 +3,7 @@ import click
 
 from flask_commands.utils.controllers import (
     controller_make_file,
-    extract_relative_path_from
+    controller_generate_relative_path_from_controller_name
 )
 from flask_commands.utils.files import is_project_root
 from flask_commands.utils.models import (
@@ -11,7 +11,7 @@ from flask_commands.utils.models import (
     model_make_file
 )
 from flask_commands.utils.naming import camel_to_snake
-from flask_commands.utils.routes import route_infer_name_from
+from flask_commands.utils.routes import route_generate_route_name_from_dotted_path_with_action
 from flask_commands.utils.wirings import wire_controller_route_view
 
 
@@ -59,10 +59,10 @@ def make_controller(
 
     if crud:
         restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
-        relative_path = extract_relative_path_from(controller_name)
+        relative_path = controller_generate_relative_path_from_controller_name(controller_name)
         for action in restful_actions:
             dotted_path_with_action = f"{relative_path.replace('/', '.')}.{action}"
-            route_name = route_infer_name_from(dotted_path_with_action)
+            route_name = route_generate_route_name_from_dotted_path_with_action(dotted_path_with_action)
 
             is_successful, messages = wire_controller_route_view(
                 dotted_path_with_action,
