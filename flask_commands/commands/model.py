@@ -3,7 +3,7 @@ import click
 
 from flask_commands.utils.models import model_make_file
 from flask_commands.utils.naming import pluralize
-from flask_commands.utils.routes import route_generate_route_name_from_dotted_path_with_action
+from flask_commands.utils.routes import route_generate_route_name
 from flask_commands.utils.wirings import wire_controller_route_view
 
 
@@ -29,7 +29,7 @@ def make_model(model_name: str, crud:bool) -> None:
             controller_name = model_name + "Controller"
             relative_path = pluralize(model_name.lower())
             dotted_path_with_action = relative_path + '.' + action
-            route_name = route_generate_route_name_from_dotted_path_with_action(dotted_path_with_action)
+            route_name = route_generate_route_name(dotted_path_with_action)
 
             is_successful, messages = wire_controller_route_view(
                 dotted_path_with_action,

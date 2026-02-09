@@ -2,13 +2,13 @@ from calendar import c
 import os
 import re
 import click
-from typing import Tuple
+
 from .files import append_file, write_file, insert_import_into_lines
 from .naming import camel_to_snake, pluralize, singularize
 from .routes import(
-    parse_route_name_for_params_and_types,
+    route_parse_route_name_for_params_and_types,
     route_http_method_for_action,
-    route_build_parameter_reference
+    route_generate_parameter_reference
 )
 
 
@@ -16,7 +16,7 @@ def controller_add_method(
         relative_path: str,
         action: str,
         controller_name: str,
-        route_name: str | None = None) -> Tuple[bool, str]:
+        route_name: str | None = None) -> tuple[bool, str]:
     try:
         controller_file_path = os.path.join(
             "app", "controllers", f"{camel_to_snake(controller_name)}.py")
@@ -87,12 +87,12 @@ def controller_add_method(
         parameters = []
         if route_name:
             parameters_with_types, parameters = \
-                parse_route_name_for_params_and_types(route_name)
+                route_parse_route_name_for_params_and_types(route_name)
             method_parameters = ", ".join(parameters_with_types)
         if is_redirect:
             if action != "store":
                 parameters = parameters[:-1]
-            parameter_reference = route_build_parameter_reference(parameters)
+            parameter_reference = route_generate_parameter_reference(parameters)
             redirect_route_reference = relative_path.replace("/", ".")
             return_line = " "*8 +\
                 f"return redirect(url_for('{redirect_route_reference}" + \
@@ -151,7 +151,7 @@ def controller_make_file(
         relative_path: str | None,
         action: str | None, # method_name
         controller_name: str,
-        route_name: str | None = None) -> Tuple[bool, str]:
+        route_name: str | None = None) -> tuple[bool, str]:
     if action and relative_path is None:
         return False, click.style("💣 Error: relative_path required when action present", fg="red")
     if relative_path and action is None:
@@ -161,7 +161,7 @@ def controller_make_file(
     parameters = []
     if route_name:
         parameters_with_types, parameters = \
-            parse_route_name_for_params_and_types(route_name)
+            route_parse_route_name_for_params_and_types(route_name)
         parameters_with_types_joined = ", ".join(parameters_with_types)
 
 
@@ -179,7 +179,7 @@ def controller_make_file(
             f"    def {action}({parameters_with_types_joined}) -> str:",
         ])
         if is_redirect:
-            parameter_reference = route_build_parameter_reference(parameters)
+            parameter_reference = route_generate_parameter_reference(parameters)
             redirect_route_reference = relative_path.replace("/", ".")
             contents.append(
                 f"        return redirect(url_for('{redirect_route_reference}"

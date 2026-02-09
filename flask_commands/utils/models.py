@@ -1,7 +1,7 @@
 import os
 import ast
 import click
-from typing import Tuple
+
 from .files import append_file, write_file
 from .naming import camel_to_snake, pluralize, singularize
 from .scaffold import (
@@ -96,7 +96,7 @@ def model_infer_name_from_controller(controller_name: str) -> str:
     last_segment = snake.split("_")[-1] if snake else ""
     return singularize(last_segment).title()
 
-def model_make_file(model_name: str, model_init_path: str, model_file_path: str) -> Tuple[bool, str]:
+def model_make_file(model_name: str, model_init_path: str, model_file_path: str) -> tuple[bool, str]:
     """
     Create a new SQLAlchemy model file with standard boilerplate code.
 
@@ -111,7 +111,7 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
         model_file_path (str): The file path where the new model file will be created.
 
     Returns:
-        Tuple[bool, str]: A tuple containing:
+        tuple[bool, str]: A tuple containing:
             - bool: True if the model was created successfully.
             - str: A formatted success message with file paths and status indicators.
     """
@@ -199,7 +199,7 @@ def model_model_names_to_snake_case_names(model_names:list[str]) -> list[str]:
     """
     return [camel_to_snake(model) for model in model_names]
 
-def model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action: str) -> Tuple[list[str], list[str], str]:
+def model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action: str) -> tuple[list[str], list[str], str]:
     """
     Split a dotted path into namespace, parent_models, and child_model segments.
 

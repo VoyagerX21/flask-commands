@@ -11,7 +11,7 @@ from flask_commands.utils.models import (
     model_make_file
 )
 from flask_commands.utils.naming import camel_to_snake
-from flask_commands.utils.routes import route_generate_route_name_from_dotted_path_with_action
+from flask_commands.utils.routes import route_generate_route_name
 from flask_commands.utils.wirings import wire_controller_route_view
 
 
@@ -62,7 +62,7 @@ def make_controller(
         relative_path = controller_generate_relative_path_from_controller_name(controller_name)
         for action in restful_actions:
             dotted_path_with_action = f"{relative_path.replace('/', '.')}.{action}"
-            route_name = route_generate_route_name_from_dotted_path_with_action(dotted_path_with_action)
+            route_name = route_generate_route_name(dotted_path_with_action)
 
             is_successful, messages = wire_controller_route_view(
                 dotted_path_with_action,

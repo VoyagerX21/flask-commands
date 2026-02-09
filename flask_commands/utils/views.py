@@ -1,9 +1,9 @@
 import click
 import random
-from typing import Tuple
+
 from .files import write_file
 
-def view_make_file(destination_file_path: str) -> Tuple[bool, str]:
+def view_make_file(destination_file_path: str) -> tuple[bool, str]:
     """
     Create a new view file containing a simple HTML snippet with a randomly
     selected, Python-themed quote.
@@ -18,7 +18,7 @@ def view_make_file(destination_file_path: str) -> Tuple[bool, str]:
         destination_file_path (str) : The full path (including filename) where the view file should be created.
 
     Returns:
-        Tuple[bool, str]: A tuple containing:
+        tuple[bool, str]: A tuple containing:
             - bool: True indicating the route was successfully added.
             - str: A formatted message with success notification and usage instructions.
     Example:

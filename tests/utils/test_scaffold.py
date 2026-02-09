@@ -61,8 +61,34 @@ def test_crud_mapping_route_case_with_path_like_resource():
     'admin.posts.comments.show'
     assert crud_mapping_route('show', 'admin/posts/comments', 'comment') == '/admin/posts/comments/<int:comment_id>'
 
-def test_normalize_dotted_path_with_action_lowercase_and_hyphen_to_underscore():
-    assert normalize_dotted_path_with_action("Admin.Posts-Index") == "admin.posts_index"
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("Admin.Posts-Index", "admin.posts_index"),
+        ("  admin..posts__show  ", "admin.posts_show"),
+        ("___Posts...", "posts"),
+        (".-Admin-.-", "admin"),
+        ("posts.index", "posts.index"),
+        ("posts--index", "posts_index"),
+        ("posts..index", "posts.index"),
+        ("posts__index", "posts_index"),
+        ("posts.-.index", "posts.index"),
+    ]
+)
+def test_normalize_dotted_path_with_action_success(raw, expected):
+    is_successful, value = normalize_dotted_path_with_action(raw)
+    assert is_successful is True
+    assert value == expected
+
+
+@pytest.mark.parametrize(
+        "raw", ["", "   ", ".", "..", "_", "__", "-", "--", "._-", "  ..__  "]
+)
+def test_normalize_dotted_path_with_action_empty_raises(raw):
+    is_successful, value = normalize_dotted_path_with_action(raw)
+    assert is_successful is False
+    assert "Error" in value
 
 def test_split_dotted_path_with_action_into_relative_path_and_action_with_no_dot():
     relative_path, action = split_dotted_path_with_action_into_relative_path_and_action("index")

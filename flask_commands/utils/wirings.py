@@ -7,7 +7,7 @@ from .routes import (
     route_add_method,
     route_http_method_for_action,
     route_make_directory_and_register_blueprint,
-    generate_route_folder_path_and_blueprint_name
+    route_generate_route_folder_path_and_blueprint_name
 )
 from .views import view_make_file
 
@@ -59,7 +59,7 @@ def wire_controller_route_view(
     # If a controller_name was provided or inferred
     if route_name:
         route_folder_path, blueprint_name = \
-            generate_route_folder_path_and_blueprint_name(
+            route_generate_route_folder_path_and_blueprint_name(
                 dotted_path_with_action, relative_path)
         try:
             if os.path.exists(route_folder_path):

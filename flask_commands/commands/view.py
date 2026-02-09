@@ -7,7 +7,7 @@ from flask_commands.utils.models import (
     model_make_file
 )
 from flask_commands.utils.files import is_project_root
-from flask_commands.utils.routes import route_generate_route_name_from_dotted_path_with_action
+from flask_commands.utils.routes import route_generate_route_name
 from flask_commands.utils.scaffold import (
     normalize_dotted_path_with_action,
     split_dotted_path_with_action_into_relative_path_and_action
@@ -78,8 +78,13 @@ def make_view(
     if not is_project_root():
         return
 
-    dotted_path_with_action = \
+    is_successful, dotted_path_with_action = \
         normalize_dotted_path_with_action(dotted_path_with_action)
+    if not is_successful:
+        message = dotted_path_with_action
+        click.echo(message)
+        return
+
     relative_path, action = split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action)
 
     # Infer controller name if not provided
@@ -94,7 +99,7 @@ def make_view(
     if generate_route and route_name is None:
         # EDIT MARK STOPPED
         route_name = \
-            route_generate_route_name_from_dotted_path_with_action(
+            route_generate_route_name(
                 dotted_path_with_action)
         click.secho("💡 Info: Inferred route name as "
                    f"{click.style(route_name, bold=True)}", fg="cyan")
