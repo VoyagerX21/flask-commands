@@ -7,19 +7,20 @@ normalize user input names into the expected formats.
 
 Naming + Normalization Rules
 ============================
-All user input - `dotted_path_with_action`, `controller_name`, or `model_name` - is normalized into the expected format:
+All user input - `dotted_path_with_action`, `controller_name`, or `model_name` - are normalized into the expected format:
 
-- Dotted path with action is a series of relative path segments. Segments representing models or relationships are plural and may end with a RESTful action. A dotted path with action can also be a non-model location such as `admin_panel`.
+- Dotted path with action is a series of relative path segments. These segment determine where the view file will live in the templates folder.  Segments my represent namespaces, or pluralized model, and representing models may end with a RESTful action. A dotted path with action can also be a non-model location such as `admin_panel`.
 
-  - Multiple words in a model or non-model segment use underscores (`_`).
+  - Multiple words in a model or non-model segment srr separated with an underscores (`_`).
 
   - Normalization condenses repeated separators in `dotted_path_with_action`:
     - `-` is first converted to `_`
     - `\.+` becomes `.`
     - `[_]+` becomes `_`
 
-  - Leading and trailing separators are removed after normalization:
-    `.`, `_`, and `-`. If the result is empty (`''`), return an error.
+  - Normalization removes leading and trailing separators:
+    `.`, `_`, and `-`. 
+  - If the result of the dotteted path with actions is empty (`''`) after the normiaztion process then an error message is returned.
 
   - Model matching is per segment; compound model names must be expressed with underscores in a single segment (example: `shop_images`). The CLI never combines adjacent segments to match a model.
 
