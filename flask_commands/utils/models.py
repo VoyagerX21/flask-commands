@@ -52,12 +52,13 @@ def model_get_registered_models() -> list[str]:
                 models.add(alias.name)
     return sorted(models)
 
-def model_infer_name_from_dotted_view_path(dotted_path_with_action: str) -> str:
+def model_generate_model(dotted_path_with_action: str) -> str:
     """
     Infer a model name from a dotted view path.
 
-    Uses split_dotted_path_with_action_into_relative_path_and_action to derive the relative path, then
-    singularizes the final segment and converts it to title case.
+    Uses split_dotted_path_with_action_into_relative_path_and_action to
+    derive the relative path, then singularizes the final segment
+    and converts it to title case.
 
     Args:
         dotted_path_with_action (str): The dotted module path or name.
@@ -66,18 +67,21 @@ def model_infer_name_from_dotted_view_path(dotted_path_with_action: str) -> str:
         str: The inferred model name in title case.
 
     Example:
-        >>> name = model_infer_name_from_dotted_view_path("posts.index")
+        >>> name = model_generate_model("posts.index")
         >>> name
         'Post'
-        >>> name = model_infer_name_from_dotted_view_path("posts")
+        >>> name = model_generate_model("posts")
         >>> name
         'Post'
     """
-    relative_path, _ = split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action)
+    relative_path, action = \
+        split_dotted_path_with_action_into_relative_path_and_action(
+            dotted_path_with_action)
     if relative_path != "":
-        model_name = singularize(relative_path.split('/')[-1]).title()
+        relative_path_last_segment = relative_path.split('/')[-1]
+        model_name = singularize(relative_path_last_segment).title()
     else:
-        model_name = singularize(dotted_path_with_action).title()
+        model_name = singularize(action).title()
     return model_name
 
 def model_infer_name_from_controller(controller_name: str) -> str:
@@ -150,7 +154,7 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
             click.style(f"    - Model {click.style(model_name, bold=True)} ", fg="yellow") + click.style("already exists\n", fg="yellow" ) +
             click.style("    - No changes were made to the existing model\n", fg="yellow")
         )
-        return False, message
+        return True, message
     except Exception as exception:
         return False, click.style(
             f"💣 Error: Failed to create model:\n{exception}", fg="red")

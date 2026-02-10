@@ -3,11 +3,11 @@ import click
 
 from flask_commands.utils.controllers import controller_generate_controller_name_from_relative_path
 from flask_commands.utils.models import (
-    model_infer_name_from_dotted_view_path,
+    model_generate_model,
     model_make_file
 )
 from flask_commands.utils.files import is_project_root
-from flask_commands.utils.routes import route_generate_route_name
+from flask_commands.utils.routes import route_generate_route_name_with_model_prompt
 from flask_commands.utils.scaffold import (
     normalize_dotted_path_with_action,
     split_dotted_path_with_action_into_relative_path_and_action
@@ -85,9 +85,12 @@ def make_view(
         click.echo(message)
         return
 
-    relative_path, action = split_dotted_path_with_action_into_relative_path_and_action(dotted_path_with_action)
+    all_successful = True
+    relative_path, action = \
+        split_dotted_path_with_action_into_relative_path_and_action(
+            dotted_path_with_action)
 
-    # Infer controller name if not provided
+    # 1) Infer controller name if not provided
     if generate_controller and controller_name is None:
         if relative_path != '':
             controller_name = controller_generate_controller_name_from_relative_path(relative_path)
@@ -95,34 +98,14 @@ def make_view(
         else:
             controller_name = 'MainController'
 
-    # Infer route name if not provided
-    if generate_route and route_name is None:
-        # EDIT MARK STOPPED
-        route_name = \
-            route_generate_route_name(
-                dotted_path_with_action)
-        click.secho("💡 Info: Inferred route name as "
-                   f"{click.style(route_name, bold=True)}", fg="cyan")
-
     # Infer model name if not provided
     if generate_model and model_name is None:
-        model_name = model_infer_name_from_dotted_view_path(dotted_path_with_action)
+        model_name = \
+            model_generate_model(dotted_path_with_action)
         click.secho(f"💡 Info: Inferred model name as "
                    f"{click.style(model_name, bold=True)}", fg="cyan")
 
-    click.echo("\n")
-
-    all_successful = True
-    is_successful, messages = wire_controller_route_view(
-        dotted_path_with_action,
-        relative_path,
-        action,
-        controller_name,
-        route_name)
-    all_successful = all_successful and is_successful
-
-    for message in messages:
-        click.echo(message)
+    allow_model_prompt = not bool(model_name)
 
     # If a model_name was provided or inferred
     if model_name:
@@ -133,5 +116,37 @@ def make_view(
         click.echo(message)
         all_successful = all_successful and is_successful
 
+
+
+    # Infer route name if not provided
+    if generate_route and route_name is None:
+        route_name, new_model_name = \
+            route_generate_route_name_with_model_prompt(
+                dotted_path_with_action, allow_model_prompt)
+        click.secho("💡 Info: Inferred route name as "
+                   f"{click.style(route_name, bold=True)}", fg="cyan")
+        if new_model_name:
+            model_init_path = os.path.join("app", "models", "__init__.py")
+            model_file_path = os.path.join("app", "models", f"{new_model_name.lower()}.py")
+            is_successful, message = model_make_file(
+                new_model_name, model_init_path, model_file_path)
+            click.echo(message)
+            all_successful = all_successful and is_successful
+
+
+    is_successful, messages = wire_controller_route_view(
+        dotted_path_with_action,
+        relative_path,
+        action,
+        controller_name,
+        route_name)
+
+    all_successful = all_successful and is_successful
+
+    for message in messages:
+        click.echo(message)
+
     if not all_successful:
         click.secho("⚠️  Warning: One or more make view steps failed.", fg="yellow", bold=True)
+
+# The only think I don't really like is the duplicated creation of the model but I guess that can not be avoided because they could have forgotten the -m and then be prompted and say yes create the model

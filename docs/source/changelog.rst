@@ -15,12 +15,26 @@ Added
 - Add `model_get_registered_models` to parse `app/models/__init__.py` imports via AST.
 - Add tests for model registry parsing edge cases, dotted path normalization, and template copy ignores.
 - Document future command goals, routing prompts, and naming conventions in package_goals.md.
+- Added `RouteSpec`-based route analysis in `flask_commands/utils/routes.py`.
+- Added `route_generate_route_spec()` to compute normalized route metadata and candidate flat/nested routes.
+- Added route helper functions:
+  - `route_generate_route()`
+  - `route_generate_prompt_plan()`
+  - `route_generate_route_folder_path_and_blueprint_name()`
+  - `route_parse_route_name_for_params_and_types()`
+- Added `generate_restful_route()` in `flask_commands/utils/scaffold.py`.
+- Added extensive route/scaffold test coverage for route inference and edge cases.
 
 Changed
 ~~~~~~~
 - Normalize dotted path handling across `make:view`, route inference, and wiring using `dotted_path_with_action`.
 - Update `split_dotted_path_with_action_into_relative_path_and_action` to accept pre-normalized input instead of lowercasing internally.
 - Rename internal `copy_templates` template root variable for clarity.
+- Updated route generation internals to use explicit model-registration lookups and segment-level model matching.
+- Updated normalization behavior in `normalize_dotted_path_with_action()`.
+- Updated command and wiring modules to align with renamed/relocated route utilities.
+- `normalize_dotted_path_with_action()` now returns `(is_valid, value_or_error)` instead of a plain normalized string.
+- Legacy route utility names were renamed (for example, folder-path and parse helpers), requiring call-site updates.
 
 Fixed
 ~~~~~

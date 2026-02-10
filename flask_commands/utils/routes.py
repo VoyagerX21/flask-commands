@@ -9,18 +9,12 @@ from flask_commands.utils.models import (
 from .files import append_file, write_file
 from .naming import pluralize, singularize
 from .scaffold import (
-    check_dotted_path_with_action_for_models,
-    crud_mapping_route,
-    generate_crud_route,
+    generate_restful_route,
     filter_falsy,
     split_dotted_path_with_action_into_relative_path_and_action)
 
 RESTFUL_ACTIONS = {"index", "create", "store", "show", "edit", "update", "destroy", "delete"}
 MEMBER_ACTIONS = {"show", "edit", "update", "destroy", "delete"}
-
-class RouteStructure(StrEnum):
-    FLAT = "flat"
-    NESTED = "nested"
 
 @dataclass(frozen=True)
 class RouteSpec:
@@ -29,11 +23,10 @@ class RouteSpec:
     action: str
     is_restful: bool
     relative_path_segments: tuple[str]
-    relative_path_segment_models: tuple[bool]
+    relative_path_segment_models: tuple[str]
     registered_models: tuple[str]
     registered_snake_models: tuple[str]
-    flat_route: str
-    nested_route: str
+    generated_route_name: str
 
 @dataclass(frozen=True)
 class MissingModelPrompt:
@@ -42,15 +35,13 @@ class MissingModelPrompt:
 
 @dataclass(frozen=True)
 class RouteStructurePrompt:
-    accept_nested_route: str
-    decline_nested_route: str
-    decline_flat_route: str
+    accepted_route: str
+    declined_route: str
 
 @dataclass(frozen=True)
 class PromptPlan:
-    missing_model: MissignModelPrompt | None = None
+    missing_model: MissingModelPrompt | None = None
     route_structure: RouteStructurePrompt | None = None
-    no_prompt_reason: str | None = None
 
 def route_add_method(relative_path: str,  action: str, route_folder_path: str, blueprint_name: str,  route_name: str, controller_name: str | None) -> tuple[bool, str]:
     """
@@ -147,7 +138,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
     )
     return True, message
 
-def route_generate_nested_route(
+def route_generate_route_name(
         relative_path: str,
         action: str,
         is_restful: bool,
@@ -173,7 +164,7 @@ def route_generate_nested_route(
         str: The nested route path starting with "/".
 
     Examples:
-        >>> route_generate_nested_route(
+        >>> route_generate_route_name(
         ...     relative_path="posts/comments",
         ...     action="preview",
         ...     is_restful=False,
@@ -182,7 +173,7 @@ def route_generate_nested_route(
         ... )
         "/posts/<int:post_id>/comments/<int:comment_id>/preview"
 
-        >>> route_generate_nested_route(
+        >>> route_generate_route_name(
         ...     relative_path="posts/comments",
         ...     action="show",
         ...     is_restful=True,
@@ -218,7 +209,31 @@ def route_generate_nested_route(
         return "/" + "/".join(route_name_parts)
     parent_resources =  "/".join(route_name_parts)
     child_resource = relative_path_last_segment.replace("_", "-")
-    return generate_crud_route(action, parent_resources, child_resource)
+    return generate_restful_route(action, parent_resources, child_resource)
+
+def route_generate_route_name_with_model_prompt(
+        dotted_path_with_action: str,
+        allow_model_prompt: bool) -> tuple[str, str | None]:
+    route_spec = route_generate_route_spec(dotted_path_with_action)
+    prompt_plan = route_generate_prompt_plan(route_spec)
+
+    if not allow_model_prompt \
+            or not prompt_plan.missing_model\
+            or not prompt_plan.route_structure:
+        return route_spec.generated_route_name, None
+
+
+    segment = prompt_plan.missing_model.segment
+    model_name = prompt_plan.missing_model.model_name
+    has_accepted = click.confirm(
+        "No registered model found for "
+        f"{click.style(segment, bold=True)}. "
+        f"Generate {click.style(model_name, bold=True)}?",
+        default=True
+    )
+    if not has_accepted:
+        return prompt_plan.route_structure.declined_route, None
+    return prompt_plan.route_structure.accepted_route, model_name
 
 def route_generate_parameter_reference(parameters: list[str]) -> str:
     if not parameters:
@@ -227,18 +242,15 @@ def route_generate_parameter_reference(parameters: list[str]) -> str:
         f"{parameter}={parameter}" for parameter in parameters)
 
 def route_generate_prompt_plan(route_spec: RouteSpec) -> PromptPlan:
-    # No prompt when flat and nested are identical (covers relative_path == "")
-    if route_spec.flat_route == route_spec.nested_route:
-        return PromptPlan(no_prompt_reason="flat and nested are identical")
+    if not route_spec.relative_path_segments:
+        return PromptPlan()
 
     relative_path_last_segment = route_spec.relative_path_segments[-1]
     is_last_segment_a_model = \
         relative_path_last_segment in route_spec.relative_path_segment_models
 
     # RESTful: Only prompt if last segment is not a model
-    # Non-RESTful: Only prompt if relative_path_segment_models is not empty
-    if (route_spec.is_restful and is_last_segment_a_model) or \
-            (not route_spec.is_restful and route_spec.relative_path_segment_models == ()):
+    if (not route_spec.is_restful) or is_last_segment_a_model:
         return PromptPlan()
 
     model_name = singularize(relative_path_last_segment).title().replace("_", "")
@@ -246,23 +258,21 @@ def route_generate_prompt_plan(route_spec: RouteSpec) -> PromptPlan:
         segment=relative_path_last_segment,
         model_name=model_name
     )
-    accept_nested_route = route_generate_nested_route(
+    accepted_route = route_generate_route_name(
         relative_path=route_spec.relative_path,
         action=route_spec.action,
         is_restful=route_spec.is_restful,
-        relative_path_segments=route_spec.relative_path_segments,
-        relative_path_segment_models=route_spec.relative_path_segment_models + (relative_path_last_segment, )
+        relative_path_segments=list(route_spec.relative_path_segments),
+        relative_path_segment_models=list(route_spec.relative_path_segment_models + (relative_path_last_segment, ))
     )
     route_structure_prompt = RouteStructurePrompt(
-        accept_nested_route=accept_nested_route,
-        decline_nested_route=route_spec.nested_route,
-        decline_flat_route=route_spec.flat_route
+        accepted_route=accepted_route,
+        declined_route=route_spec.generated_route_name
     )
     return PromptPlan(
         missing_model=missing_model_prompt,
         route_structure=route_structure_prompt
     )
-
 
 def route_generate_route_folder_path_and_blueprint_name(dotted_path_with_action: str, relative_path: str) -> tuple[str, str]:
     """
@@ -297,89 +307,6 @@ def route_generate_route_folder_path_and_blueprint_name(dotted_path_with_action:
         return os.path.join("app", "routes", "mains"), 'mains'
     top_level = relative_path.split("/", 1)[0]
     return os.path.join("app", "routes", relative_path), top_level
-
-def route_generate_route_name(dotted_path_with_action: str) -> str:
-    """
-    Infer a route path from a dotted path notation with an action name.
-
-    This function converts a dotted path notation (e.g., 'posts.comments.show') into
-    a RESTful route path. It handles both custom routes and CRUD operation mappings.
-
-    Args:
-        dotted_path_with_action (str): A dotted path string optionally ending with a CRUD action.
-                                     Format: 'parent_resource.resource.action' or 'resource.action'
-
-    Returns:
-        str: The inferred route path starting with '/'.
-             - For non-CRUD actions: returns the dotted path converted to slashes
-             - For CRUD actions: returns a RESTful path based on the resource hierarchy
-
-    Examples:
-        >>> route_generate_route_name('posts')
-        '/posts'
-        >>> route_generate_route_name('posts.show')
-        '/posts/<int:post_id>'
-        >>> route_generate_route_name('admin.posts.comments.index')
-        '/admin/posts/<int:posts_id>/comments'
-        >>> route_generate_route_name('admin.posts.comments.show')
-        '/admin/posts/<int:post_id>/comments/<int:comment_id>'
-        >>> route_generate_route_name('posts.comments.show')
-        '/posts/<int:post_id>/comments/<int:comment_id>'
-        >>> route_generate_route_name('posts.custom_action')
-        '/posts/custom_action'
-
-    Note:
-        Recognized CRUD actions: 'index', 'create', 'store', 'show', 'edit',
-        'update', 'destroy', 'delete'. Resource names are singularized for CRUD routes.
-    """
-
-    # dotted_path_with_action = 'posts.comments.show'
-    # relative_path = posts/comments
-    # action = show
-    # child_object = comment
-
-    # dotted_path_with_action = 'posts.show'
-    # relative_path = posts
-    # action = show
-    # child_object = post
-
-    # TODO: THIS LINE NEED TO EVENTUALLY GO AWAY
-    models = check_dotted_path_with_action_for_models(dotted_path_with_action)
-
-    # TODO: THIS LOGIC SHOULD REPLACE THE LINE ABOVE
-
-    registered_models = model_get_registered_models()
-    registered_snake_case_models = model_model_names_to_snake_case_names(registered_models)
-
-    # Example for this case:
-    # dotted_path_with_action = "landing"       -> "landing"
-    # dotted_path_with_action = "admin_panel"   -> "/admin-panel"
-    if "." not in dotted_path_with_action:
-        return '/' + dotted_path_with_action.replace('_', '-')
-
-    # Example for this case:
-    # dotted_path_with_action = "posts.custom_action"
-    # registered_snake_case_models = ["post"]
-    # dotted_path_with_action = "admin_panel"   -> "/admin-panel"
-    relative_path, action = \
-        split_dotted_path_with_action_into_relative_path_and_action(
-            dotted_path_with_action)
-    if action not in ['index', 'create', 'store', 'show', 'edit', 'update', 'destroy', 'delete']:
-        return '/' + dotted_path_with_action.replace('.', '/').replace('_', '-')
-
-    if "/" in relative_path:
-        child_object = singularize(relative_path.rsplit("/", 1)[-1])
-        resource = ''
-        for relation in relative_path.split("/")[:-1]:
-            if relation in models:
-                resource += relation + f"/<int:{singularize(relation)}_id>/"
-            else:
-                resource += relation + '/'
-        resource += pluralize(child_object)
-    else:
-        child_object = singularize(relative_path)
-        resource = relative_path
-    return crud_mapping_route(action, resource, child_object)
 
 def route_generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
     """
@@ -458,10 +385,7 @@ def route_generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
         relative_path_segment for relative_path_segment in relative_path_segments
         if singularize(relative_path_segment) in registered_snake_models]
 
-    flat_route = _generate_flat_route(
-        dotted_path_with_action)
-
-    nested_route = route_generate_nested_route(
+    generated_route_name = route_generate_route_name(
         relative_path=relative_path,
         action=action,
         is_restful=is_restful,
@@ -478,8 +402,7 @@ def route_generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
         relative_path_segment_models=tuple(relative_path_segment_models),
         registered_models=tuple(registered_models),
         registered_snake_models=registered_snake_models,
-        flat_route=flat_route,
-        nested_route=nested_route
+        generated_route_name=generated_route_name
     )
 
 def route_http_method_for_action(action: str) -> str:
@@ -661,26 +584,6 @@ def route_parse_route_name_for_params_and_types(route_name: str) ->tuple[list[st
         parameters.append(param)
 
     return parameters_with_types, parameters
-
-def _generate_flat_route(dotted_path_with_action: str) -> str:
-    """
-    Build a flat route by prefixing a slash and replacing dots/underscores with hyphens.
-
-    Args:
-        dotted_path_with_action (str): Dotted route string such as
-            "posts.index" or "admin.user_profiles.show".
-
-    Returns:
-        str: The flat route with a leading slash and hyphenated separators,
-        e.g. "/posts-index" or "/admin-user-profiles-show".
-
-    Examples:
-        >>> _generate_flat_route("posts.index")
-        "/posts-index"
-        >>> _generate_flat_route("admin.user_profiles.show")
-        "/admin-user-profiles-show"
-    """
-    return '/' + dotted_path_with_action.replace(".", "-").replace("_", "-")
 
 def _generate_parameter_reference_example(parameters: list[str]) -> str:
     if not parameters:

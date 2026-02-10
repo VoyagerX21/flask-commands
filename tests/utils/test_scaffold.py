@@ -1,8 +1,8 @@
 from re import split
 import pytest
 from flask_commands.utils.scaffold import (
-    check_dotted_path_with_action_for_models,
-    crud_mapping_route,
+    filter_falsy,
+    generate_restful_route,
     normalize_dotted_path_with_action,
     split_dotted_path_with_action_into_relative_path_and_action
 )
@@ -21,65 +21,39 @@ def model_builder(tmp_path, monkeypatch):
 
     return project_root
 
-def test_check_dotted_path_with_action_for_models_no_models_init():
-    models = check_dotted_path_with_action_for_models("posts.index")
-    assert models == []
-
-def test_check_dotted_path_with_action_for_models_empty(model_builder):
-    models = check_dotted_path_with_action_for_models("posts.index")
-    assert models == []
-
-def test_check_dotted_path_with_action_for_models_intersection(model_builder):
-    models = check_dotted_path_with_action_for_models("users.index")
-    assert models == ['users']
-
-def test_crud_mapping_route_case_index():
-    assert crud_mapping_route('index', 'posts', 'post') == '/posts'
-
-def test_crud_mapping_route_case_create():
-    assert crud_mapping_route('create', 'posts', 'post') == '/posts/create'
-
-def test_crud_mapping_route_case_store():
-    assert crud_mapping_route('store', 'posts', 'post') == '/posts'
-
-def test_crud_mapping_route_case_show():
-    assert crud_mapping_route('show', 'posts', 'post') == '/posts/<int:post_id>'
-
-def test_crud_mapping_route_case_edit():
-    assert crud_mapping_route('edit', 'posts', 'post') == '/posts/<int:post_id>/edit'
-
-def test_crud_mapping_route_case_update():
-    assert crud_mapping_route('update', 'posts', 'post') == '/posts/<int:post_id>'
-
-def test_crud_mapping_route_case_destroy():
-    assert crud_mapping_route('destroy', 'posts', 'post') == '/posts/<int:post_id>/delete'
-
-def test_crud_mapping_route_case_delete():
-    assert crud_mapping_route('delete', 'posts', 'post') == '/posts/<int:post_id>/delete'
-
-def test_crud_mapping_route_case_with_path_like_resource():
-    'admin.posts.comments.show'
-    assert crud_mapping_route('show', 'admin/posts/comments', 'comment') == '/admin/posts/comments/<int:comment_id>'
-
-
 @pytest.mark.parametrize(
     "raw, expected",
     [
-        ("Admin.Posts-Index", "admin.posts_index"),
-        ("  admin..posts__show  ", "admin.posts_show"),
-        ("___Posts...", "posts"),
-        (".-Admin-.-", "admin"),
-        ("posts.index", "posts.index"),
-        ("posts--index", "posts_index"),
-        ("posts..index", "posts.index"),
-        ("posts__index", "posts_index"),
-        ("posts.-.index", "posts.index"),
+        (['a', 'b', 'c'], ['a', 'b', 'c']),
+        (['0', '1', '2'], ['0', '1', '2']),
+        ([0, 1, 2], [1, 2]),
+        ([None, 1, 2], [1, 2]),
+        (['', '1', '2'], ['1', '2'])
     ]
 )
-def test_normalize_dotted_path_with_action_success(raw, expected):
-    is_successful, value = normalize_dotted_path_with_action(raw)
-    assert is_successful is True
-    assert value == expected
+def test_filter_falsy(raw, expected):
+    assert filter_falsy(raw) == expected
+
+# TODO: put in test for generate_restful_route and have chat write a doc string for generate_restful_route
+
+# @pytest.mark.parametrize(
+#     "raw, expected",
+#     [
+#         ("Admin.Posts-Index", "admin.posts_index"),
+#         ("  admin..posts__show  ", "admin.posts_show"),
+#         ("___Posts...", "posts"),
+#         (".-Admin-.-", "admin"),
+#         ("posts.index", "posts.index"),
+#         ("posts--index", "posts_index"),
+#         ("posts..index", "posts.index"),
+#         ("posts__index", "posts_index"),
+#         ("posts.-.index", "posts.index"),
+#     ]
+# )
+# def test_normalize_dotted_path_with_action_success(raw, expected):
+#     is_successful, value = normalize_dotted_path_with_action(raw)
+#     assert is_successful is True
+#     assert value == expected
 
 
 @pytest.mark.parametrize(

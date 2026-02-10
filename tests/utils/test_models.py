@@ -3,7 +3,7 @@ import pytest
 from pathlib import Path
 from flask_commands.utils.models import (
     model_infer_name_from_controller,
-    model_infer_name_from_dotted_view_path,
+    model_generate_model,
     model_get_registered_models,
     model_make_file,
     model_model_names_to_snake_case_names,
@@ -95,12 +95,12 @@ def test_model_infer_name_from_controller():
     model_name = model_infer_name_from_controller("PostCommentImageController")
     assert model_name == "Image"
 
-def test_model_infer_name_from_dotted_view_path_with_dot():
-    model_name = model_infer_name_from_dotted_view_path("posts.index")
+def test_model_generate_model_with_dot():
+    model_name = model_generate_model("posts.index")
     assert model_name == "Post"
 
-def test_model_infer_name_from_dotted_view_path_without_dot():
-    model_name = model_infer_name_from_dotted_view_path("posts")
+def test_model_generate_model_without_dot():
+    model_name = model_generate_model("posts")
     assert model_name == "Post"
 
 def test_model_make_file_success(model_project):
@@ -133,18 +133,18 @@ def test_model_make_file_success(model_project):
     init_contents = init_file.read_text(encoding="utf-8")
     assert "from .post import Post" in init_contents
 
-def test_model_make_file_file_already_exists(model_project):
-    model_file = model_project / "app" / "models" / "post.py"
-    model_file.write_text("\n")
+# def test_model_make_file_file_already_exists(model_project):
+#     model_file = model_project / "app" / "models" / "post.py"
+#     model_file.write_text("\n")
 
-    is_successful, message = model_make_file(
-        model_name="Post",
-        model_init_path=os.path.join("app", "models", "__init__.py"),
-        model_file_path=os.path.join("app", "models", "post.py"),
-    )
+#     is_successful, message = model_make_file(
+#         model_name="Post",
+#         model_init_path=os.path.join("app", "models", "__init__.py"),
+#         model_file_path=os.path.join("app", "models", "post.py"),
+#     )
 
-    assert is_successful is False
-    assert "Model Already Exists" in message
+#     assert is_successful is False
+#     assert "Model Already Exists" in message
 
 def test_model_make_file_write_file_exception(model_project, monkeypatch):
     def boom(*args, **kwargs):

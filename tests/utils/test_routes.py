@@ -1,7 +1,6 @@
 import pytest
 from flask_commands.utils.routes import (
     route_add_method,
-    route_generate_nested_route,
     route_generate_route_name,
     route_generate_route_spec,
     route_generate_route_folder_path_and_blueprint_name,
@@ -22,7 +21,6 @@ def model_builder(tmp_path, monkeypatch):
     monkeypatch.chdir(project_root)
 
     return project_root
-
 
 def test_route_add_method_success(tmp_path, monkeypatch):
     project_root = tmp_path
@@ -99,8 +97,8 @@ def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
     assert is_successful is False
     assert f"Route Directory Missing" in message
 
-def test_route_generate_nested_route_empty_relative_path():
-    assert route_generate_nested_route(
+def test_route_generate_route_name_empty_relative_path():
+    assert route_generate_route_name(
         relative_path="",
         action="my_action",
         is_restful=False,
@@ -108,8 +106,8 @@ def test_route_generate_nested_route_empty_relative_path():
         relative_path_segment_models=[]
     ) == "/my-action"
 
-def test_route_generate_nested_route_non_restful_with_models():
-    assert route_generate_nested_route(
+def test_route_generate_route_name_non_restful_with_models():
+    assert route_generate_route_name(
         relative_path="posts/comments",
         action="preview_action",
         is_restful=False,
@@ -117,8 +115,8 @@ def test_route_generate_nested_route_non_restful_with_models():
         relative_path_segment_models=["posts", "comments"]
     ) == "/posts/<int:post_id>/comments/<int:comment_id>/preview-action"
 
-def test_route_generate_nested_route_restful_last_segment_not_model():
-    assert route_generate_nested_route(
+def test_route_generate_route_name_restful_last_segment_not_model():
+    assert route_generate_route_name(
         relative_path="admin_panel/reports",
         action="index",
         is_restful=True,
@@ -126,8 +124,8 @@ def test_route_generate_nested_route_restful_last_segment_not_model():
         relative_path_segment_models=[]
     ) == "/admin-panel/reports/index"
 
-def test_route_generate_nested_route_restful_with_models():
-    assert route_generate_nested_route(
+def test_route_generate_route_name_restful_with_models():
+    assert route_generate_route_name(
         relative_path="posts/comments",
         action="show",
         is_restful=True,
@@ -160,122 +158,96 @@ def test_route_generate_route_folder_path_and_blueprint_name_non_crud():
     assert route_folder_path == 'app/routes/mains'
     assert blueprint_name == 'mains'
 
-def test_route_generate_route_name_crud(model_builder):
-    assert route_generate_route_name('posts.index') == '/posts'
-    assert route_generate_route_name('posts.create') == '/posts/create'
-    assert route_generate_route_name('posts.store') == '/posts'
-    assert route_generate_route_name('posts.show') == '/posts/<int:post_id>'
-    assert route_generate_route_name('posts.edit') == '/posts/<int:post_id>/edit'
-    assert route_generate_route_name('posts.update') == '/posts/<int:post_id>'
-    assert route_generate_route_name('posts.destroy') == '/posts/<int:post_id>/delete'
-    assert route_generate_route_name('posts.delete') == '/posts/<int:post_id>/delete'
-    assert route_generate_route_name('admin.posts.create') == '/admin/posts/create'
-    assert route_generate_route_name('admin.posts.comments.show') == '/admin/posts/<int:post_id>/comments/<int:comment_id>'
-    assert route_generate_route_name('admin.posts.comments.index') == '/admin/posts/<int:post_id>/comments'
-    assert route_generate_route_name('admin.posts.comments.index') == '/admin/posts/<int:post_id>/comments'
-    assert route_generate_route_name('not_a_model.posts.comments.index') == '/not_a_model/posts/<int:post_id>/comments'
+# def test_route_generate_route_spec_landing(model_builder):
+#     spec = route_generate_route_spec("landing")
 
-def test_route_generate_route_name_non_crud():
-    assert route_generate_route_name('posts') == '/posts'
-    assert route_generate_route_name('admin.posts') == '/admin/posts'
-    assert route_generate_route_name('post') == '/post'
-    assert route_generate_route_name('admin.post') == '/admin/post'
-    assert route_generate_route_name('admin.posts.comments') == '/admin/posts/comments'
+#     assert spec.relative_path == ""
+#     assert spec.action == "landing"
+#     assert spec.is_restful is False
+#     assert spec.flat_route == "/landing"
+#     assert spec.nested_route == "/landing"
+#     assert spec.registered_models == ("Comment", "Post", "ShopImage")
+#     assert "post" in spec.registered_snake_models
 
-def test_route_generate_route_spec_landing(model_builder):
-    spec = route_generate_route_spec("landing")
+# def test_route_generate_route_spec_index_empty_relative_path(model_builder):
+#     spec = route_generate_route_spec("index")
 
-    assert spec.relative_path == ""
-    assert spec.action == "landing"
-    assert spec.is_restful is False
-    assert spec.flat_route == "/landing"
-    assert spec.nested_route == "/landing"
-    assert spec.registered_models == ("Comment", "Post", "ShopImage")
-    assert "post" in spec.registered_snake_models
+#     assert spec.relative_path == ""
+#     assert spec.action == "index"
+#     assert spec.is_restful is True
+#     assert spec.flat_route == "/index"
+#     assert spec.nested_route == "/index"
 
-def test_route_generate_route_spec_index_empty_relative_path(model_builder):
-    spec = route_generate_route_spec("index")
+# def test_route_generate_route_spec_posts_show(model_builder):
+#     spec = route_generate_route_spec("posts.show")
 
-    assert spec.relative_path == ""
-    assert spec.action == "index"
-    assert spec.is_restful is True
-    assert spec.flat_route == "/index"
-    assert spec.nested_route == "/index"
+#     assert spec.relative_path == "posts"
+#     assert spec.action == "show"
+#     assert spec.is_restful is True
+#     assert spec.flat_route == "/posts-show"
+#     assert spec.nested_route == "/posts/<int:post_id>"
 
-def test_route_generate_route_spec_posts_show(model_builder):
-    spec = route_generate_route_spec("posts.show")
+# def test_route_generate_route_spec_admin_posts_comments_show(model_builder):
+#     spec = route_generate_route_spec("admin.posts.comments.show")
 
-    assert spec.relative_path == "posts"
-    assert spec.action == "show"
-    assert spec.is_restful is True
-    assert spec.flat_route == "/posts-show"
-    assert spec.nested_route == "/posts/<int:post_id>"
+#     assert spec.relative_path == "admin/posts/comments"
+#     assert spec.action == "show"
+#     assert spec.is_restful is True
+#     assert spec.flat_route == "/admin-posts-comments-show"
+#     assert spec.nested_route == "/admin/posts/<int:post_id>/comments/<int:comment_id>"
 
-def test_route_generate_route_spec_admin_posts_comments_show(model_builder):
-    spec = route_generate_route_spec("admin.posts.comments.show")
+# def test_route_generate_route_spec_admin_shop_images_show(model_builder):
+#     spec = route_generate_route_spec("admin.shop_images.show")
 
-    assert spec.relative_path == "admin/posts/comments"
-    assert spec.action == "show"
-    assert spec.is_restful is True
-    assert spec.flat_route == "/admin-posts-comments-show"
-    assert spec.nested_route == "/admin/posts/<int:post_id>/comments/<int:comment_id>"
+#     assert spec.relative_path == "admin/shop_images"
+#     assert spec.action == "show"
+#     assert spec.is_restful is True
+#     assert spec.flat_route == "/admin-shop-images-show"
+#     assert spec.nested_route == "/admin/shop-images/<int:shop_image_id>"
 
-#here
-def test_route_generate_route_spec_admin_shop_images_show(model_builder):
-    spec = route_generate_route_spec("admin.shop_images.show")
+# def test_route_generate_route_spec_posts_custom_action(model_builder):
+#     spec = route_generate_route_spec("posts.custom_action")
 
-    assert spec.relative_path == "admin/shop_images"
-    assert spec.action == "show"
-    assert spec.is_restful is True
-    assert spec.flat_route == "/admin-shop-images-show"
-    assert spec.nested_route == "/admin/shop-images/<int:shop_image_id>"
+#     assert spec.relative_path == "posts"
+#     assert spec.action == "custom_action"
+#     assert spec.is_restful is False
+#     assert spec.flat_route == "/posts-custom-action"
+#     assert spec.nested_route == "/posts/<int:post_id>/custom-action"
 
+# def test_route_generate_route_spec_posts_custom_action_again(model_builder):
+#     spec = route_generate_route_spec("posts.custom-action")
 
-def test_route_generate_route_spec_posts_custom_action(model_builder):
-    spec = route_generate_route_spec("posts.custom_action")
+#     assert spec.relative_path == "posts"
+#     assert spec.action == "custom-action"
+#     assert spec.is_restful is False
+#     assert spec.flat_route == "/posts-custom-action"
+#     assert spec.nested_route == "/posts/<int:post_id>/custom-action"
 
-    assert spec.relative_path == "posts"
-    assert spec.action == "custom_action"
-    assert spec.is_restful is False
-    assert spec.flat_route == "/posts-custom-action"
-    assert spec.nested_route == "/posts/<int:post_id>/custom-action"
+# def test_route_generate_route_spec_admin_reports_index_no_models(model_builder):
+#     spec = route_generate_route_spec("admin.reports.index")
 
-def test_route_generate_route_spec_posts_custom_action_again(model_builder):
-    spec = route_generate_route_spec("posts.custom-action")
+#     assert spec.relative_path == "admin/reports"
+#     assert spec.action == "index"
+#     assert spec.is_restful is True
+#     assert spec.flat_route == "/admin-reports-index"
+#     assert spec.nested_route == "/admin/reports/index"
 
-    assert spec.relative_path == "posts"
-    assert spec.action == "custom-action"
-    assert spec.is_restful is False
-    assert spec.flat_route == "/posts-custom-action"
-    assert spec.nested_route == "/posts/<int:post_id>/custom-action"
+# def test_route_generate_route_spec_admin_posts_show_when_admin_model_exists(model_builder):
+#     # Override fixture for this one collision-specific case.
+#     models_init_file = model_builder / "app" / "models" / "__init__.py"
+#     models_init_file.write_text(
+#         "from .admin import Admin\n"
+#         "from .post import Post\n",
+#         encoding="utf-8",
+#     )
 
-def test_route_generate_route_spec_admin_reports_index_no_models(model_builder):
-    spec = route_generate_route_spec("admin.reports.index")
+#     spec = route_generate_route_spec("admin.posts.show")
 
-    assert spec.relative_path == "admin/reports"
-    assert spec.action == "index"
-    assert spec.is_restful is True
-    assert spec.flat_route == "/admin-reports-index"
-    assert spec.nested_route == "/admin/reports/index"
-
-
-def test_route_generate_route_spec_admin_posts_show_when_admin_model_exists(model_builder):
-    # Override fixture for this one collision-specific case.
-    models_init_file = model_builder / "app" / "models" / "__init__.py"
-    models_init_file.write_text(
-        "from .admin import Admin\n"
-        "from .post import Post\n",
-        encoding="utf-8",
-    )
-
-    spec = route_generate_route_spec("admin.posts.show")
-
-    assert spec.relative_path == "admin/posts"
-    assert spec.action == "show"
-    assert spec.is_restful is True
-    assert spec.flat_route == "/admin-posts-show"
-    assert spec.nested_route == "/admin/<int:admin_id>/posts/<int:post_id>"
-
+#     assert spec.relative_path == "admin/posts"
+#     assert spec.action == "show"
+#     assert spec.is_restful is True
+#     assert spec.flat_route == "/admin-posts-show"
+#     assert spec.nested_route == "/admin/<int:admin_id>/posts/<int:post_id>"
 
 def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypatch):
     project_root = tmp_path

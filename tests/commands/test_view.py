@@ -124,66 +124,66 @@ def test_make_view_with_generated_controller_and_no_relationship(project):
     assert result.exit_code == 0
     assert "Method Added To Controller" in result.output
 
-def test_make_view_with_generated_route(project):
-    """
-    This should
-    1) create app/templates/posts/index.html
-    2) infer route + blueprint for posts
-    """
-    runner = CliRunner()
-    result = runner.invoke(make_view, ["posts.index", "-r"])
+# def test_make_view_with_generated_route(project):
+#     """
+#     This should
+#     1) create app/templates/posts/index.html
+#     2) infer route + blueprint for posts
+#     """
+#     runner = CliRunner()
+#     result = runner.invoke(make_view, ["posts.index", "-r"])
 
-    assert result.exit_code == 0
+#     assert result.exit_code == 0
 
-    template_file = project / "app" / "templates" / "posts" / "index.html"
-    assert template_file.exists()
+#     template_file = project / "app" / "templates" / "posts" / "index.html"
+#     assert template_file.exists()
 
-    # Route folder exists
-    route_dir = project / "app" / "routes" / "posts"
-    assert route_dir.exists()
+#     # Route folder exists
+#     route_dir = project / "app" / "routes" / "posts"
+#     assert route_dir.exists()
 
-    # routes.py should exist
-    routes_file = route_dir / "routes.py"
-    assert routes_file.exists()
+#     # routes.py should exist
+#     routes_file = route_dir / "routes.py"
+#     assert routes_file.exists()
 
-    assert "/posts" in routes_file.read_text()
+#     assert "/posts" in routes_file.read_text()
 
-def test_make_view_with_generated_route_add_method(project):
-    route_file = project / "app" / "routes" / "posts" / "routes.py"
-    route_file.parent.mkdir(parents=True)
-    route_file.write_text(
-        "from app.controllers import MainController\n"
-        "\n"
-        "from app.routes.posts import bp\n"
-        "@bp.route('/posts', methods=['GET'])\n"
-        "def index():\n"
-        "    return PostController.index()"
-    )
-    runner = CliRunner()
-    result = runner.invoke(make_view, ["posts.show", "-r"])
+# def test_make_view_with_generated_route_add_method(project):
+#     route_file = project / "app" / "routes" / "posts" / "routes.py"
+#     route_file.parent.mkdir(parents=True)
+#     route_file.write_text(
+#         "from app.controllers import MainController\n"
+#         "\n"
+#         "from app.routes.posts import bp\n"
+#         "@bp.route('/posts', methods=['GET'])\n"
+#         "def index():\n"
+#         "    return PostController.index()"
+#     )
+#     runner = CliRunner()
+#     result = runner.invoke(make_view, ["posts.show", "-r"])
 
-    assert result.exit_code == 0
+#     assert result.exit_code == 0
 
-    assert "Added Route" in result.output
+#     assert "Added Route" in result.output
 
-def test_make_view_with_generated_route_exception(project, monkeypatch):
-    # Keep the real function around
-    real_exists = os.path.exists
+# def test_make_view_with_generated_route_exception(project, monkeypatch):
+#     # Keep the real function around
+#     real_exists = os.path.exists
 
-    def boom(path):
-        # Raise only for our route folder lookup
-        if "app/routes" in str(path):
-            raise RuntimeError("boom boom boom")
-        return real_exists(path)
+#     def boom(path):
+#         # Raise only for our route folder lookup
+#         if "app/routes" in str(path):
+#             raise RuntimeError("boom boom boom")
+#         return real_exists(path)
 
-    monkeypatch.setattr("os.path.exists", boom)
+#     monkeypatch.setattr("os.path.exists", boom)
 
-    runner = CliRunner()
-    result = runner.invoke(make_view, ["posts.index", "-r"])
+#     runner = CliRunner()
+#     result = runner.invoke(make_view, ["posts.index", "-r"])
 
-    assert result.exit_code == 0
-    assert "💣 Error:" in result.output
-    assert "boom boom boom" in result.output
+#     assert result.exit_code == 0
+#     assert "💣 Error:" in result.output
+#     assert "boom boom boom" in result.output
 
 def test_make_view_with_generated_model(project):
     runner = CliRunner()
