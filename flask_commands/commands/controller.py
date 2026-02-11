@@ -5,7 +5,7 @@ from flask_commands.utils.controllers import (
     controller_make_file,
     controller_generate_relative_path_from_controller_name
 )
-from flask_commands.utils.files import is_project_root
+from flask_commands.utils.files import file_is_project_root
 from flask_commands.utils.models import (
     model_infer_name_from_controller,
     model_make_file
@@ -28,7 +28,7 @@ def make_controller(
     crud: bool,
     model_name: str | None,
     generate_model: bool) -> None:
-    if not is_project_root():
+    if not file_is_project_root():
         return
     # Infer model name if not provided
     if generate_model and model_name is None:
@@ -85,4 +85,4 @@ def make_controller(
         all_successful = all_successful and is_successful
 
     if not all_successful:
-        click.secho("⚠️  Warning: One or more make controller steps failed.", fg="yellow", bold=True)
+        click.secho("⚠️  Warning: One or more make controller steps produced a warning or failure.", fg="yellow", bold=True)

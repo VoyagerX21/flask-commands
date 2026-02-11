@@ -3,7 +3,7 @@ import os
 import re
 import click
 
-from .files import append_file, write_file, insert_import_into_lines
+from .files import file_append_file, file_write_file, file_insert_import_into_lines
 from .naming import camel_to_snake, pluralize, singularize
 from .routes import(
     route_parse_route_name_for_params_and_types,
@@ -45,13 +45,13 @@ def controller_add_method(
             import_url_for_pattern = r"from\s+flask\s+import\s+.*\burl_for\b"
             if not re.search(import_redirect_pattern, source) or \
                     not re.search(import_url_for_pattern, source):
-                lines =insert_import_into_lines(
+                lines =file_insert_import_into_lines(
                     lines, "from flask import redirect, url_for")
 
         else:
             import_render_template_pattern = r"from\s+flask\s+import\s+.*\brender_template\b"
             if not re.search(import_render_template_pattern, source):
-                lines =insert_import_into_lines(
+                lines =file_insert_import_into_lines(
                     lines, "from flask import render_template")
 
 
@@ -194,7 +194,7 @@ def controller_make_file(
     try:
         controller_file_path = os.path.join(
             "app", "controllers", f"{camel_to_snake(controller_name)}.py")
-        write_file(controller_file_path, contents)
+        file_write_file(controller_file_path, contents)
     except FileExistsError:
         message = (
             click.style("⚠️ Warning: Controller Already Exists\n", fg="yellow", bold=True) +
@@ -210,7 +210,7 @@ def controller_make_file(
         controller_init_path = os.path.join("app", "controllers", "__init__.py")
         init_contents = [f"from .{camel_to_snake(controller_name)} import {controller_name}"]
 
-        append_file(controller_init_path, init_contents)
+        file_append_file(controller_init_path, init_contents)
     except FileNotFoundError:
         message = (
             click.style("⚠️  Warning: Controller __init__.py Missing\n", fg="yellow", bold=True) +

@@ -1,7 +1,7 @@
 import click
 import random
 
-from .files import write_file
+from .files import file_write_file
 
 def view_make_file(destination_file_path: str) -> tuple[bool, str]:
     """
@@ -9,7 +9,7 @@ def view_make_file(destination_file_path: str) -> tuple[bool, str]:
     selected, Python-themed quote.
 
     The function builds a minimal HTML fragment (`<div>...</div>`) and writes it
-    to the given destination path using `write_file`. If a file already exists
+    to the given destination path using `file_write_file`. If a file already exists
     at that path, a styled warning message is returned instead of overwriting
     the file. Any other unexpected exceptions are also caught and returned as a
     styled error message.
@@ -45,7 +45,7 @@ def view_make_file(destination_file_path: str) -> tuple[bool, str]:
             "    Your future self is your most important user.",
             "    If you copy code, you inherit its ghosts." ]
         content = [ "<div>", random.choice(python_quotes), "</div>"]
-        write_file(destination_file_path, content)
+        file_write_file(destination_file_path, content)
     except FileExistsError:
         message = (
             click.style("⚠️  Warning: View Already Exists\n", fg="yellow", bold=True) +

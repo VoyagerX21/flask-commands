@@ -6,15 +6,12 @@ from enum import StrEnum
 from flask_commands.utils.models import (
     model_get_registered_models,
     model_model_names_to_snake_case_names)
-from .files import append_file, write_file
+from .files import file_append_file, file_write_file
 from .naming import pluralize, singularize
 from .scaffold import (
     generate_restful_route,
     filter_falsy,
     split_dotted_path_with_action_into_relative_path_and_action)
-
-RESTFUL_ACTIONS = {"index", "create", "store", "show", "edit", "update", "destroy", "delete"}
-MEMBER_ACTIONS = {"show", "edit", "update", "destroy", "delete"}
 
 @dataclass(frozen=True)
 class RouteSpec:
@@ -117,7 +114,7 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
                 click.style("    - No changes were made existing route function\n", fg="yellow")
             )
             return False, message
-        append_file(route_file_path, route_content)
+        file_append_file(route_file_path, route_content)
     except FileNotFoundError:
         message = (
             click.style("⚠️ Warning: Route Directory Missing\n", fg="yellow", bold=True) +
@@ -137,6 +134,68 @@ def route_add_method(relative_path: str,  action: str, route_folder_path: str, b
         click.style(f"    - Reference route with ", fg="green") + click.style(f"url_for('{relative_path.replace('/', '.')}.{action}'{parameter_reference})\n", fg="green", bold=True)
     )
     return True, message
+
+def route_generate_parameter_reference(parameters: list[str]) -> str:
+    """
+    Build a `url_for` argument suffix from parameter names.
+
+    Args:
+        parameters (list[str]): Parameter names in the order they should appear.
+
+    Returns:
+        str: "" when `parameters` is empty; otherwise a string starting with
+        ", " followed by "name=name" pairs joined with ", ".
+
+    Examples:
+        >>> route_generate_parameter_reference([])
+        ''
+        >>> route_generate_parameter_reference(["post_id"])
+        ', post_id=post_id'
+        >>> route_generate_parameter_reference(["post_id", "comment_id"])
+        ', post_id=post_id, comment_id=comment_id'
+    """
+    if not parameters:
+        return ""
+    return ", " + ", ".join(
+        f"{parameter}={parameter}" for parameter in parameters)
+
+def route_generate_route_folder_path_and_blueprint_name(dotted_path_with_action: str, relative_path: str) -> tuple[str, str]:
+    """
+    Generate a file path and blueprint name for a Flask route.
+
+    If `dotted_path_with_action` contains no ".", the route is treated as a top-level
+    (non-nested) route and this returns the mains location regardless of
+    `relative_path`.
+
+    Args:
+        dotted_path_with_action (str): A dotted path notation string that may contain
+            a dot separator and a name component (e.g., 'posts.comments.show' or 'dashboard').
+        relative_path (str): A relative path string representing the route directory
+            structure and should be derived from the dotted path with action
+            (e.g., 'posts/comments' or '').
+
+    Returns:
+        tuple[str, str]: A tuple containing:
+            - str: The route folder path relative to the project root.
+            - str: The blueprint name derived from the top-level segment of `relative_path
+
+    Example:
+        >>> route_generate_route_folder_path_and_blueprint_name('posts.index', 'posts')
+        ('app/routes/posts', 'posts')
+
+        >>> route_generate_route_folder_path_and_blueprint_name('posts.comments.index', 'posts/comments')
+        ('app/routes/posts/comments', 'posts')
+
+        >>> route_generate_route_folder_path_and_blueprint_name('dashboard', '')
+        ('app/routes/mains', 'mains')
+
+        >>> route_generate_route_folder_path_and_blueprint_name('recipe.comments.images.index', 'recipe/comments/images')
+        ('app/routes/recipe/comments/images', 'recipe')
+    """
+    if "." not in dotted_path_with_action:
+        return os.path.join("app", "routes", "mains"), 'mains'
+    top_level = relative_path.split("/", 1)[0]
+    return os.path.join("app", "routes", relative_path), top_level
 
 def route_generate_route_name(
         relative_path: str,
@@ -214,8 +273,38 @@ def route_generate_route_name(
 def route_generate_route_name_with_model_prompt(
         dotted_path_with_action: str,
         allow_model_prompt: bool) -> tuple[str, str | None]:
-    route_spec = route_generate_route_spec(dotted_path_with_action)
-    prompt_plan = route_generate_prompt_plan(route_spec)
+    """
+    Generate a route name and optionally prompt to create a missing model.
+
+    This function builds a RouteSpec from the dotted input, derives a prompt plan,
+    and (when allowed) asks the user to confirm generating a missing model for a
+    RESTful route whose last segment is not a registered model. If the prompt is
+    declined or disabled, it returns the originally generated route name.
+
+    Args:
+        dotted_path_with_action (str): Normalized dotted input such as:
+            - `posts.show`
+            - `admin.posts.index`
+            - `landing`
+        allow_model_prompt (bool): If True, may prompt to generate a missing model.
+
+    Returns:
+        tuple[str, str | None]: A tuple containing:
+            - The chosen route name (accepted or declined prompt route).
+            - The model name to generate if the prompt was accepted; otherwise None.
+
+    Examples:
+        >>> route_name, model_name = route_generate_route_name_with_model_prompt("posts.show", False)
+        >>> model_name is None
+        True
+
+    Note:
+        Prompts are only considered for RESTful actions where the last path segment
+        is not a registered model. Non-RESTful actions do not trigger prompts.
+    """
+
+    route_spec = _generate_route_spec(dotted_path_with_action)
+    prompt_plan = _generate_prompt_plan(route_spec)
 
     if not allow_model_prompt \
             or not prompt_plan.missing_model\
@@ -235,177 +324,25 @@ def route_generate_route_name_with_model_prompt(
         return prompt_plan.route_structure.declined_route, None
     return prompt_plan.route_structure.accepted_route, model_name
 
-def route_generate_parameter_reference(parameters: list[str]) -> str:
-    if not parameters:
-        return ""
-    return ", " + ", ".join(
-        f"{parameter}={parameter}" for parameter in parameters)
-
-def route_generate_prompt_plan(route_spec: RouteSpec) -> PromptPlan:
-    if not route_spec.relative_path_segments:
-        return PromptPlan()
-
-    relative_path_last_segment = route_spec.relative_path_segments[-1]
-    is_last_segment_a_model = \
-        relative_path_last_segment in route_spec.relative_path_segment_models
-
-    # RESTful: Only prompt if last segment is not a model
-    if (not route_spec.is_restful) or is_last_segment_a_model:
-        return PromptPlan()
-
-    model_name = singularize(relative_path_last_segment).title().replace("_", "")
-    missing_model_prompt = MissingModelPrompt(
-        segment=relative_path_last_segment,
-        model_name=model_name
-    )
-    accepted_route = route_generate_route_name(
-        relative_path=route_spec.relative_path,
-        action=route_spec.action,
-        is_restful=route_spec.is_restful,
-        relative_path_segments=list(route_spec.relative_path_segments),
-        relative_path_segment_models=list(route_spec.relative_path_segment_models + (relative_path_last_segment, ))
-    )
-    route_structure_prompt = RouteStructurePrompt(
-        accepted_route=accepted_route,
-        declined_route=route_spec.generated_route_name
-    )
-    return PromptPlan(
-        missing_model=missing_model_prompt,
-        route_structure=route_structure_prompt
-    )
-
-def route_generate_route_folder_path_and_blueprint_name(dotted_path_with_action: str, relative_path: str) -> tuple[str, str]:
+def route_http_method_for_action(action: str) -> str:
     """
-    Generate a file path and blueprint name for a Flask route module.
+    Return the HTTP method for a given route action.
+
+    Actions that modify data ("store", "update", "destroy", "delete") map to "POST".
+    All other actions map to "GET".
 
     Args:
-        dotted_path_with_action (str): A dotted path notation string that may contain
-            a dot separator and a name component (e.g., 'auth.login' or 'dashboard').
-        relative_path (str): A relative path string representing the route directory
-            structure (e.g., 'auth/login' or 'users/profile').
+        action (str): The action name (e.g., "index", "show", "store", "delete").
 
     Returns:
-        tuple[str, str]: A tuple containing:
-            - str: The file path for the route module relative to the project root.
-            - str: The blueprint name derived from the relative path, with forward slashes
-                replaced by underscores.
-
-    Example:
-        >>> route_generate_route_folder_path_and_blueprint_name('posts.index', 'posts')
-        ('app/routes/posts', 'posts')
-
-        >>> route_generate_route_folder_path_and_blueprint_name('posts.comments.index', 'posts/comments')
-        ('app/routes/posts/comments', 'posts')
-
-        >>> route_generate_route_folder_path_and_blueprint_name('dashboard', '')
-        ('app/routes/mains', 'mains')
-
-        >>> route_generate_route_folder_path_and_blueprint_name('recipe.comments.images.index', 'recipe/comments/images')
-        ('app/routes/recipe/comments/images', 'mains')
-    """
-    if "." not in dotted_path_with_action:
-        return os.path.join("app", "routes", "mains"), 'mains'
-    top_level = relative_path.split("/", 1)[0]
-    return os.path.join("app", "routes", relative_path), top_level
-
-def route_generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
-    """
-    Analyze a dotted path and produce a complete route-generation specification.
-
-    This function does not decide prompts or final route selection. It builds a
-    `RouteSpec` snapshot used by downstream logic to decide between flat and
-    nested routes (and prompt behavior, if needed).
-
-    Workflow:
-    1. Split `dotted_path_with_action` into `relative_path` and `action`.
-    2. Detect whether `action` is RESTful (`RESTFUL_ACTIONS`).
-    3. Load registered models from `app/models/__init__.py` via
-       `model_get_registered_models()`.
-    4. Convert registered model names to snake_case for per-segment matching.
-    5. Mark which `relative_path` segments map to known models.
-    6. Build both candidate routes:
-       - `flat_route` (single hyphenated path segment)
-       - `nested_route` (model-aware path with optional `<int:..._id>` params)
-
-    Args:
-        dotted_path_with_action: Normalized dotted input in the form:
-            - `resource.action` (example: `posts.show`)
-            - `namespace.resource.action` (example: `admin.posts.index`)
-            - `resource` (example: `landing`)
-
-    Returns:
-        RouteSpec: Immutable route analysis data containing:
-            - original dotted input
-            - `relative_path` and `action`
-            - RESTful flag
-            - split path segments
-            - segments recognized as models
-            - registered model names (PascalCase) and snake_case variants
-            - `flat_route` and `nested_route` candidates
+        str: "POST" for modifying actions; otherwise "GET".
 
     Examples:
-        >>> spec = route_generate_route_spec("posts.show")
-        >>> spec.relative_path
-        'posts'
-        >>> spec.action
-        'show'
-        >>> spec.is_restful
-        True
-        >>> spec.flat_route
-        '/posts-show'
-        >>> spec.nested_route
-        '/posts/<int:post_id>'
-
-        >>> spec = route_generate_route_spec("landing")
-        >>> spec.relative_path
-        ''
-        >>> spec.action
-        'landing'
-        >>> spec.flat_route
-        '/landing'
-        >>> spec.nested_route
-        '/landing'
-
-    Note:
-        Model matching is segment-by-segment using singularized segment names
-        against registered snake_case model names.
+        >>> route_http_method_for_action("index")
+        'GET'
+        >>> route_http_method_for_action("store")
+        'POST'
     """
-    relative_path, action = \
-        split_dotted_path_with_action_into_relative_path_and_action(
-            dotted_path_with_action)
-
-
-    relative_path_segments = filter_falsy(relative_path.split("/"))
-    is_restful = action in RESTFUL_ACTIONS
-
-    registered_models = model_get_registered_models()
-    registered_snake_models = model_model_names_to_snake_case_names(
-        registered_models)
-    relative_path_segment_models = [
-        relative_path_segment for relative_path_segment in relative_path_segments
-        if singularize(relative_path_segment) in registered_snake_models]
-
-    generated_route_name = route_generate_route_name(
-        relative_path=relative_path,
-        action=action,
-        is_restful=is_restful,
-        relative_path_segments=relative_path_segments,
-        relative_path_segment_models=relative_path_segment_models
-    )
-
-    return RouteSpec(
-        dotted_path_with_action=dotted_path_with_action,
-        relative_path=relative_path,
-        action=action,
-        is_restful=is_restful,
-        relative_path_segments=relative_path_segments,
-        relative_path_segment_models=tuple(relative_path_segment_models),
-        registered_models=tuple(registered_models),
-        registered_snake_models=registered_snake_models,
-        generated_route_name=generated_route_name
-    )
-
-def route_http_method_for_action(action: str) -> str:
     return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
 
 def route_make_directory_and_register_blueprint(relative_path: str, action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> tuple[bool, str]:
@@ -464,7 +401,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
             "",
             f"from {route_folder_path.replace('/', '.')} import routes"
         ]
-        write_file(route_init_path, route_init_content)
+        file_write_file(route_init_path, route_init_content)
     #   2b) Check to see if you need to update the top level __init__.py to
     #       include the new blueprint
         top_level_path = os.path.join("app", "routes", blueprint_name)
@@ -477,7 +414,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
                 f"from {route_folder_path.replace('/', '.')} import bp as {relative_path.replace('/', '_')}_blueprint",
                 f"bp.register_blueprint({relative_path.replace('/', '_')}_blueprint)"
             ]
-            append_file(parent_init_path, new_blueprint_content)
+            file_append_file(parent_init_path, new_blueprint_content)
 
     #   3) routes.py file - check
         route_file_path = os.path.join(route_folder_path, "routes.py")
@@ -492,7 +429,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
             f"def {action}({', '.join(parameters_with_types)}):",
             f"    return {using_controller_name}.{action}({', '.join(parameters)})"
         ]
-        write_file(route_file_path, route_content)
+        file_write_file(route_file_path, route_content)
     except FileExistsError:
         message = (
             click.style("⚠️  Warning: Route Already Exists\n", fg="yellow", bold=True) +
@@ -557,9 +494,12 @@ def route_parse_route_name_for_params_and_types(route_name: str) ->tuple[list[st
     Parse a Flask-style route and extract parameter names and typed parameter
     declarations.
 
+    Only typed params like "<int:post_id>" are captured; untyped params like
+    "<post_id>" are ignored.
+
     Args:
-        route_name: Route string containing typed params, e.g. "/posts/<int:post_id>"
-        route_name: Route string containing typed params, e.g. "/posts/<str:post_slug>".
+        route_name (str): Route string containing typed params, e.g.
+            "/posts/<int:post_id>" or "/posts/<str:post_slug>".
 
     Returns:
         A tuple of (parameters_with_types, parameters) where:
@@ -592,3 +532,147 @@ def _generate_parameter_reference_example(parameters: list[str]) -> str:
         f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
     )
 
+def _generate_prompt_plan(route_spec: RouteSpec) -> PromptPlan:
+    """
+    Create a prompt plan for RESTful routes when a missing model segment is detected.
+
+    If the route is RESTful and the last segment is not a recognized model, this
+    builds prompts to suggest the missing model and an adjusted route structure.
+    The route structure includes two optional names: one for the current route
+    (without the missing model added) and one for the adjusted route (with the
+    missing model added).
+
+    Args:
+        route_spec (RouteSpec): Parsed route metadata used to determine whether
+            prompts are required and to generate suggested route names.
+
+    Returns:
+        PromptPlan: A plan containing optional `missing_model` and
+        `route_structure` prompts, or an empty plan when no prompt is needed.
+    """
+
+    if not route_spec.relative_path_segments:
+        return PromptPlan()
+
+    relative_path_last_segment = route_spec.relative_path_segments[-1]
+    is_last_segment_a_model = \
+        relative_path_last_segment in route_spec.relative_path_segment_models
+
+    # RESTful: Only prompt if last segment is not a model
+    if (not route_spec.is_restful) or is_last_segment_a_model:
+        return PromptPlan()
+
+    model_name = singularize(relative_path_last_segment).title().replace("_", "")
+    missing_model_prompt = MissingModelPrompt(
+        segment=relative_path_last_segment,
+        model_name=model_name
+    )
+    accepted_route = route_generate_route_name(
+        relative_path=route_spec.relative_path,
+        action=route_spec.action,
+        is_restful=route_spec.is_restful,
+        relative_path_segments=list(route_spec.relative_path_segments),
+        relative_path_segment_models=list(route_spec.relative_path_segment_models + (relative_path_last_segment, ))
+    )
+    route_structure_prompt = RouteStructurePrompt(
+        accepted_route=accepted_route,
+        declined_route=route_spec.generated_route_name
+    )
+    return PromptPlan(
+        missing_model=missing_model_prompt,
+        route_structure=route_structure_prompt
+    )
+
+def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
+    """
+    Analyze a dotted path with action to build a RouteSpec which includes a generated route name.
+
+    This function does not prompt or choose alternate structures. It returns a
+    RouteSpec snapshot used by downstream logic (for example, prompt planning).
+
+    Workflow:
+    1. Split `dotted_path_with_action` into `relative_path` and `action`.
+    2. Detect whether `action` is RESTful.
+    3. Load registered models from `app/models/__init__.py` via
+       `model_get_registered_models()`.
+    4. Convert registered model names to snake_case for per-segment matching.
+    5. Mark which `relative_path` segments map to known models.
+    6. Generate the route name with `route_generate_route_name()`.
+
+    Args:
+        dotted_path_with_action: Normalized dotted input in the form:
+            - `resource.action` (example: `posts.show`)
+            - `namespace.resource.action` (example: `admin.posts.index`)
+            - `resource` (example: `landing`)
+
+    Returns:
+        RouteSpec: Immutable route analysis data containing:
+            - original dotted input
+            - `relative_path` and `action`
+            - RESTful flag
+            - split path segments
+            - segments recognized as models
+            - registered model names (PascalCase) and snake_case variants
+            - `generated_route_name`
+
+    Examples:
+        >>> spec = _generate_route_spec("posts.show")
+        >>> spec.relative_path
+        'posts'
+        >>> spec.action
+        'show'
+        >>> spec.is_restful
+        True
+        >>> spec.flat_route
+        '/posts-show'
+        >>> spec.generated_route_name  # assuming "Post" is a registered model
+        '/posts/<int:post_id>'
+
+        >>> spec = _generate_route_spec("landing")
+        >>> spec.relative_path
+        ''
+        >>> spec.action
+        'landing'
+        >>> spec.action
+        'landing'
+        >>> spec.generated_route_name
+        '/landing'
+
+    Note:
+        Model matching is segment-by-segment using singularized segment names
+        against registered snake_case model names.
+    """
+    relative_path, action = \
+        split_dotted_path_with_action_into_relative_path_and_action(
+            dotted_path_with_action)
+
+
+    relative_path_segments = filter_falsy(relative_path.split("/"))
+    is_restful = action in ["index", "create", "store", "show", "edit", "update", "destroy", "delete"]
+
+    registered_models = model_get_registered_models()
+    registered_snake_models = model_model_names_to_snake_case_names(
+        registered_models)
+    relative_path_segment_models = [
+        relative_path_segment for relative_path_segment in relative_path_segments
+        if singularize(relative_path_segment) in registered_snake_models]
+
+    generated_route_name = route_generate_route_name(
+        relative_path=relative_path,
+        action=action,
+        is_restful=is_restful,
+        relative_path_segments=relative_path_segments,
+        relative_path_segment_models=relative_path_segment_models
+    )
+
+    return RouteSpec(
+        dotted_path_with_action=dotted_path_with_action,
+        relative_path=relative_path,
+        action=action,
+        is_restful=is_restful,
+        relative_path_segments=tuple(relative_path_segments),
+        relative_path_segment_models=tuple(relative_path_segment_models),
+        registered_models=tuple(registered_models),
+        registered_snake_models=tuple(registered_snake_models),
+        generated_route_name=generated_route_name
+    )

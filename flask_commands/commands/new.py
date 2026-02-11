@@ -2,7 +2,7 @@ import os
 import click
 import shutil
 from flask_commands.utils.venv import create_venv
-from flask_commands.utils.files import copy_templates
+from flask_commands.utils.files import file_copy_templates
 from flask_commands.utils.css import install_tailwind
 from flask_commands.utils.databases import install_sqlitedb
 
@@ -33,7 +33,7 @@ def new(project_name, db):
             packages=packages,
             freeze_requirements=True)
 
-        copy_templates(
+        file_copy_templates(
             project_path,
             include_db=include_db,
             replacements={"project_name": project_name, "project_path": project_path})

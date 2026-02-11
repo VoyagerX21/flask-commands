@@ -2,9 +2,9 @@ import os
 import pytest
 from pathlib import Path
 from flask_commands.utils.models import (
-    model_infer_name_from_controller,
     model_generate_model,
     model_get_registered_models,
+    model_infer_name_from_controller,
     model_make_file,
     model_model_names_to_snake_case_names,
     model_split_hierarchy_from_dotted_path_with_action
@@ -16,7 +16,7 @@ def model_project(tmp_path, monkeypatch):
     model_dir = project_root / "app" / "models"
     model_dir.mkdir(parents=True)
 
-    # __init__.py must exist for append_file
+    # __init__.py must exist for file_append_file
     init_file = model_dir / "__init__.py"
     init_file.write_text("\n", encoding="utf-8")
 
@@ -91,10 +91,6 @@ def test_model_get_registered_models_ignores_non_models_absolute_imports(tmp_pat
 
     assert model_get_registered_models() == ["Post"]
 
-def test_model_infer_name_from_controller():
-    model_name = model_infer_name_from_controller("PostCommentImageController")
-    assert model_name == "Image"
-
 def test_model_generate_model_with_dot():
     model_name = model_generate_model("posts.index")
     assert model_name == "Post"
@@ -102,6 +98,10 @@ def test_model_generate_model_with_dot():
 def test_model_generate_model_without_dot():
     model_name = model_generate_model("posts")
     assert model_name == "Post"
+
+def test_model_infer_name_from_controller():
+    model_name = model_infer_name_from_controller("PostCommentImageController")
+    assert model_name == "Image"
 
 def test_model_make_file_success(model_project):
     is_successful, message = model_make_file(
@@ -133,26 +133,26 @@ def test_model_make_file_success(model_project):
     init_contents = init_file.read_text(encoding="utf-8")
     assert "from .post import Post" in init_contents
 
-# def test_model_make_file_file_already_exists(model_project):
-#     model_file = model_project / "app" / "models" / "post.py"
-#     model_file.write_text("\n")
+def test_model_make_file_file_already_exists(model_project):
+    model_file = model_project / "app" / "models" / "post.py"
+    model_file.write_text("\n")
 
-#     is_successful, message = model_make_file(
-#         model_name="Post",
-#         model_init_path=os.path.join("app", "models", "__init__.py"),
-#         model_file_path=os.path.join("app", "models", "post.py"),
-#     )
+    is_successful, message = model_make_file(
+        model_name="Post",
+        model_init_path=os.path.join("app", "models", "__init__.py"),
+        model_file_path=os.path.join("app", "models", "post.py"),
+    )
 
-#     assert is_successful is False
-#     assert "Model Already Exists" in message
+    assert is_successful is False
+    assert "Model Already Exists" in message
 
-def test_model_make_file_write_file_exception(model_project, monkeypatch):
+def test_model_make_file_file_write_file_exception(model_project, monkeypatch):
     def boom(*args, **kwargs):
         raise Exception("screen failure")
 
-    # Patch write_file to fail
+    # Patch file_write_file to fail
     monkeypatch.setattr(
-        "flask_commands.utils.models.write_file",
+        "flask_commands.utils.models.file_write_file",
         boom
     )
 
@@ -181,13 +181,13 @@ def test_model_make_file_init_missing(tmp_path, monkeypatch):
     assert is_successful is False
     assert " Model __init__.py Missing" in message
 
-def test_model_make_file_append_file_exception(model_project, monkeypatch):
+def test_model_make_file_file_append_file_exception(model_project, monkeypatch):
     def boom(*args, **kwargs):
         raise Exception("screen failure")
 
-    # Patch write_file to fail
+    # Patch file_write_file to fail
     monkeypatch.setattr(
-        "flask_commands.utils.models.append_file",
+        "flask_commands.utils.models.file_append_file",
         boom
     )
 

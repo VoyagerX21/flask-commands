@@ -30,7 +30,7 @@ def test_view_make_file_exception(tmp_path, monkeypatch):
         raise Exception("processor overload")
 
     monkeypatch.setattr(
-        "flask_commands.utils.views.write_file",
+        "flask_commands.utils.views.file_write_file",
         boom
     )
 

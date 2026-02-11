@@ -219,4 +219,4 @@ def test_make_model_warns_when_init_missing(project):
     result = runner.invoke(make_model, ["Comment"])
 
     assert result.exit_code == 0
-    assert "Warning: One or more make model steps failed." in result.output
+    assert "Warning: One or more make model steps produced a warning or failure." in result.output

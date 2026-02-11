@@ -3,7 +3,7 @@ import sys
 import click
 import subprocess
 from typing import Optional, Iterable
-from .files import write_file
+from .files import file_write_file
 
 def create_venv(project_path: str, packages: Optional[Iterable[str]] = None, freeze_requirements: bool = False) -> str:
     """
@@ -44,5 +44,5 @@ def _write_requirements_from_venv(venv_dir: str, project_path: str):
 
     requirements_path = os.path.join(project_path, "requirements.txt")
 
-    write_file(requirements_path, requirements_content)
+    file_write_file(requirements_path, requirements_content)
 

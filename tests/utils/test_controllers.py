@@ -234,13 +234,13 @@ def test_controller_make_file_file_already_exists(controller_project):
 
     assert contents == "class PostController:\n    pass\n"
 
-def test_controller_make_file_write_file_exception(tmp_path, monkeypatch):
+def test_controller_make_file_file_write_file_exception(tmp_path, monkeypatch):
     def boom(*args, **kwargs):
         raise Exception("disk exploded")
 
-    # Patch write_file to fail
+    # Patch file_write_file to fail
     monkeypatch.setattr(
-        "flask_commands.utils.controllers.write_file",
+        "flask_commands.utils.controllers.file_write_file",
         boom
     )
 
@@ -283,7 +283,7 @@ def test_controller_make_file_init_exception(controller_project, monkeypatch):
         raise Exception("permission denied")
 
     monkeypatch.setattr(
-        "flask_commands.utils.controllers.append_file",
+        "flask_commands.utils.controllers.file_append_file",
         boom
     )
 

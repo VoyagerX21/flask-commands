@@ -43,4 +43,4 @@ def make_model(model_name: str, crud:bool) -> None:
                 click.echo(message)
 
     if not all_successful:
-        click.secho("⚠️  Warning: One or more make model steps failed.", fg="yellow", bold=True)
+        click.secho("⚠️  Warning: One or more make model steps produced a warning or failure.", fg="yellow", bold=True)

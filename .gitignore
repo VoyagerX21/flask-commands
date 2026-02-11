@@ -52,3 +52,6 @@ pip-wheel-metadata/
 
 build_zip.py
 diff.txt
+
+# Chat file
+AGENTS.md

@@ -2,7 +2,7 @@ import os
 import ast
 import click
 
-from .files import append_file, write_file
+from .files import file_append_file, file_write_file
 from .naming import camel_to_snake, pluralize, singularize
 from .scaffold import (
     filter_falsy,
@@ -147,21 +147,21 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
             '        """Model representation for Code Debugging"""',
             f"        return f'<{model_name} id:{{self.id}}>'",
         ]
-        write_file(model_file_path, file_contents)
+        file_write_file(model_file_path, file_contents)
     except FileExistsError:
         message = (
             click.style("⚠️  Warning: Model Already Exists\n", fg="yellow", bold=True) +
             click.style(f"    - Model {click.style(model_name, bold=True)} ", fg="yellow") + click.style("already exists\n", fg="yellow" ) +
             click.style("    - No changes were made to the existing model\n", fg="yellow")
         )
-        return True, message
+        return False, message
     except Exception as exception:
         return False, click.style(
             f"💣 Error: Failed to create model:\n{exception}", fg="red")
 
     try:
         init_contents = [f"from .{model_name.lower()} import {model_name}"]
-        append_file(model_init_path, init_contents)
+        file_append_file(model_init_path, init_contents)
     except FileNotFoundError:
         message = (
             click.style("⚠️  Warning: Model __init__.py Missing\n", fg="yellow", bold=True) +
@@ -265,4 +265,3 @@ def _model_finalize_child_model(parent_models: list[str], remaining_relative_pat
     if parent_models:
         return parent_models[:-1], parent_models[-1]
     return parent_models, ""
-

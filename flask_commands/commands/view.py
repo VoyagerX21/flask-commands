@@ -6,7 +6,7 @@ from flask_commands.utils.models import (
     model_generate_model,
     model_make_file
 )
-from flask_commands.utils.files import is_project_root
+from flask_commands.utils.files import file_is_project_root
 from flask_commands.utils.routes import route_generate_route_name_with_model_prompt
 from flask_commands.utils.scaffold import (
     normalize_dotted_path_with_action,
@@ -75,7 +75,7 @@ def make_view(
         --route ROUTE_NAME            set a specific route
         --model MODEL_NAME            set a specific model
     """
-    if not is_project_root():
+    if not file_is_project_root():
         return
 
     is_successful, dotted_path_with_action = \
@@ -147,6 +147,4 @@ def make_view(
         click.echo(message)
 
     if not all_successful:
-        click.secho("⚠️  Warning: One or more make view steps failed.", fg="yellow", bold=True)
-
-# The only think I don't really like is the duplicated creation of the model but I guess that can not be avoided because they could have forgotten the -m and then be prompted and say yes create the model
+        click.secho("⚠️  Warning: One or more make view steps produced a warning or failure.", fg="yellow", bold=True)

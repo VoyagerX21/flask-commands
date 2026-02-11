@@ -2,7 +2,7 @@ import os
 import click
 from typing import Dict, Optional
 
-def append_file(file_path: str, contents: list[str]) -> None:
+def file_append_file(file_path: str, contents: list[str]) -> None:
     """Appends a list of lines from contents to the file_path.  Insert a
     leading newline only if the file doesn't already end with one. Rasises
     a File Not Found Error if the file does not exist.
@@ -26,7 +26,7 @@ def append_file(file_path: str, contents: list[str]) -> None:
         for line in normalized_content:
             f.write(line)
 
-def copy_templates(project_path: str, include_db: bool, replacements: Optional[Dict[str, str]] = None) -> None:
+def file_copy_templates(project_path: str, include_db: bool, replacements: Optional[Dict[str, str]] = None) -> None:
     """
     Copy everything under the package 'templates' directory into the target
     project_path, preserving directory structure. Optionally apply simple
@@ -60,9 +60,9 @@ def copy_templates(project_path: str, include_db: bool, replacements: Optional[D
                     if line.strip() != "from app import models"
                 ) + "\n"
 
-            write_file(destination_path, content.splitlines())
+            file_write_file(destination_path, content.splitlines())
 
-def insert_import_into_lines(lines, import_statement) -> list:
+def file_insert_import_into_lines(lines, import_statement) -> list:
     insert_at = 0
     for idx, line in enumerate(lines):
         stripped = line.strip()
@@ -79,7 +79,7 @@ def insert_import_into_lines(lines, import_statement) -> list:
         lines.insert(insert_at + 1, "")
     return lines
 
-def is_project_root() -> bool:
+def file_is_project_root() -> bool:
     if os.path.isdir("app") and os.path.isfile("run.py"):
         return True
 
@@ -93,7 +93,7 @@ def is_project_root() -> bool:
     click.secho("    - No files were created or changed", fg="yellow")
     return False
 
-def write_file(file_path: str, contents: list[str]) -> None:
+def file_write_file(file_path: str, contents: list[str]) -> None:
     """Writes the contents to the file_path for a new file.  Raises a File
     Exists error if the file already exists at the given path directory."""
     # Split directory and filename
@@ -116,8 +116,6 @@ def write_file(file_path: str, contents: list[str]) -> None:
     with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(normalized_content)
 
-
-# Helper Functions
 def _read_template(file_path):
     """Read a template file and return its content as a string."""
     with open(file_path, "r", encoding="utf-8") as f:

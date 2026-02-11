@@ -426,4 +426,4 @@ def test_make_controller_warns_when_init_missing(project):
     result = runner.invoke(make_controller, ["CommentController"])
 
     assert result.exit_code == 0
-    assert "Warning: One or more make controller steps failed." in result.output
+    assert "Warning: One or more make controller steps produced a warning or failure." in result.output

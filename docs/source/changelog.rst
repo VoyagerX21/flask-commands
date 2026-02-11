@@ -16,10 +16,10 @@ Added
 - Add tests for model registry parsing edge cases, dotted path normalization, and template copy ignores.
 - Document future command goals, routing prompts, and naming conventions in package_goals.md.
 - Added `RouteSpec`-based route analysis in `flask_commands/utils/routes.py`.
-- Added `route_generate_route_spec()` to compute normalized route metadata and candidate flat/nested routes.
+- Added `_generate_route_spec()` to compute normalized route metadata and candidate flat/nested routes.
 - Added route helper functions:
   - `route_generate_route()`
-  - `route_generate_prompt_plan()`
+  - `_generate_prompt_plan()`
   - `route_generate_route_folder_path_and_blueprint_name()`
   - `route_parse_route_name_for_params_and_types()`
 - Added `generate_restful_route()` in `flask_commands/utils/scaffold.py`.
@@ -29,7 +29,7 @@ Changed
 ~~~~~~~
 - Normalize dotted path handling across `make:view`, route inference, and wiring using `dotted_path_with_action`.
 - Update `split_dotted_path_with_action_into_relative_path_and_action` to accept pre-normalized input instead of lowercasing internally.
-- Rename internal `copy_templates` template root variable for clarity.
+- Rename internal `file_copy_templates` template root variable for clarity.
 - Updated route generation internals to use explicit model-registration lookups and segment-level model matching.
 - Updated normalization behavior in `normalize_dotted_path_with_action()`.
 - Updated command and wiring modules to align with renamed/relocated route utilities.
@@ -324,7 +324,7 @@ Changed
 
 Fixed
 ~~~~~
-- Ensure `append_file` inserts a newline and handles empty files safely.
+- Ensure `file_append_file` inserts a newline and handles empty files safely.
 - Guard blueprint registration when `return app` is missing.
 - Fix controller option errors and model name inference.
 - Improve error handling for controller/model generation and align tests.
