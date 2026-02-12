@@ -63,6 +63,23 @@ def file_copy_templates(project_path: str, include_db: bool, replacements: Optio
             file_write_file(destination_path, content.splitlines())
 
 def file_insert_import_into_lines(lines, import_statement) -> list:
+    """
+    Inserts an import or from statement into a list of lines.  Places the
+    statement after any existing import/from block, and adds a blank line
+    after the inserted statement if needed.
+
+    Args:
+        lines: List of source lines to modify.
+        import_statement: Import/from line to insert.
+
+    Returns:
+        The modified list of lines.
+
+    Examples:
+        lines = ["import os", "", "print('hi')"]
+        result = file_insert_import_into_lines(lines, "from sys import path")
+        # result == ["import os", "from sys import path", "", "print('hi')"]
+    """
     insert_at = 0
     for idx, line in enumerate(lines):
         stripped = line.strip()
@@ -100,6 +117,7 @@ def file_write_file(file_path: str, contents: list[str]) -> None:
     directory = os.path.dirname(file_path)
 
     # Create the directory (and parents) if needed
+    # Not needed example: Only create directories when the path includes one; os.path.dirname("file.txt") is "".
     if directory:
         os.makedirs(directory, exist_ok=True)
 

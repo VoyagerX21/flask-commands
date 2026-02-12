@@ -4,6 +4,10 @@ import shutil
 import subprocess
 
 def install_sqlitedb(project_path):
+    """Initializes the sqlite database for a project by running the Flask
+    migrations in the project's virtual environment.  Raises a Click
+    Exception if venv/bin/flask is not found.
+    """
     click.secho("Setting up sqlite database for development...", bold=True)
 
     venv_flask = os.path.join(project_path, "venv", "bin", "flask")

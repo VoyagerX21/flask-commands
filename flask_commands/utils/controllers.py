@@ -3,7 +3,10 @@ import os
 import re
 import click
 
-from .files import file_append_file, file_write_file, file_insert_import_into_lines
+from .files import (
+    file_append_file,
+    file_write_file,
+    file_insert_import_into_lines )
 from .naming import camel_to_snake, pluralize, singularize
 from .routes import(
     route_parse_route_name_for_params_and_types,
@@ -11,12 +14,17 @@ from .routes import(
     route_generate_parameter_reference
 )
 
-
 def controller_add_method(
         relative_path: str,
         action: str,
         controller_name: str,
         route_name: str | None = None) -> tuple[bool, str]:
+    """
+    Adds a static method to an existing controller class.  Ensures the
+    required Flask imports exist, inserts the method into the class, and
+    returns a (success, message) tuple.  If the method or class is missing,
+    no changes are made and a warning is returned.
+    """
     try:
         controller_file_path = os.path.join(
             "app", "controllers", f"{camel_to_snake(controller_name)}.py")
@@ -135,16 +143,46 @@ def controller_add_method(
     return True, message
 
 def controller_generate_controller_name_from_relative_path(relative_path: str) -> str:
+    """
+    Build a controller class name from a slash-delimited relative path by
+    singularizing each segment and appending "Controller".
+
+    Args:
+        relative_path (str): Slash-delimited path (e.g., "posts/comments").
+
+    Returns:
+        str: The generated controller class name.
+
+    Examples:
+        >>> controller_generate_controller_name_from_relative_path("posts/comments/images")
+        'PostCommentImageController'
+        >>> controller_generate_controller_name_from_relative_path("user_profiles")
+        'UserProfileController'
+    """
     return ''.join([singularize(part).title().replace('_', '')
                     for part in relative_path.split('/')]) + "Controller"
 
 def controller_generate_relative_path_from_controller_name(controller_name: str) -> str:
-    """Return pluralized path from a controller class name.
-
-    Example:
-        PostCommentImageController -> posts/comments/images
     """
-    parts = camel_to_snake(controller_name).split('_')[:-1]
+    Return a pluralized relative path derived from a controller class name.
+    The "Controller" suffix is optional.
+
+    Args:
+        controller_name (str): Controller class name with or without "Controller".
+
+    Returns:
+        str: Slash-delimited relative path.
+
+    Examples:
+        >>> controller_generate_relative_path_from_controller_name("PostCommentImageController")
+        'posts/comments/images'
+        >>> controller_generate_relative_path_from_controller_name("UserProfile")
+        'users/profiles'
+    """
+    name_without_suffix = controller_name
+    if controller_name.endswith("Controller"):
+        name_without_suffix = controller_name[:-len("Controller")]
+    parts = camel_to_snake(name_without_suffix).split('_')
     return '/'.join(list(map(lambda part: pluralize(part), parts)))
 
 def controller_make_file(
@@ -152,6 +190,11 @@ def controller_make_file(
         action: str | None, # method_name
         controller_name: str,
         route_name: str | None = None) -> tuple[bool, str]:
+    """Creates a new controller file and optionally adds an initial method.
+    Registers the controller in app/controllers/__init__.py and returns a
+    (success, message) tuple.  Returns warnings for existing controllers or
+    missing __init__.py.
+    """
     if action and relative_path is None:
         return False, click.style("💣 Error: relative_path required when action present", fg="red")
     if relative_path and action is None:

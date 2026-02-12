@@ -314,9 +314,16 @@ def route_generate_route_name_with_model_prompt(
 
     segment = prompt_plan.missing_model.segment
     model_name = prompt_plan.missing_model.model_name
+
+    accepted_route = prompt_plan.route_structure.accepted_route
+    declined_route = prompt_plan.route_structure.declined_route
+
+
     has_accepted = click.confirm(
         "No registered model found for "
         f"{click.style(segment, bold=True)}. "
+        f"    - Accept: {click.style(accepted_route, bold=True)}\n"
+        f"    - Decline: {click.style(declined_route, bold=True)}\n"
         f"Generate {click.style(model_name, bold=True)}?",
         default=True
     )

@@ -54,12 +54,13 @@ def test_controller_add_method_already_exists(controller_project):
         controller_name="PostController"
     )
 
+    updated_source = controller_file.read_text(encoding="utf-8")
+    expected_source = original_source
+
     # Assert
     assert is_successful is False
     assert "Method Already Exists" in message
-
-    # File should be unchanged
-    assert controller_file.read_text(encoding="utf-8") == original_source
+    assert updated_source == expected_source   # File should be unchanged
 
 def test_controller_add_method_no_controller_class(controller_project):
     controller_file = controller_project(
@@ -68,17 +69,22 @@ def test_controller_add_method_no_controller_class(controller_project):
         "    pass"
     )
 
+    original_source = controller_file.read_text(encoding="utf-8")
+
     is_successful, message = controller_add_method(
         relative_path="posts",
         action="index",
         controller_name="PostController"
     )
 
+    updated_source = controller_file.read_text(encoding="utf-8")
+    expected_source = original_source
+
     assert is_successful is False
     assert "Controller Class Not Found" in message
+    assert updated_source == expected_source
 
 def test_controller_add_method_success(controller_project):
-    """The fixture runs and controller_project is the return from fixture"""
     controller_file = controller_project(
         "post_controller.py",
         "class PostController:\n"
@@ -99,15 +105,29 @@ def test_controller_add_method_success(controller_project):
         route_name="/posts"
     )
 
+    updated_source = controller_file.read_text(encoding="utf-8")
+
+    expected_source = (
+        "from flask import render_template\n"
+        "\n"
+        "class PostController:\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def create():\n"
+        "        pass\n"
+        "\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('posts/index.html')\n"
+        "def helper_function(input):\n"
+        "    pass"
+    )
+
     # Assert
     assert is_successful is True
     assert "Method Added" in message
-
-    updated_source = controller_file.read_text(encoding="utf-8")
-
-    assert "@staticmethod" in updated_source
-    assert "def index()" in updated_source
-    assert "return render_template('posts/index.html')" in updated_source
+    assert updated_source == expected_source
 
 def test_controller_add_method_success_with_relation(controller_project):
     """The fixture runs and controller_project is the return from fixture"""
@@ -129,15 +149,26 @@ def test_controller_add_method_success_with_relation(controller_project):
         route_name="/users/<int:user_id>/posts/<int:post_id>"
     )
 
-    # Assert
-    assert is_successful is True
-    assert "Method Added" in message
-
     updated_source = controller_file.read_text(encoding="utf-8")
 
-    assert "@staticmethod" in updated_source
-    assert "def show(user_id: int, post_id: int)" in updated_source
-    assert "return render_template('users/posts/index.html')" in updated_source
+    expected_source = (
+        "from flask import render_template\n"
+        "\n"
+        "class UserPostController:\n"
+        "    @staticmethod\n"
+        "    def index(user_id: int):\n"
+        "        return render_template('users/posts/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def show(user_id: int, post_id: int) -> str:\n"
+        "        return render_template('users/posts/show.html')"
+    )
+
+    # Assert
+    assert is_successful is True
+    assert is_successful is True
+    assert "Method Added" in message
+    assert updated_source == expected_source
 
 def test_controller_add_method_exception(controller_project, monkeypatch):
     controller_file = controller_project(
@@ -151,6 +182,8 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
         "def helper_function(input):\n"
         "    pass"
     )
+
+    original_source = controller_file.read_text(encoding="utf-8")
 
     real_open = builtins.open
 
@@ -169,8 +202,102 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
         controller_name="PostController"
     )
 
+    updated_source = controller_file.read_text(encoding="utf-8")
+    expected_source = original_source
+
     assert is_successful is False
     assert "Failed to add Controller Method" in message
+    assert updated_source == expected_source
+
+def test_controller_add_method_inserts_redirect_imports(controller_project):
+    controller_file = controller_project(
+        "post_controller.py",
+        "class PostController:\n"
+        "    pass\n"
+    )
+
+    is_successful, _ = controller_add_method(
+        relative_path="posts",
+        action="store",
+        controller_name="PostController",
+        route_name="/posts"
+    )
+
+    updated_source = controller_file.read_text(encoding="utf-8")
+
+    expected_source = (
+        "from flask import redirect, url_for\n"
+        "\n"
+        "class PostController:\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def store() -> str:\n"
+        "        return redirect(url_for('posts.index'))"
+    )
+
+    assert is_successful is True
+    assert updated_source == expected_source
+
+def test_controller_add_method_redirect_return_line_uses_nested_param_reference(controller_project):
+    controller_file = controller_project(
+        "post_comment_controller.py",
+        "class PostCommentController:\n"
+        "    def helper(self):\n"
+        "        pass\n"
+    )
+
+    is_successful, _ = controller_add_method(
+        relative_path="posts/comments",
+        action="update",
+        controller_name="PostCommentController",
+        route_name="/posts/<int:post_id>/comments/<int:comment_id>"
+    )
+
+    updated_source = controller_file.read_text(encoding="utf-8")
+
+    expected_source = (
+        "from flask import redirect, url_for\n"
+        "\n"
+        "class PostCommentController:\n"
+        "    def helper(self):\n"
+        "        pass\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def update(post_id: int, comment_id: int) -> str:\n"
+        "        return redirect(url_for('posts.comments.index', post_id=post_id))"
+    )
+
+    assert is_successful is True
+    assert updated_source == expected_source
+
+def test_controller_add_method_removes_pass_only_class_body(controller_project):
+    controller_file = controller_project(
+        "user_controller.py",
+        "class UserController:\n"
+        "    pass\n"
+    )
+
+    is_successful, _ = controller_add_method(
+        relative_path="users",
+        action="index",
+        controller_name="UserController",
+        route_name="/users"
+    )
+
+    updated_source = controller_file.read_text(encoding="utf-8")
+
+    expected_source = (
+        "from flask import render_template\n"
+        "\n"
+        "class UserController:\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('users/index.html')"
+    )
+
+    assert is_successful is True
+    assert updated_source == expected_source
 
 def test_controller_generate_controller_name_from_relative_path():
     assert controller_generate_controller_name_from_relative_path('posts') == 'PostController'
@@ -183,7 +310,6 @@ def test_controller_generate_relative_path_from_controller_name():
     assert controller_generate_relative_path_from_controller_name("PostCommentController") == 'posts/comments'
     assert controller_generate_relative_path_from_controller_name("PostCommentImageController") == 'posts/comments/images'
     assert controller_generate_relative_path_from_controller_name("UserAPIController") == 'users/apis'
-
 
 def test_controller_make_file_success(controller_project):
 

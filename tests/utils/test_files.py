@@ -6,7 +6,8 @@ from flask_commands.utils.files import (
     file_copy_templates,
     file_insert_import_into_lines,
     file_is_project_root,
-    file_write_file)
+    file_write_file,
+    _read_template)
 
 def test_file_append_file_success(tmp_path):
     file_path = tmp_path / "test.txt"
@@ -136,10 +137,19 @@ def test_file_copy_templates_applies_replacements(tmp_path, monkeypatch):
     _, contents = calls[0]
     assert contents == ["Hello World"]
 
+
 def test_file_insert_import_into_lines_with_blank_at_the_start():
-    lines = ["", "from flask import redirect, url_for"]
+    lines = ["", "from flask import redirect, url_for", "", "print('hello')"]
     import_statement = 'from flask import render_template'
-    file_insert_import_into_lines(lines=lines, import_statement=import_statement)
+    new_lines = file_insert_import_into_lines(lines=lines, import_statement=import_statement)
+    expected_outcome = [
+        '',
+        'from flask import redirect, url_for',
+        'from flask import render_template',
+        '',
+        "print('hello')"
+    ]
+    assert new_lines == expected_outcome
 
 def test_file_is_project_root_true(tmp_path, monkeypatch):
     app_directory = tmp_path / "app"
@@ -158,7 +168,7 @@ def test_file_write_file_success(tmp_path):
     file_write_file(file_path, ["hello", "world"])
 
     assert file_path.exists()
-    assert file_path.read_text() == "hello\nworld\n"
+    assert file_path.read_text(encoding="utf-8") == "hello\nworld\n"
 
 def test_file_write_file_fails_if_file_exists(tmp_path):
     file_path = tmp_path / "test.txt"
@@ -172,3 +182,18 @@ def test_file_write_file_fails_if_file_exists(tmp_path):
 
     # Ensure the original content is still intact
     assert file_path.read_text(encoding="utf-8") == "I already exist don't write over me"
+
+def test_file_write_file_nested(tmp_path):
+    file_path = tmp_path / 'nested' / "template.txt"
+    file_write_file(file_path, ["hello", "world"])
+
+    assert (tmp_path / 'nested').is_dir()
+    assert file_path.read_text(encoding="utf-8") == "hello\nworld\n"
+
+def test__read_template_reads_contents(tmp_path):
+    file_path = tmp_path / "template.txt"
+    file_path.write_text("hello\nworld\n", encoding="utf-8")
+
+    contents = _read_template(str(file_path))
+
+    assert contents == "hello\nworld\n"

@@ -5,6 +5,12 @@ import shutil
 import subprocess
 
 def install_tailwind(project_path):
+    """Installs Tailwind CSS via npm for the given project path.  If npm is
+    missing, prints guidance and returns without installing.  On success,
+    adds Tailwind build/watch scripts to package.json; on failure, prints
+    the npm error.
+    """
+
     if shutil.which("npm") is None:
         click.secho("⚠️  Warning: npm not found on PATH;",
                                fg="yellow", bold=True)
@@ -31,7 +37,6 @@ def install_tailwind(project_path):
         click.secho("    - ✅ Success: Tailwind installed", fg="green")
     except subprocess.CalledProcessError as exc:
         click.secho(f"💣 Error: npm install failed:\n{exc}", fg="red")
-
 
 def _append_tailwind_scripts(project_path):
     package_json_path = os.path.join(project_path, "package.json")

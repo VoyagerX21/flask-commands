@@ -18,6 +18,35 @@ def wire_controller_route_view(
     controller_name: str | None,
     route_name: str | None
 ) -> tuple[bool, list[str]]:
+    """
+    Wire together view, controller, and route for a given action.
+
+    Creates a view file for GET actions, ensures a controller method exists
+    (creating the controller if needed), and adds or creates the route and
+    blueprint for the given dotted path. Collects success/error messages for
+    each step and returns overall status.
+
+    Args:
+        dotted_path_with_action (str): Dotted path like "posts.comments.show".
+        relative_path (str): Slash-delimited path like "posts/comments".
+        action (str): Action name (e.g., "index", "show", "store").
+        controller_name (str | None): Controller class name or None.
+        route_name (str | None): URL path like "/posts/<int:post_id>".
+
+    Returns:
+        tuple[bool, list[str]]: Overall success flag and list of messages.
+
+    Examples:
+        >>> is_successful, messages = wire_controller_route_view(
+        ...     dotted_path_with_action="posts.index",
+        ...     relative_path="posts",
+        ...     action="index",
+        ...     controller_name="PostController",
+        ...     route_name="/posts"
+        ... )
+        >>> is_successful
+        True
+    """
     messages = []
     all_successful = True
 

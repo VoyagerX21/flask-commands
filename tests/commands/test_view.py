@@ -63,6 +63,13 @@ def project(tmp_path, monkeypatch):
     monkeypatch.chdir(root)
     return root
 
+def test_make_view_with_invalid_dotted_path(project):
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["  ..__  "])
+
+    assert result.exit_code == 0
+    assert "Invalid dotted path" in result.output
+
 def test_make_view_not_in_project_root(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
@@ -124,29 +131,81 @@ def test_make_view_with_generated_controller_and_no_relationship(project):
     assert result.exit_code == 0
     assert "Method Added To Controller" in result.output
 
-# def test_make_view_with_generated_route(project):
-#     """
-#     This should
-#     1) create app/templates/posts/index.html
-#     2) infer route + blueprint for posts
-#     """
-#     runner = CliRunner()
-#     result = runner.invoke(make_view, ["posts.index", "-r"])
+def test_make_view_with_generated_route_declines_model_prompt(project):
+    """
+    This should
+    1) create app/templates/posts/index.html
+    2) infer route + blueprint for posts
+    3) decline model prompt (no model file)
+    4) use declined route: /posts/index (not /posts)
+    """
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["posts.index", "-r"], input="n\n")
 
-#     assert result.exit_code == 0
+    assert result.exit_code == 0
 
-#     template_file = project / "app" / "templates" / "posts" / "index.html"
-#     assert template_file.exists()
+    template_file = project / "app" / "templates" / "posts" / "index.html"
+    assert template_file.exists()
 
-#     # Route folder exists
-#     route_dir = project / "app" / "routes" / "posts"
-#     assert route_dir.exists()
+    # Route folder exists
+    route_dir = project / "app" / "routes" / "posts"
+    assert route_dir.exists()
 
-#     # routes.py should exist
-#     routes_file = route_dir / "routes.py"
-#     assert routes_file.exists()
+    # routes.py should exist
+    routes_file = route_dir / "routes.py"
+    assert routes_file.exists()
 
-#     assert "/posts" in routes_file.read_text()
+    routes_text = routes_file.read_text(encoding="utf-8")
+
+    expected_source = (
+        "from app.controllers import MainController\n"
+        "from app.routes.posts import bp\n"
+        "\n"
+        "@bp.route('/posts/index', methods=['GET'])\n"
+        "def index():\n"
+        "    return MainController.index()\n"
+    )
+
+    assert routes_text == expected_source
+
+    model_file = project / "app" / "models" / "post.py"
+    assert not model_file.exists()
+
+def test_make_view_with_generated_route_accepts_model_prompt(project):
+    """
+    This should
+    1) create app/templates/posts/index.html
+    2) accept model prompt (model generated)
+    3) use accepted route: /posts
+    """
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["posts.index", "-r"], input="\n")
+
+    assert result.exit_code == 0
+
+    template_file = project / "app" / "templates" / "posts" / "index.html"
+    assert template_file.exists()
+
+    route_dir = project / "app" / "routes" / "posts"
+    assert route_dir.exists()
+
+    routes_file = route_dir / "routes.py"
+    assert routes_file.exists()
+
+    routes_text = routes_file.read_text(encoding="utf-8")
+    expected_source = (
+        "from app.controllers import MainController\n"
+        "from app.routes.posts import bp\n"
+        "\n"
+        "@bp.route('/posts', methods=['GET'])\n"
+        "def index():\n"
+        "    return MainController.index()\n"
+    )
+    assert routes_text == expected_source
+
+    model_file = project / "app" / "models" / "post.py"
+    assert model_file.exists()
+
 
 # def test_make_view_with_generated_route_add_method(project):
 #     route_file = project / "app" / "routes" / "posts" / "routes.py"

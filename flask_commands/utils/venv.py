@@ -10,6 +10,18 @@ def create_venv(project_path: str, packages: Optional[Iterable[str]] = None, fre
     Create a virtual environment at <project_path>/venv using the current
     Python interpreter. If `packages` is provided, install them into the
     new venv using the venv's pip.
+
+    Args:
+        project_path (str): Directory where the venv should be created.
+        packages (Optional[Iterable[str]]): Package names to install in the venv.
+        freeze_requirements (bool): Whether to write requirements.txt from `pip freeze`.
+
+    Returns:
+        str: Path to the created virtual environment.
+
+    Examples:
+        >>> create_venv("/tmp/myapp", packages=None, freeze_requirements=False)
+        '/tmp/myapp/venv'
     """
     # Ensure the project directory exists
     os.makedirs(project_path, exist_ok=True)
@@ -26,6 +38,20 @@ def create_venv(project_path: str, packages: Optional[Iterable[str]] = None, fre
     return venv_dir
 
 def _pip_install_in_venv(venv_dir: str, packages):
+    """
+    Install packages into an existing virtual environment using its pip.
+
+    Args:
+        venv_dir (str): Path to the virtual environment directory.
+        packages (Iterable[str]): Packages to install.
+
+    Returns:
+        None
+
+    Examples:
+        >>> _pip_install_in_venv("/tmp/myapp/venv", ["flask"])
+        None
+    """
     click.secho("Installing Python Dependencies...", bold=True)
     pip_path = os.path.join(venv_dir, "bin", "pip")
     subprocess.run([pip_path, "install", *packages], check=True, capture_output=True, text=True)
@@ -35,6 +61,17 @@ def _write_requirements_from_venv(venv_dir: str, project_path: str):
     """
     Run `pip freeze` inside the venv and write the output to
     `<project_path>/requirements.txt`.
+
+    Args:
+        venv_dir (str): Path to the virtual environment directory.
+        project_path (str): Project directory where requirements.txt is written.
+
+    Returns:
+        None
+
+    Examples:
+        >>> _write_requirements_from_venv("/tmp/myapp/venv", "/tmp/myapp")
+        None
     """
     pip_path = os.path.join(venv_dir, "bin", "pip")
 
