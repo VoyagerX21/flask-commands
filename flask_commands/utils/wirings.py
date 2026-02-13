@@ -6,7 +6,7 @@ from .naming import camel_to_snake
 from .routes import (
     route_add_method,
     route_http_method_for_action,
-    route_make_directory_and_register_blueprint,
+    route_write_directory_and_register_blueprint,
     route_generate_route_folder_path_and_blueprint_name
 )
 from .views import view_make_file
@@ -102,7 +102,7 @@ def wire_controller_route_view(
                         controller_name)    # contoller_name is like PostController
             else:
                 is_successful, message = \
-                    route_make_directory_and_register_blueprint(
+                    route_write_directory_and_register_blueprint(
                         relative_path,      # this is everything before the last part of dotted_path_with_action replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_action
                         route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''

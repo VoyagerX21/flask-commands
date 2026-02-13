@@ -179,7 +179,7 @@ def test_make_view_with_generated_route_accepts_model_prompt(project):
     3) use accepted route: /posts
     """
     runner = CliRunner()
-    result = runner.invoke(make_view, ["posts.index", "-r"], input="\n")
+    result = runner.invoke(make_view, ["posts.index", "-r"], input="y\n")
 
     assert result.exit_code == 0
 
@@ -206,43 +206,93 @@ def test_make_view_with_generated_route_accepts_model_prompt(project):
     model_file = project / "app" / "models" / "post.py"
     assert model_file.exists()
 
+def test_make_view_with_generated_route_add_method_decline_model_prompt(project):
+    routes_file = project / "app" / "routes" / "posts" / "routes.py"
+    routes_file.parent.mkdir(parents=True)
+    routes_file.write_text(
+        "from app.controllers import MainController\n"
+        "from app.routes.posts import bp\n"
+        "\n"
+        "@bp.route('/posts', methods=['GET'])\n"
+        "def index():\n"
+        "    return PostController.index()"
+    )
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["posts.show", "-r"], input="n\n")
 
-# def test_make_view_with_generated_route_add_method(project):
-#     route_file = project / "app" / "routes" / "posts" / "routes.py"
-#     route_file.parent.mkdir(parents=True)
-#     route_file.write_text(
-#         "from app.controllers import MainController\n"
-#         "\n"
-#         "from app.routes.posts import bp\n"
-#         "@bp.route('/posts', methods=['GET'])\n"
-#         "def index():\n"
-#         "    return PostController.index()"
-#     )
-#     runner = CliRunner()
-#     result = runner.invoke(make_view, ["posts.show", "-r"])
+    routes_text = routes_file.read_text(encoding="utf-8")
 
-#     assert result.exit_code == 0
+    expected_source = (
+        "from app.controllers import MainController\n"
+        "from app.routes.posts import bp\n"
+        "\n"
+        "@bp.route('/posts', methods=['GET'])\n"
+        "def index():\n"
+        "    return PostController.index()\n"
+        "\n"
+        "@bp.route('/posts/show', methods=['GET'])\n"
+        "def show():\n"
+        "    return MainController.show()\n"
+    )
 
-#     assert "Added Route" in result.output
+    print('--------')
+    print(routes_text)
 
-# def test_make_view_with_generated_route_exception(project, monkeypatch):
-#     # Keep the real function around
-#     real_exists = os.path.exists
+    assert routes_text == expected_source
+    assert result.exit_code == 0
+    assert "Added Route" in result.output
 
-#     def boom(path):
-#         # Raise only for our route folder lookup
-#         if "app/routes" in str(path):
-#             raise RuntimeError("boom boom boom")
-#         return real_exists(path)
+def test_make_view_with_generated_route_add_method_accept_model_prompt(project):
+    routes_file = project / "app" / "routes" / "posts" / "routes.py"
+    routes_file.parent.mkdir(parents=True)
+    routes_file.write_text(
+        "from app.controllers import MainController\n"
+        "from app.routes.posts import bp\n"
+        "\n"
+        "@bp.route('/posts', methods=['GET'])\n"
+        "def index():\n"
+        "    return PostController.index()"
+    )
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["posts.show", "-r"], input="y\n")
 
-#     monkeypatch.setattr("os.path.exists", boom)
+    routes_text = routes_file.read_text(encoding="utf-8")
 
-#     runner = CliRunner()
-#     result = runner.invoke(make_view, ["posts.index", "-r"])
+    expected_source = (
+        "from app.controllers import MainController\n"
+        "from app.routes.posts import bp\n"
+        "\n"
+        "@bp.route('/posts', methods=['GET'])\n"
+        "def index():\n"
+        "    return PostController.index()\n"
+        "\n"
+        "@bp.route('/posts/<int:post_id>', methods=['GET'])\n"
+        "def show(post_id: int):\n"
+        "    return MainController.show(post_id)\n"
+    )
 
-#     assert result.exit_code == 0
-#     assert "💣 Error:" in result.output
-#     assert "boom boom boom" in result.output
+    assert routes_text == expected_source
+    assert result.exit_code == 0
+    assert "Added Route" in result.output
+
+def test_make_view_with_generated_route_exception(project, monkeypatch):
+    # Keep the real function around
+    real_exists = os.path.exists
+
+    def boom(path):
+        # Raise only for our route folder lookup
+        if "app/routes" in str(path):
+            raise RuntimeError("boom boom boom")
+        return real_exists(path)
+
+    monkeypatch.setattr("os.path.exists", boom)
+
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["posts.index", "-r"], input="n\n")
+
+    assert result.exit_code == 0
+    assert "💣 Error:" in result.output
+    assert "boom boom boom" in result.output
 
 def test_make_view_with_generated_model(project):
     runner = CliRunner()

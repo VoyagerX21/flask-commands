@@ -6,7 +6,7 @@ from flask_commands.utils.routes import (
     route_generate_route_name,
     route_generate_route_name_with_model_prompt,
     route_http_method_for_action,
-    route_make_directory_and_register_blueprint,
+    route_write_directory_and_register_blueprint,
     route_parse_route_name_for_params_and_types,
     _generate_prompt_plan,
     _generate_route_spec)
@@ -268,7 +268,7 @@ def test_route_http_method_for_action_post_delete():
 def test_route_http_method_for_action_post_delete():
     assert route_http_method_for_action("custom_action") == "GET"
 
-def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypatch):
+def test_route_write_directory_and_register_blueprint_success(tmp_path, monkeypatch):
     project_root = tmp_path
     app_dir = project_root / "app"
     app_dir.mkdir(parents=True)
@@ -295,7 +295,7 @@ def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypat
 
     monkeypatch.chdir(project_root)
     # dotted_path_with_action = users.index
-    is_successful, message = route_make_directory_and_register_blueprint(
+    is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
@@ -306,7 +306,7 @@ def test_route_make_directory_and_register_blueprint_success(tmp_path, monkeypat
     assert is_successful is True
     assert "Created New Route Directory" in message
 
-def test_route_make_directory_and_register_blueprint_success_nested_routes(tmp_path, monkeypatch):
+def test_route_write_directory_and_register_blueprint_success_nested_routes(tmp_path, monkeypatch):
     project_root = tmp_path
     app_dir = project_root / "app"
     app_dir.mkdir(parents=True)
@@ -342,7 +342,7 @@ def test_route_make_directory_and_register_blueprint_success_nested_routes(tmp_p
 
     monkeypatch.chdir(project_root)
     # dotted_path_with_action = recipes.comments.index
-    is_successful, message = route_make_directory_and_register_blueprint(
+    is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='recipes/comments',
         action='index',
         route_folder_path='app/routes/recipes/comments',
@@ -353,7 +353,7 @@ def test_route_make_directory_and_register_blueprint_success_nested_routes(tmp_p
     assert is_successful is True
     assert "Created New Route Directory" in message
 
-def test_route_make_directory_and_register_blueprint_app_init_missing_return(tmp_path, monkeypatch):
+def test_route_write_directory_and_register_blueprint_app_init_missing_return(tmp_path, monkeypatch):
     project_root = tmp_path
     app_dir = project_root / "app"
     app_dir.mkdir(parents=True)
@@ -378,7 +378,7 @@ def test_route_make_directory_and_register_blueprint_app_init_missing_return(tmp
 
     monkeypatch.chdir(project_root)
     # dotted_path_with_action = users.index
-    is_successful, message = route_make_directory_and_register_blueprint(
+    is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
@@ -389,14 +389,14 @@ def test_route_make_directory_and_register_blueprint_app_init_missing_return(tmp
     assert is_successful is False
     assert "Could not register blueprint" in message
 
-def test_route_make_directory_and_register_blueprint_route_already_exists(tmp_path, monkeypatch):
+def test_route_write_directory_and_register_blueprint_route_already_exists(tmp_path, monkeypatch):
     project_root = tmp_path
     route_dir = project_root / "app" / "routes" / "users"
     route_dir.mkdir(parents=True)
     monkeypatch.chdir(project_root)
 
     # dotted_path_with_action = users.index
-    is_successful, message = route_make_directory_and_register_blueprint(
+    is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='users',
         action='index',
         route_folder_path='app/routes/users',
@@ -407,7 +407,7 @@ def test_route_make_directory_and_register_blueprint_route_already_exists(tmp_pa
     assert is_successful is False
     assert "Route Already Exists" in message
 
-def test_route_make_directory_and_register_blueprint_exception(tmp_path, monkeypatch):
+def test_route_write_directory_and_register_blueprint_exception(tmp_path, monkeypatch):
     def boom(*args, **kwargs):
         raise Exception("motherboard failure")
 
@@ -419,7 +419,7 @@ def test_route_make_directory_and_register_blueprint_exception(tmp_path, monkeyp
     project_root = tmp_path
     monkeypatch.chdir(project_root)
     # dotted_path_with_action = users.index
-    is_successful, message = route_make_directory_and_register_blueprint(
+    is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='users',
         action='index',
         route_folder_path='app/routes/users',

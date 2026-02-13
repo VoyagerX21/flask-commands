@@ -352,7 +352,7 @@ def route_http_method_for_action(action: str) -> str:
     """
     return "POST" if action in ["store", "update", "destroy", "delete"] else "GET"
 
-def route_make_directory_and_register_blueprint(relative_path: str, action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> tuple[bool, str]:
+def route_write_directory_and_register_blueprint(relative_path: str, action: str, route_folder_path: str, blueprint_name: str, route_name: str, controller_name: str | None) -> tuple[bool, str]:
     """
     Creates a new Flask route directory structure and registers a blueprint in the Flask app.
 
@@ -377,7 +377,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
                    blueprint registration, generated route action, and url_for reference.
 
     Example:
-        >>> is_successful, message = route_make_directory_and_register_blueprint(
+        >>> is_successful, message = route_write_directory_and_register_blueprint(
         ...     relative_path='users',
         ...     action='index',
         ...     route_folder_path='app/routes/users',
@@ -385,7 +385,7 @@ def route_make_directory_and_register_blueprint(relative_path: str, action: str,
         ...     route_name='/users',
         ...     controller_name='UserController'
         ...
-        >>> is_successful, message = route_make_directory_and_register_blueprint(
+        >>> is_successful, message = route_write_directory_and_register_blueprint(
         ...     relative_path='recipes/comments/images',
         ...     action='index',
         ...     route_folder_path='app/routes/recipes/comments/images',
@@ -683,3 +683,109 @@ def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
         registered_snake_models=tuple(registered_snake_models),
         generated_route_name=generated_route_name
     )
+
+def _write_parent_routes(relative_path: str) -> list[str]:
+    update_messages: list[str] = []
+    relative_path_segments = filter_falsy(relative_path.split("/"))             # ['recipes', 'comments', 'images']
+    if len(relative_path_segments) <= 1:
+        return update_messages
+    app_base_route = os.path.join("app", "routes")                              # app/routes
+    parent_segments = relative_path_segments[:-1]                               # ['recipes', 'comments']
+    for index in range(len(parent_segments)):
+        parent_relative_path = "/".join(parent_segments[:index + 1])            # recipes or recipes/comments
+        parent_route_directory_path = \
+            os.path.join(app_base_route, parent_relative_path)                  # app/routes/recipes or app/routes/recipes/comments
+        if not os.path.isdir(parent_route_directory_path):
+            update_messages.extend(
+                _write_parent_route_directory(parent_route_directory_path))
+            if index == 0:
+                is_successful, message = _register_top_level_blueprint_in_app(
+                     parent_route_directory_path)
+                update_messages.append(message)
+            else:
+                is_successful, message = \
+                    _register_blueprint_in_parent(
+                        parent_relative_path,
+                        parent_route_directory_path)
+                update_messages.append(message)
+
+def _write_parent_route_directory(route_directory_path: str) -> list[str]:
+    update_messages: list[str] = []
+    if os.path.isdir(route_directory_path):
+        return update_messages
+    os.makedirs(route_directory_path)
+    update_messages.append(
+        f"Created routes directory at "
+        f"{click.style(route_directory_path, bold=True)}")
+    route_init_path = os.path.join(route_directory_path, "__init__.py")
+    file_write_file(
+        route_init_path, _generate_route_init(route_directory_path))
+    update_messages.append(
+        f"Created __init__.py in "
+        f"{click.style(route_directory_path, bold=True)}")
+    route_routes_path = os.path.join(route_directory_path, "routes.py")
+    file_write_file(
+        route_routes_path,
+        _generate_minimal_route_routes(route_directory_path))
+    update_messages.append(
+        f"Created routes.py with blueprint import only in "
+        f"{click.style(route_directory_path, bold=True)}")
+    return update_messages
+
+
+def _generate_route_init(route_directory_path: str) -> list[str]:
+    blueprint_name = route_directory_path.split("/")[-1]
+    return [
+            "from flask import Blueprint",
+            "",
+            f"bp = Blueprint('{blueprint_name}', __name__)",
+            "",
+            f"from {route_directory_path.replace('/', '.')} import routes"
+        ]
+
+def _generate_minimal_route_routes(route_directory_path: str) -> list[str]:
+    return [f"from {route_directory_path.replace('/', '.')} import bp"]
+
+def _register_top_level_blueprint_in_app(route_directory_path) -> tuple[bool, str]:
+    app_init_path = os.path.join("app", "__init__.py")
+    try:
+        with open(app_init_path, "r", encoding="utf-8") as f:
+            source = f.read()
+    except FileNotFoundError:
+        return False, "app/__init__.py missing"
+    blueprint_name = route_directory_path.split("/")[-1]
+    import_line = f"from {route_directory_path.replace('/', '.')} import bp as {blueprint_name}_blueprint",
+    register_line = f"app.register_blueprint({blueprint_name}_blueprint)"
+    if import_line in source and register_line in source:
+        return True, 'Route blueprint already registered in app/__init__.py'
+    match = re.search(r"^\s*return app\b", source, flags=re.MULTILINE)
+    if match is None:
+        return False, "`return app` not found in app/__init__.py"
+    insert_index = match.start()
+    new_blueprint = (
+        "\n"
+        f"    {import_line}\n"
+        f"    {register_line}\n"
+    )
+    new_content = source[:insert_index] + new_blueprint + source[insert_index:]
+    with open(app_init_path, "w") as f:
+        f.write(new_content)
+
+def _register_blueprint_in_parent(relative_path: str, route_directory_path: str) -> tuple[bool, str]:
+    parent_init_path = os.path.join(os.path.dirname(route_directory_path), "__init__.py")
+    try:
+        with open(parent_init_path, "r", encoding="utf-8") as f:
+            parent_source = f.read()
+    except FileNotFoundError:
+        return False, f"file __init__.py missing at {parent_init_path}"
+    import_line = f"from {route_directory_path.replace('/', '.')} import bp as {relative_path.replace('/', '_')}_blueprint",
+    register_line = f"bp.register_blueprint({relative_path.replace('/', '_')}_blueprint)"
+    if import_line in parent_source and register_line in parent_source:
+        return True, f"{route_directory_path} already registered"
+    new_blueprint_content = [
+        "",
+        import_line,
+        register_line
+    ]
+    file_append_file(parent_init_path, new_blueprint_content)
+    return True, f"registered {relative_path.replace('/', '_')}_blueprint in {parent_init_path}"

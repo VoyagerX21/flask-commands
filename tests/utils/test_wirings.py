@@ -180,7 +180,7 @@ def test_wire_creates_route_directory_when_missing(monkeypatch):
         if path.endswith("app/controllers/post_controller.py"):
             return True  # so controller_add_method is used
         if path.endswith("app/routes/posts"):
-            return False  # triggers route_make_directory_and_register_blueprint
+            return False  # triggers route_write_directory_and_register_blueprint
         return False
 
     monkeypatch.setattr(wirings_module.os.path, "exists", fake_exists)
@@ -197,7 +197,7 @@ def test_wire_creates_route_directory_when_missing(monkeypatch):
     )
     monkeypatch.setattr(
         wirings_module,
-        "route_make_directory_and_register_blueprint",
+        "route_write_directory_and_register_blueprint",
         lambda *args: (True, "route made"),
     )
 
