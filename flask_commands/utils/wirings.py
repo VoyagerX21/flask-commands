@@ -6,13 +6,11 @@ from .naming import camel_to_snake
 from .routes import (
     route_add_method,
     route_http_method_for_action,
-    route_write_directory_and_register_blueprint,
-    route_generate_route_folder_path_and_blueprint_name
+    route_write_directory_and_register_blueprint
 )
 from .views import view_make_file
 
 def wire_controller_route_view(
-    dotted_path_with_action: str,
     relative_path: str,
     action: str,
     controller_name: str | None,
@@ -38,7 +36,6 @@ def wire_controller_route_view(
 
     Examples:
         >>> is_successful, messages = wire_controller_route_view(
-        ...     dotted_path_with_action="posts.index",
         ...     relative_path="posts",
         ...     action="index",
         ...     controller_name="PostController",
@@ -87,17 +84,14 @@ def wire_controller_route_view(
 
     # If a controller_name was provided or inferred
     if route_name:
-        route_folder_path, blueprint_name = \
-            route_generate_route_folder_path_and_blueprint_name(
-                dotted_path_with_action, relative_path)
+        route_directory_path = os.path.join("app", "routes", relative_path)
         try:
-            if os.path.exists(route_folder_path):
+            if os.path.exists(route_directory_path):
                 is_successful, message = \
                     route_add_method(
                         relative_path,      # this is everything before the last part of dotted_path_with_action replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_action
-                        route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
-                        blueprint_name,     # posts or mains - this is the top level of the relative_path or it is main if relative_path = ''
+                        route_directory_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
                         controller_name)    # contoller_name is like PostController
             else:
@@ -105,8 +99,7 @@ def wire_controller_route_view(
                     route_write_directory_and_register_blueprint(
                         relative_path,      # this is everything before the last part of dotted_path_with_action replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_action
-                        route_folder_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
-                        blueprint_name,     # posts or mains or posts_comments
+                        route_directory_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
                         controller_name)    # contoller_name is like PostController
             all_successful = all_successful and is_successful

@@ -2,7 +2,6 @@ import pytest
 from flask_commands.utils.routes import (
     route_add_method,
     route_generate_parameter_reference,
-    route_generate_route_folder_path_and_blueprint_name,
     route_generate_route_name,
     route_generate_route_name_with_model_prompt,
     route_http_method_for_action,
@@ -47,8 +46,7 @@ def test_route_add_method_success(tmp_path, monkeypatch):
     is_successful, message = route_add_method(
         relative_path='users',
         action='index',
-        route_folder_path='app/routes/users',
-        blueprint_name="users",
+        route_directory_path='app/routes/users',
         route_name='users.index',
         controller_name='UserController')
 
@@ -77,8 +75,7 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
     is_successful, message = route_add_method(
         relative_path='users',
         action='index',
-        route_folder_path='app/routes/users',
-        blueprint_name='users',
+        route_directory_path='app/routes/users',
         route_name='users.index',
         controller_name='UserController')
 
@@ -94,8 +91,7 @@ def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
     is_successful, message = route_add_method(
         relative_path='users',
         action='index',
-        route_folder_path='app/routes/users',
-        blueprint_name='users',
+        route_directory_path='app/routes/users',
         route_name='users.index',
         controller_name='UserController')
 
@@ -130,8 +126,7 @@ def test_route_add_method_exception(tmp_path, monkeypatch):
     is_successful, message = route_add_method(
         relative_path='users',
         action='index',
-        route_folder_path='app/routes/users',
-        blueprint_name='users',
+        route_directory_path='app/routes/users',
         route_name='users.index',
         controller_name='UserController')
 
@@ -146,33 +141,6 @@ def test_route_generate_parameter_reference_single_param():
 
 def test_route_generate_parameter_reference_multiple_params():
     assert route_generate_parameter_reference(["post_id", "comment_id"]) == ", post_id=post_id, comment_id=comment_id"
-
-def test_route_generate_route_folder_path_and_blueprint_name_crud():
-    route_folder_path, blueprint_name = \
-        route_generate_route_folder_path_and_blueprint_name(
-            "posts.index", 'posts')
-    assert route_folder_path == 'app/routes/posts'
-    assert blueprint_name == 'posts'
-
-def test_route_generate_route_folder_path_and_blueprint_name_crud_with_relation():
-    route_folder_path, blueprint_name = \
-        route_generate_route_folder_path_and_blueprint_name(
-            "posts.comments.index", 'posts/comments')
-    assert route_folder_path == 'app/routes/posts/comments'
-    assert blueprint_name == 'posts'
-
-    route_folder_path, blueprint_name = \
-        route_generate_route_folder_path_and_blueprint_name(
-            "posts.comments.images.index", 'posts/comments/images')
-    assert route_folder_path == 'app/routes/posts/comments/images'
-    assert blueprint_name == 'posts'
-
-def test_route_generate_route_folder_path_and_blueprint_name_non_crud():
-    route_folder_path, blueprint_name = \
-        route_generate_route_folder_path_and_blueprint_name(
-            "dashboard", "")
-    assert route_folder_path == 'app/routes/mains'
-    assert blueprint_name == 'mains'
 
 def test_route_generate_route_name_empty_relative_path():
     assert route_generate_route_name(
@@ -298,8 +266,7 @@ def test_route_write_directory_and_register_blueprint_success(tmp_path, monkeypa
     is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='users',
         action='index',
-        route_folder_path='app/routes/users',
-        blueprint_name='users',
+        route_directory_path='app/routes/users',
         route_name='/users',
         controller_name='UserController')
 
@@ -345,8 +312,7 @@ def test_route_write_directory_and_register_blueprint_success_nested_routes(tmp_
     is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='recipes/comments',
         action='index',
-        route_folder_path='app/routes/recipes/comments',
-        blueprint_name='recipes',
+        route_directory_path='app/routes/recipes/comments',
         route_name='/recipes/<int:recipe_id>/comments',
         controller_name='RecipeCommentController')
 
@@ -381,8 +347,7 @@ def test_route_write_directory_and_register_blueprint_app_init_missing_return(tm
     is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='users',
         action='index',
-        route_folder_path='app/routes/users',
-        blueprint_name='users',
+        route_directory_path='app/routes/users',
         route_name='/users',
         controller_name='UserController')
 
@@ -399,13 +364,12 @@ def test_route_write_directory_and_register_blueprint_route_already_exists(tmp_p
     is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='users',
         action='index',
-        route_folder_path='app/routes/users',
-        blueprint_name='users',
+        route_directory_path='app/routes/users',
         route_name='/users',
         controller_name='UserController')
 
     assert is_successful is False
-    assert "Route Already Exists" in message
+    assert "File exists" in message
 
 def test_route_write_directory_and_register_blueprint_exception(tmp_path, monkeypatch):
     def boom(*args, **kwargs):
@@ -422,13 +386,12 @@ def test_route_write_directory_and_register_blueprint_exception(tmp_path, monkey
     is_successful, message = route_write_directory_and_register_blueprint(
         relative_path='users',
         action='index',
-        route_folder_path='app/routes/users',
-        blueprint_name='users',
+        route_directory_path='app/routes/users',
         route_name='/users',
         controller_name='UserController')
 
     assert is_successful is False
-    assert "Failed to create route" in message
+    assert "Could not create route" in message
 
 def test_route_parse_route_name_for_params_and_types_no_params():
     params_with_types, params = route_parse_route_name_for_params_and_types("/posts")

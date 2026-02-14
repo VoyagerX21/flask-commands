@@ -47,13 +47,24 @@ def normalize_dotted_path_with_action(dotted_path_with_action: str) -> tuple[boo
         "  ..__  " -> ValueError
     """
     value = dotted_path_with_action.lower()
+
+    # UX layer: allow slash input and map it to dotted form.
+    # UX layer: allow - or _ for multi word objects map them to _
+    value = value.replace("/", ".")
     value = value.replace("-", "_")
+
+    # Canonicalize separators and underscores.
     value = re.sub(r"\.+", ".", value)
     value = re.sub(r"\_+", "_", value)
     value = re.sub(r"\.\_\.", ".", value)
     value = value.strip("._ ")
     if value == "":
         return False, "💣 Error: Invalid dotted path (empty after normalization)."
+
+    # Internal segments should only contain [a-z0-9_].
+    segments = value.split(".")
+    if any(not re.fullmatch(r"[a-z0-9_]+", segment) for segment in segments):
+        return False, "💣 Error: Invalid dotted path (allowed: letters, numbers, underscore)."
     return True, value
 
 def split_dotted_path_with_action_into_relative_path_and_action(

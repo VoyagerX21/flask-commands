@@ -36,25 +36,27 @@ def test_filter_falsy(raw, expected):
 
 # TODO: put in test for generate_restful_route and have chat write a doc string for generate_restful_route
 
-# @pytest.mark.parametrize(
-#     "raw, expected",
-#     [
-#         ("Admin.Posts-Index", "admin.posts_index"),
-#         ("  admin..posts__show  ", "admin.posts_show"),
-#         ("___Posts...", "posts"),
-#         (".-Admin-.-", "admin"),
-#         ("posts.index", "posts.index"),
-#         ("posts--index", "posts_index"),
-#         ("posts..index", "posts.index"),
-#         ("posts__index", "posts_index"),
-#         ("posts.-.index", "posts.index"),
-#     ]
-# )
-# def test_normalize_dotted_path_with_action_success(raw, expected):
-#     is_successful, value = normalize_dotted_path_with_action(raw)
-#     assert is_successful is True
-#     assert value == expected
-
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("Admin.Posts-Index", "admin.posts_index"),
+        ("  admin..posts__show  ", "admin.posts_show"),
+        ("___Posts...", "posts"),
+        (".-Admin-.-", "admin"),
+        ("posts.index", "posts.index"),
+        ("posts--index", "posts_index"),
+        ("posts..index", "posts.index"),
+        ("posts__index", "posts_index"),
+        ("posts.-.index", "posts.index"),
+        ("admin/users.index", "admin.users.index"),
+        ("admin/.users//index", "admin.users.index"),
+        ("/.index", "index"),
+    ]
+)
+def test_normalize_dotted_path_with_action_success(raw, expected):
+    is_successful, value = normalize_dotted_path_with_action(raw)
+    assert is_successful is True
+    assert value == expected
 
 @pytest.mark.parametrize(
         "raw", ["", "   ", ".", "..", "_", "__", "-", "--", "._-", "  ..__  "]
@@ -63,6 +65,11 @@ def test_normalize_dotted_path_with_action_empty_raises(raw):
     is_successful, value = normalize_dotted_path_with_action(raw)
     assert is_successful is False
     assert "Error" in value
+
+def test_normalize_dotted_path_with_action_invalid_characters():
+    is_successful, value = normalize_dotted_path_with_action("posts.$index")
+    assert is_successful is False
+    assert "allowed: letters, numbers, underscore" in value
 
 def test_split_dotted_path_with_action_into_relative_path_and_action_with_no_dot():
     relative_path, action = split_dotted_path_with_action_into_relative_path_and_action("index")

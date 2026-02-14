@@ -135,7 +135,6 @@ def make_view(
 
 
     is_successful, messages = wire_controller_route_view(
-        dotted_path_with_action,
         relative_path,
         action,
         controller_name,

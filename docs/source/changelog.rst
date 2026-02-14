@@ -20,7 +20,6 @@ Added
 - Added route helper functions:
   - `route_generate_route()`
   - `_generate_prompt_plan()`
-  - `route_generate_route_folder_path_and_blueprint_name()`
   - `route_parse_route_name_for_params_and_types()`
 - Added `generate_restful_route()` in `flask_commands/utils/scaffold.py`.
 - Added extensive route/scaffold test coverage for route inference and edge cases.

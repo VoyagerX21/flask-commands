@@ -65,7 +65,6 @@ def make_controller(
             route_name = route_generate_route_name(dotted_path_with_action)
 
             is_successful, messages = wire_controller_route_view(
-                dotted_path_with_action,
                 relative_path,
                 action,
                 controller_name,

@@ -5,11 +5,6 @@ def test_wire_get_with_existing_controller_and_route(monkeypatch):
     calls = []
 
     monkeypatch.setattr(wirings_module, "route_http_method_for_action", lambda *_: "GET")
-    monkeypatch.setattr(
-        wirings_module,
-        "route_generate_route_folder_path_and_blueprint_name",
-        lambda *_: ("app/routes/posts", "posts"),
-    )
     monkeypatch.setattr(wirings_module.os.path, "exists", lambda *_: True)
 
     monkeypatch.setattr(
@@ -29,7 +24,6 @@ def test_wire_get_with_existing_controller_and_route(monkeypatch):
     )
 
     is_successful, messages = wire_controller_route_view(
-        dotted_path_with_action="posts.index",
         relative_path="posts",
         action="index",
         controller_name="PostController",
@@ -46,11 +40,6 @@ def test_wire_post_skips_view(monkeypatch):
     calls = []
 
     monkeypatch.setattr(wirings_module, "route_http_method_for_action", lambda *_: "POST")
-    monkeypatch.setattr(
-        wirings_module,
-        "route_generate_route_folder_path_and_blueprint_name",
-        lambda *_: ("app/routes/posts", "posts"),
-    )
     monkeypatch.setattr(wirings_module.os.path, "exists", lambda *_: True)
 
     monkeypatch.setattr(
@@ -70,7 +59,6 @@ def test_wire_post_skips_view(monkeypatch):
     )
 
     is_successful, messages = wire_controller_route_view(
-        dotted_path_with_action="posts.store",
         relative_path="posts",
         action="store",
         controller_name="PostController",
@@ -85,11 +73,6 @@ def test_wire_uses_make_file_when_controller_missing(monkeypatch):
     calls = []
 
     monkeypatch.setattr(wirings_module, "route_http_method_for_action", lambda *_: "GET")
-    monkeypatch.setattr(
-        wirings_module,
-        "route_generate_route_folder_path_and_blueprint_name",
-        lambda *_: ("app/routes/posts", "posts"),
-    )
 
     def fake_exists(path):
         if path.endswith("app/controllers/post_controller.py"):
@@ -117,7 +100,6 @@ def test_wire_uses_make_file_when_controller_missing(monkeypatch):
     )
 
     is_successful, messages = wire_controller_route_view(
-        dotted_path_with_action="posts.index",
         relative_path="posts",
         action="index",
         controller_name="PostController",
@@ -131,11 +113,6 @@ def test_wire_uses_make_file_when_controller_missing(monkeypatch):
 
 def test_wire_route_exception_sets_failure(monkeypatch):
     monkeypatch.setattr(wirings_module, "route_http_method_for_action", lambda *_: "GET")
-    monkeypatch.setattr(
-        wirings_module,
-        "route_generate_route_folder_path_and_blueprint_name",
-        lambda *_: ("app/routes/posts", "posts"),
-    )
     monkeypatch.setattr(wirings_module.os.path, "exists", lambda *_: True)
 
     monkeypatch.setattr(
@@ -155,7 +132,6 @@ def test_wire_route_exception_sets_failure(monkeypatch):
     monkeypatch.setattr(wirings_module, "route_add_method", boom)
 
     is_successful, messages = wire_controller_route_view(
-        dotted_path_with_action="posts.index",
         relative_path="posts",
         action="index",
         controller_name="PostController",
@@ -170,11 +146,6 @@ def test_wire_route_exception_sets_failure(monkeypatch):
 
 def test_wire_creates_route_directory_when_missing(monkeypatch):
     monkeypatch.setattr(wirings_module, "route_http_method_for_action", lambda *_: "GET")
-    monkeypatch.setattr(
-        wirings_module,
-        "route_generate_route_folder_path_and_blueprint_name",
-        lambda *_: ("app/routes/posts", "posts"),
-    )
 
     def fake_exists(path):
         if path.endswith("app/controllers/post_controller.py"):
@@ -202,7 +173,6 @@ def test_wire_creates_route_directory_when_missing(monkeypatch):
     )
 
     is_successful, messages = wire_controller_route_view(
-        dotted_path_with_action="posts.index",
         relative_path="posts",
         action="index",
         controller_name="PostController",
