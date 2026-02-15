@@ -1,4 +1,5 @@
 import pytest
+import flask_commands.utils.routes as routes_module
 from flask_commands.utils.routes import (
     route_add_method,
     route_generate_parameter_reference,
@@ -7,8 +8,14 @@ from flask_commands.utils.routes import (
     route_http_method_for_action,
     route_write_directory_and_register_blueprint,
     route_parse_route_name_for_params_and_types,
+    _generate_minimal_route_routes,
     _generate_prompt_plan,
-    _generate_route_spec)
+    _generate_route_spec,
+    _register_blueprint_in_parent,
+    _register_top_level_blueprint_in_app,
+    _write_parent_route_directory,
+    _write_parent_routes,
+    _write_routes_file)
 
 @pytest.fixture
 def model_builder(tmp_path, monkeypatch):
@@ -72,6 +79,8 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
         "    return UserController.index()"
         , encoding="utf-8")
 
+    before_content = route_file.read_text(encoding='utf-8')
+
     is_successful, message = route_add_method(
         relative_path='users',
         action='index',
@@ -79,8 +88,11 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
         route_name='users.index',
         controller_name='UserController')
 
+    after_content = route_file.read_text(encoding='utf-8')
+
     assert is_successful is False
-    assert f"Route Function Exist" in message
+    assert before_content == after_content
+    assert f"Route function index already exist" in message
 
 def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
     project_root = tmp_path
@@ -95,8 +107,9 @@ def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
         route_name='users.index',
         controller_name='UserController')
 
+    assert (route_dir / "routes.py").exists() is False
     assert is_successful is False
-    assert f"Route Directory Missing" in message
+    assert f"Could not find file at app/routes/users/routes.py" in message
 
 def test_route_add_method_exception(tmp_path, monkeypatch):
     def boom(*args, **kwargs):
@@ -123,6 +136,9 @@ def test_route_add_method_exception(tmp_path, monkeypatch):
         "    return UserController.show()"
         , encoding="utf-8")
 
+    before_content = route_file.read_text(encoding='utf-8')
+
+
     is_successful, message = route_add_method(
         relative_path='users',
         action='index',
@@ -130,8 +146,74 @@ def test_route_add_method_exception(tmp_path, monkeypatch):
         route_name='users.index',
         controller_name='UserController')
 
+    after_content = route_file.read_text(encoding='utf-8')
+
+
+    assert is_successful is False
+    assert before_content == after_content
+    assert "Failed to append index to app/routes/users/routes.py" in message
+
+def test_route_add_method_unexpected_exception_path(monkeypatch):
+    def boom(*args, **kwargs):
+        raise RuntimeError("kaboom")
+
+    monkeypatch.setattr(
+        "flask_commands.utils.routes._generate_route_method",
+        boom
+    )
+
+    is_successful, message = route_add_method(
+        relative_path="users",
+        action="index",
+        route_directory_path="app/routes/users",
+        route_name="/users",
+        controller_name="UserController",
+    )
+
     assert is_successful is False
     assert "Failed to add method to route" in message
+    assert "kaboom" in message
+
+def test_route_write_directory_returns_when_write_routes_step_fails(tmp_path, monkeypatch):
+    project_root = tmp_path
+    app_dir = project_root / "app"
+    app_dir.mkdir(parents=True)
+    (app_dir / "__init__.py").write_text(
+        "from flask import Flask\n"
+        "def create_app(config_name) -> Flask:\n"
+        "    app = Flask(__name__)\n"
+        "    return app\n",
+        encoding="utf-8",
+    )
+
+    route_dir = project_root / "app" / "routes" / "users"
+    route_dir.mkdir(parents=True)
+
+    route_file = route_dir / "routes.py"
+    route_file.write_text("# pre-existing route file\n", encoding="utf-8")
+    before = route_file.read_text(encoding="utf-8")
+
+    monkeypatch.chdir(project_root)
+
+    # Keep route_write_directory_and_register_blueprint running even though route_dir already exists.
+    # _write_routes_file itself is NOT patched.
+    monkeypatch.setattr(routes_module.os, "makedirs", lambda *args, **kwargs: None)
+
+    is_successful, message = route_write_directory_and_register_blueprint(
+        relative_path="users",
+        action="index",
+        route_directory_path="app/routes/users",
+        route_name="/users",
+        controller_name="UserController",
+    )
+
+    after = route_file.read_text(encoding="utf-8")
+
+    assert is_successful is False
+    assert "Could not create route file" in message
+    assert "Failed to create routes.py at app/routes/users/routes.py" in message
+    assert "already exists" in message
+    assert after == before
 
 def test_route_generate_parameter_reference_empty():
     assert route_generate_parameter_reference([]) == ""
@@ -425,6 +507,10 @@ def test_route_parse_route_name_for_params_and_types_str_param():
     assert params == ["post_slug"]
 
 # Private Function Test
+def test__generate_minimal_route_routes():
+    assert _generate_minimal_route_routes("app/routes/users") == [
+        "from app.routes.users import bp"
+    ]
 def test__generate_prompt_plan_missing_model_index(model_builder):
     route_spec = _generate_route_spec("admin.reports.index")
     prompt_plan = _generate_prompt_plan(route_spec)
@@ -592,3 +678,142 @@ def test__generate_route_spec_admin_posts_show_when_admin_model_exists(model_bui
     assert spec.registered_models == ("Admin", "Post")
     assert spec.registered_snake_models == ("admin", "post")
     assert spec.generated_route_name == "/admin/<int:admin_id>/posts/<int:post_id>"
+
+def test__register_top_level_blueprint_in_app_missing_app_init(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    is_successful, message = routes_module._register_top_level_blueprint_in_app(
+        "app/routes/users"
+    )
+
+    assert is_successful is False
+    assert message == "Failed to locate file `app/__init__.py`"
+
+def test__register_top_level_blueprint_in_app_already_registered(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    app_dir = tmp_path / "app"
+    app_dir.mkdir(parents=True)
+    (app_dir / "__init__.py").write_text(
+        "from app.routes.users import bp as users_blueprint\n"
+        "app.register_blueprint(users_blueprint)\n"
+        "return app\n",
+        encoding="utf-8",
+    )
+
+    is_successful, message = _register_top_level_blueprint_in_app(
+        "app/routes/users"
+    )
+
+    assert is_successful is False
+    assert message == "Route blueprint already registered in app/__init__.py"
+
+def test__register_blueprint_in_parent_missing_parent_init(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    is_successful, message = _register_blueprint_in_parent(
+        "recipes/comments",
+        "app/routes/recipes/comments",
+    )
+
+    assert is_successful is False
+    assert message == "file __init__.py missing at app/routes/recipes/__init__.py"
+
+def test__register_blueprint_in_parent_already_registered(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    parent_dir = tmp_path / "app" / "routes" / "recipes"
+    parent_dir.mkdir(parents=True)
+    (parent_dir / "__init__.py").write_text(
+        "from app.routes.recipes.comments import bp as recipes_comments_blueprint\n"
+        "bp.register_blueprint(recipes_comments_blueprint)\n",
+        encoding="utf-8",
+    )
+
+    is_successful, message = routes_module._register_blueprint_in_parent(
+        "recipes/comments",
+        "app/routes/recipes/comments",
+    )
+
+    assert is_successful is False
+    assert message == "recipes_comments_blueprint already registered"
+
+def test__write_parent_route_directory_when_exists_returns_empty(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "app" / "routes" / "recipes").mkdir(parents=True)
+
+    updates = _write_parent_route_directory("app/routes/recipes")
+
+    assert updates == []
+
+def test__write_parent_route_directory_creates_scaffold(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    updates = _write_parent_route_directory("app/routes/recipes")
+
+    assert len(updates) == 3
+    assert updates[0] == "Created routes directory at app/routes/recipes"
+    assert updates[1] == "Created __init__.py in app/routes/recipes"
+    assert updates[2] == "Created routes.py with blueprint import only in app/routes/recipes"
+    assert (tmp_path / "app" / "routes" / "recipes" / "__init__.py").exists()
+    assert (tmp_path / "app" / "routes" / "recipes" / "routes.py").exists()
+
+def test__write_parent_routes_single_segment_returns_empty():
+    assert _write_parent_routes("users") == []
+
+
+def test__write_parent_routes_creates_each_missing_parent_and_registers(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    app_dir = tmp_path / "app"
+    app_dir.mkdir(parents=True)
+    (app_dir / "__init__.py").write_text(
+        "from flask import Flask\n"
+        "def create_app(config_name) -> Flask:\n"
+        "    app = Flask(__name__)\n"
+        "    return app\n",
+        encoding="utf-8",
+    )
+
+    updates = routes_module._write_parent_routes("recipes/comments/images")
+    updates = [routes_module.click.unstyle(message) for message in updates]
+
+    # Parent route directories were created
+    assert (tmp_path / "app" / "routes" / "recipes").is_dir()
+    assert (tmp_path / "app" / "routes" / "recipes" / "__init__.py").exists()
+    assert (tmp_path / "app" / "routes" / "recipes" / "routes.py").exists()
+
+    assert (tmp_path / "app" / "routes" / "recipes" / "comments").is_dir()
+    assert (tmp_path / "app" / "routes" / "recipes" / "comments" / "__init__.py").exists()
+    assert (tmp_path / "app" / "routes" / "recipes" / "comments" / "routes.py").exists()
+
+    # Top-level registration happened in app/__init__.py
+    app_init = (tmp_path / "app" / "__init__.py").read_text(encoding="utf-8")
+    assert "from app.routes.recipes import bp as recipes_blueprint" in app_init
+    assert "app.register_blueprint(recipes_blueprint)" in app_init
+
+    # Nested registration happened in app/routes/recipes/__init__.py
+    recipes_init = (tmp_path / "app" / "routes" / "recipes" / "__init__.py").read_text(encoding="utf-8")
+    assert "from app.routes.recipes.comments import bp as recipes_comments_blueprint" in recipes_init
+    assert "bp.register_blueprint(recipes_comments_blueprint)" in recipes_init
+
+    # Verify high-level update messages
+    assert any("Created routes directory at app/routes/recipes" in m for m in updates)
+    assert any("Created routes directory at app/routes/recipes/comments" in m for m in updates)
+    assert any("Registered the new route directory as recipes_blueprint" in m for m in updates)
+    assert any("Registered the new route as recipes_comments_blueprint in app/routes/recipes/__init__.py" in m for m in updates)
+
+def test__write_routes_file_fails_when_routes_py_already_exists(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    route_dir = tmp_path / "app" / "routes" / "users"
+    route_dir.mkdir(parents=True)
+    (route_dir / "routes.py").write_text("# exists\n", encoding="utf-8")
+
+    is_successful, message = _write_routes_file(
+        route_directory_path="app/routes/users",
+        action="index",
+        route_name="/users",
+        controller_name="UserController",
+    )
+
+    assert is_successful is False
+    assert "Failed to create routes.py at app/routes/users/routes.py" in message
+    assert "already exists" in message
