@@ -2,12 +2,12 @@ import os
 import pytest
 from pathlib import Path
 from flask_commands.utils.models import (
-    model_generate_model,
+    model_generate_model_name_from_dotted_path_with_action,
     model_get_registered_models,
-    model_infer_name_from_controller,
+    model_generate_model_name_from_controller_name,
     model_make_file,
     model_model_names_to_snake_case_names,
-    model_split_hierarchy_from_dotted_path_with_action
+    model_generate_hierarchy_from_dotted_path_with_action
 )
 
 @pytest.fixture
@@ -91,17 +91,17 @@ def test_model_get_registered_models_ignores_non_models_absolute_imports(tmp_pat
 
     assert model_get_registered_models() == ["Post"]
 
-def test_model_generate_model_with_dot():
-    model_name = model_generate_model("posts.index")
+def test_model_generate_model_name_from_dotted_path_with_action_with_dot():
+    model_name = model_generate_model_name_from_dotted_path_with_action("posts.index")
     assert model_name == "Post"
 
-def test_model_generate_model_without_dot():
-    model_name = model_generate_model("posts")
+def test_model_generate_model_name_from_dotted_path_with_action_without_dot():
+    model_name = model_generate_model_name_from_dotted_path_with_action("posts")
     assert model_name == "Post"
 
-def test_model_infer_name_from_controller():
-    model_name = model_infer_name_from_controller("PostCommentImageController")
-    assert model_name == "Image"
+def test_model_generate_model_name_from_controller_name():
+    non_nested_model_name, nested_model_name = model_generate_model_name_from_controller_name("PostCommentImageController")
+    assert non_nested_model_name, nested_model_name == ("PostCommentImage", "")
 
 def test_model_make_file_success(model_project):
     is_successful, message = model_make_file(
@@ -214,7 +214,7 @@ def test_model_model_names_to_snake_case_names_empty():
 def test_model_model_names_to_snake_case_names_preserves_order():
     assert model_model_names_to_snake_case_names(["Comment", "Post"]) == ["comment", "post"]
 
-def test_model_split_hierarchy_from_dotted_path_with_action_simple_resource(tmp_path, monkeypatch):
+def test_model_generate_hierarchy_from_dotted_path_with_action_simple_resource(tmp_path, monkeypatch):
     dotted_path_with_action = "posts.index"
     init_content = (
         "from .post import Post\n"
@@ -227,13 +227,13 @@ def test_model_split_hierarchy_from_dotted_path_with_action_simple_resource(tmp_
     monkeypatch.chdir(tmp_path)
 
     namespace, parents, child = \
-        model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
 
     assert namespace == []
     assert parents == []
     assert child == "posts"
 
-def test_model_split_hierarchy_from_dotted_path_with_action_with_namespace(tmp_path, monkeypatch):
+def test_model_generate_hierarchy_from_dotted_path_with_action_with_namespace(tmp_path, monkeypatch):
     dotted_path_with_action = "admin.posts.show"
     init_content = (
         "from .post import Post\n"
@@ -246,13 +246,13 @@ def test_model_split_hierarchy_from_dotted_path_with_action_with_namespace(tmp_p
     monkeypatch.chdir(tmp_path)
 
     namespace, parents, child = \
-        model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
 
     assert namespace == ["admin"]
     assert parents == []
     assert child == "posts"
 
-def test_model_split_hierarchy_from_dotted_path_with_action_nested_models(tmp_path, monkeypatch):
+def test_model_generate_hierarchy_from_dotted_path_with_action_nested_models(tmp_path, monkeypatch):
     dotted_path_with_action = "admin.posts.comments.index"
     init_content = (
         "from .post import Post\n"
@@ -266,13 +266,13 @@ def test_model_split_hierarchy_from_dotted_path_with_action_nested_models(tmp_pa
     monkeypatch.chdir(tmp_path)
 
     namespace, parents, child = \
-        model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
 
     assert namespace == ["admin"]
     assert parents == ["posts"]
     assert child == "comments"
 
-def test_model_split_hierarchy_from_dotted_path_with_action_no_dots(tmp_path, monkeypatch):
+def test_model_generate_hierarchy_from_dotted_path_with_action_no_dots(tmp_path, monkeypatch):
     dotted_path_with_action = "landinng"
     init_content = (
         "from .post import Post\n"
@@ -286,13 +286,13 @@ def test_model_split_hierarchy_from_dotted_path_with_action_no_dots(tmp_path, mo
     monkeypatch.chdir(tmp_path)
 
     namespace, parents, child = \
-        model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
 
     assert namespace == []
     assert parents == []
     assert child == ""
 
-def test_model_split_hierarchy_from_dotted_path_with_action_remaining_segments(tmp_path, monkeypatch):
+def test_model_generate_hierarchy_from_dotted_path_with_action_remaining_segments(tmp_path, monkeypatch):
     dotted_path_with_action = "admin.posts.shop.images.show"
     init_content = (
         "from .post import Post\n"
@@ -305,13 +305,13 @@ def test_model_split_hierarchy_from_dotted_path_with_action_remaining_segments(t
     monkeypatch.chdir(tmp_path)
 
     namespace, parents, child = \
-        model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
 
     assert namespace == ["admin"]
     assert parents == ["posts"]
     assert child == "shop_images"
 
-def test_model_split_hierarchy_from_dotted_path_with_action_with_underscore(tmp_path, monkeypatch):
+def test_model_generate_hierarchy_from_dotted_path_with_action_with_underscore(tmp_path, monkeypatch):
     dotted_path_with_action = "admin.users.user_profile.index"
     init_content = (
         "from .user import User\n"
@@ -326,7 +326,7 @@ def test_model_split_hierarchy_from_dotted_path_with_action_with_underscore(tmp_
     monkeypatch.chdir(tmp_path)
 
     namespace, parents, child = \
-        model_split_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
 
     assert namespace == ["admin"]
     assert parents == ["users"]

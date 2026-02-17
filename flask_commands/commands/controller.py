@@ -7,7 +7,8 @@ from flask_commands.utils.controllers import (
 )
 from flask_commands.utils.files import file_is_project_root
 from flask_commands.utils.models import (
-    model_infer_name_from_controller,
+    model_generate_hierarchy_from_controller_name,
+    model_generate_model_name_from_controller_name,
     model_make_file
 )
 from flask_commands.utils.naming import camel_to_snake
@@ -30,15 +31,32 @@ def make_controller(
     generate_model: bool) -> None:
     if not file_is_project_root():
         return
+
     # Infer model name if not provided
     if generate_model and model_name is None:
-        model_name = model_infer_name_from_controller(controller_name)
-        click.secho(f"💡 Info: Inferred model name as {click.style(model_name, bold=True)}", fg="cyan")
+        non_nested_model_name, nested_model_name = model_generate_model_name_from_controller_name(controller_name)
+        if nested_model_name:
+            _, parent_models, _ = \
+                model_generate_hierarchy_from_controller_name(controller_name)
+
+            click.echo(
+                "Detected nested models:\n" +
+                " -> ".join(parent_models)
+            )
+            click.echo(f"Y (nested generated model) = {nested_model_name}")
+            click.echo(f"N (single resource model)  = {non_nested_model_name}")
+            use_nested = click.confirm("Use nested pattern?", default=True)
+            model_name = nested_model_name if use_nested else non_nested_model_name
+        else:
+            model_name = non_nested_model_name
+        click.secho(f"💡 Info: Generated model {click.style(model_name, bold=True)}", fg="cyan")
+
     controller_file_path = \
         os.path.join(
             "app",
             "controllers",
             f"{camel_to_snake(controller_name)}.py")
+
     # if controller exist warn the user that the controller already exist
     if os.path.exists(controller_file_path):
         click.secho("⚠️  Warning: Controller Already Exists", fg="yellow", bold=True)
@@ -47,6 +65,7 @@ def make_controller(
             click.style(" already exists", fg="yellow"))
         click.secho("    - No changes were made", fg="yellow")
         return
+
     # create the controller
     all_successful = True
     is_successful, message = controller_make_file(

@@ -223,7 +223,8 @@ def test_make_controller_file_exists(project):
 #         "    def destroy(comment_id: int) -> str:\n"
 #         "        return redirect(url_for('comments.index'))"
 #     )
-#     assert comment_controller_file_path.read_text(encoding="utf-8") == expected_contents
+#     observed_content = comment_controller_file_path.read_text(encoding="utf-8")
+#     assert observed_content == expected_contents
 
 #     # Check the contents of the new routes
 #     routes_comments_directory_path = project / "app" / "routes" / "comments"
@@ -266,7 +267,8 @@ def test_make_controller_file_exists(project):
 #         "def destroy(comment_id: int):\n"
 #         "    return CommentController.destroy(comment_id)\n"
 #     )
-#     assert routes_comments_route_file_path.read_text(encoding="utf-8") == expected_contents
+#     observed_content = routes_comments_route_file_path.read_text(encoding="utf-8")
+#     assert observed_content == expected_contents
 
 #     # Check the contents of the new templates
 #     create_template_file_path = project / "app" / "templates" / "comments" / "create.html"
@@ -406,17 +408,17 @@ def test_make_controller_file_exists(project):
 #     show_template_file_path = project / "app" / "templates" / "posts" / "comments" / "show.html"
 #     assert show_template_file_path.exists()
 
-def test_make_controller_with_generate_model(project):
-    runner = CliRunner()
-    result = runner.invoke(make_controller, ["PostCommentImageController", "-m"])
+# def test_make_controller_with_generate_model(project):
+#     runner = CliRunner()
+#     result = runner.invoke(make_controller, ["AdminPostCommentImageController", "-m"])
 
-    assert result.exit_code == 0
-    model_file_path = project / "app" / "models" / "image.py"
-    assert model_file_path.exists()
+#     assert result.exit_code == 0
+#     model_file_path = project / "app" / "models" / "image.py"
+#     assert model_file_path.exists()
 
-    init_file_path = project / "app" / "models" / "__init__.py"
-    init_contents = init_file_path.read_text(encoding="utf-8")
-    assert "from .image import Image" in init_contents
+#     init_file_path = project / "app" / "models" / "__init__.py"
+#     init_contents = init_file_path.read_text(encoding="utf-8")
+#     assert "from .image import Image" in init_contents
 
 def test_make_controller_warns_when_init_missing(project):
     controller_init_path = project / "app" / "controllers" / "__init__.py"

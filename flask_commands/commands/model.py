@@ -1,6 +1,7 @@
 import os
 import click
 
+from flask_commands.utils.files import file_is_project_root
 from flask_commands.utils.models import model_make_file
 from flask_commands.utils.naming import pluralize
 from flask_commands.utils.routes import route_generate_route_name
@@ -12,6 +13,8 @@ from flask_commands.utils.wirings import wire_controller_route_view
 @click.option("--crud", is_flag=True,
                help="Optional CRUD flag to generate all seven RESTful actions routes and controller methods along with get views.")
 def make_model(model_name: str, crud:bool) -> None:
+    if not file_is_project_root():
+        return
     all_successful = True
 
     if model_name:

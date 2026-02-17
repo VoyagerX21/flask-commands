@@ -2,9 +2,9 @@ from re import split
 import pytest
 from flask_commands.utils.scaffold import (
     filter_falsy,
-    generate_restful_route,
     normalize_dotted_path_with_action,
-    split_dotted_path_with_action_into_relative_path_and_action
+    split_dotted_path_with_action_into_relative_path_and_action,
+    split_pascal_case,
 )
 
 @pytest.fixture
@@ -91,3 +91,19 @@ def test_split_dotted_path_with_action_into_relative_path_and_action_with_capita
     assert relative_path == "admin/users"
     assert action == "show"
 
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("AdminUserProfileImage", ["Admin", "User", "Profile", "Image"]),
+        ("HTTPResponse", ["HTTP", "Response"]),
+        ("XCoordinate", ["X", "Coordinate"]),
+        ("UserAPI", ["User", "API"]),
+        ("JSONToXML", ["JSON", "To", "XML"]),
+        ("OAuthToken", ["O", "Auth", "Token"]),
+        ("A", ["A"]),
+        ("ABC", ["ABC"]),
+        ("", []),
+    ],
+)
+def test_split_pascal_case(raw, expected):
+    assert split_pascal_case(raw) == expected

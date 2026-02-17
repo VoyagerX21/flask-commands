@@ -3,7 +3,7 @@ import click
 
 from flask_commands.utils.controllers import controller_generate_controller_name_from_relative_path
 from flask_commands.utils.models import (
-    model_generate_model,
+    model_generate_model_name_from_dotted_path_with_action,
     model_make_file
 )
 from flask_commands.utils.files import file_is_project_root
@@ -94,16 +94,15 @@ def make_view(
     if generate_controller and controller_name is None:
         if relative_path != '':
             controller_name = controller_generate_controller_name_from_relative_path(relative_path)
-            click.secho(f"💡 Info - Generated controller: {click.style(controller_name, bold=True)}", fg="cyan")
+            click.secho(f"💡 Info: Generated controller {click.style(controller_name, bold=True)}\n", fg="cyan")
         else:
             controller_name = 'MainController'
 
     # Infer model name if not provided
     if generate_model and model_name is None:
         model_name = \
-            model_generate_model(dotted_path_with_action)
-        click.secho(f"💡 Info: Inferred model name as "
-                   f"{click.style(model_name, bold=True)}", fg="cyan")
+            model_generate_model_name_from_dotted_path_with_action(dotted_path_with_action)
+        click.secho(f"💡 Info: Generated model {click.style(model_name, bold=True)}\n", fg="cyan")
 
     allow_model_prompt = not bool(model_name)
 
@@ -116,15 +115,12 @@ def make_view(
         click.echo(message)
         all_successful = all_successful and is_successful
 
-
-
     # Infer route name if not provided
     if generate_route and route_name is None:
         route_name, new_model_name = \
             route_generate_route_name_with_model_prompt(
                 dotted_path_with_action, allow_model_prompt)
-        click.secho("💡 Info: Inferred route name as "
-                   f"{click.style(route_name, bold=True)}", fg="cyan")
+        click.secho(f"💡 Info: Generated route {click.style(route_name, bold=True)}\n", fg="cyan")
         if new_model_name:
             model_init_path = os.path.join("app", "models", "__init__.py")
             model_file_path = os.path.join("app", "models", f"{new_model_name.lower()}.py")
@@ -132,7 +128,6 @@ def make_view(
                 new_model_name, model_init_path, model_file_path)
             click.echo(message)
             all_successful = all_successful and is_successful
-
 
     is_successful, messages = wire_controller_route_view(
         relative_path,

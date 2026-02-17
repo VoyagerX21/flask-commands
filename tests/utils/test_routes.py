@@ -1,3 +1,4 @@
+import os
 import pytest
 import flask_commands.utils.routes as routes_module
 from flask_commands.utils.routes import (
@@ -475,6 +476,33 @@ def test_route_write_directory_and_register_blueprint_exception(tmp_path, monkey
     assert is_successful is False
     assert "Could not create route" in message
 
+def test_route_write_directory_parent_prep_failure_returns_grouped_updates(tmp_path):
+    original_cwd = os.getcwd()
+    try:
+        os.chdir(tmp_path)
+
+        is_successful, message = route_write_directory_and_register_blueprint(
+            relative_path="recipes/comments",  # nested path triggers _write_parent_routes
+            action="index",
+            route_directory_path="app/routes/recipes/comments",
+            route_name="/recipes/<int:recipe_id>/comments",
+            controller_name="RecipeCommentController",
+        )
+    finally:
+        os.chdir(original_cwd)
+
+    assert is_successful is False
+    assert "Warning: Could not prepare parent routes" in message
+    assert "Created routes directory at app/routes/recipes" in message
+    assert "Created __init__.py in app/routes/recipes" in message
+    assert "Created routes.py with blueprint import only in app/routes/recipes" in message
+    assert "Failed to locate file `app/__init__.py`" in message
+
+    # Early return happened before creating the final child route directory.
+    assert (tmp_path / "app" / "routes" / "recipes").is_dir()
+    assert not (tmp_path / "app" / "routes" / "recipes" / "comments").exists()
+
+
 def test_route_parse_route_name_for_params_and_types_no_params():
     params_with_types, params = route_parse_route_name_for_params_and_types("/posts")
     assert params_with_types == []
@@ -704,7 +732,7 @@ def test__register_top_level_blueprint_in_app_already_registered(tmp_path, monke
         "app/routes/users"
     )
 
-    assert is_successful is False
+    assert is_successful is True
     assert message == "Route blueprint already registered in app/__init__.py"
 
 def test__register_blueprint_in_parent_missing_parent_init(tmp_path, monkeypatch):
@@ -733,7 +761,7 @@ def test__register_blueprint_in_parent_already_registered(tmp_path, monkeypatch)
         "app/routes/recipes/comments",
     )
 
-    assert is_successful is False
+    assert is_successful is True
     assert message == "recipes_comments_blueprint already registered"
 
 def test__write_parent_route_directory_when_exists_returns_empty(tmp_path, monkeypatch):
@@ -757,7 +785,7 @@ def test__write_parent_route_directory_creates_scaffold(tmp_path, monkeypatch):
     assert (tmp_path / "app" / "routes" / "recipes" / "routes.py").exists()
 
 def test__write_parent_routes_single_segment_returns_empty():
-    assert _write_parent_routes("users") == []
+    assert _write_parent_routes("users") == (True, [])
 
 
 def test__write_parent_routes_creates_each_missing_parent_and_registers(tmp_path, monkeypatch):
@@ -773,7 +801,7 @@ def test__write_parent_routes_creates_each_missing_parent_and_registers(tmp_path
         encoding="utf-8",
     )
 
-    updates = routes_module._write_parent_routes("recipes/comments/images")
+    is_successful, updates = routes_module._write_parent_routes("recipes/comments/images")
     updates = [routes_module.click.unstyle(message) for message in updates]
 
     # Parent route directories were created
