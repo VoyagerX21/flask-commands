@@ -9,6 +9,7 @@ from .scaffold import (
     split_dotted_path_with_action_into_relative_path_and_action,
     split_pascal_case,
 )
+
 def model_generate_hierarchy_from_controller_name(controller_name: str) -> tuple[list[str], list[str], str]:
     """
     Split a controller class name into namespace, parent models, and child model.
@@ -115,7 +116,7 @@ def model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_actio
 
     return namespace, parent_models, child_model
 
-def model_generate_model_name_from_controller_name(controller_name: str) -> tuple[str, str]:
+def model_generate_model_name_from_controller_name(controller_name: str) -> tuple[str, list[str]]:
     """
     Infer a model class name from a controller class name.
 
@@ -170,10 +171,10 @@ def model_generate_model_name_from_controller_name(controller_name: str) -> tupl
 
     non_nested_model_name = \
         _generate_non_nested_model_name_from_controller_name(controller_name)
-    nested_model_name = \
-        _generate_nested_model_name_from_controller_name(controller_name)
+    nested_model_names = \
+        _generate_nested_model_names_from_controller_name(controller_name)
 
-    return non_nested_model_name, nested_model_name,
+    return non_nested_model_name, nested_model_names,
 
 def model_generate_model_name_from_dotted_path_with_action(dotted_path_with_action: str) -> str:
     """
@@ -384,10 +385,12 @@ def _find_longest_running_model_segment_match_from_index(
 
     return longest_running_model_segment, longest_running_match_length
 
-def _generate_nested_model_name_from_controller_name(controller_name: str) -> str:
+def _generate_nested_model_names_from_controller_name(controller_name: str) -> list[str]:
     namespace, parent_models, child_model_name = \
         model_generate_hierarchy_from_controller_name(controller_name)
-    return child_model_name
+    if child_model_name == '' and parent_models == []:
+        return namespace
+    return [child_model_name]
 
 def _generate_non_nested_model_name_from_controller_name(controller_name: str) -> str:
     name_without_suffix = controller_name

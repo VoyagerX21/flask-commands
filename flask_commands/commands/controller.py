@@ -32,24 +32,60 @@ def make_controller(
     if not file_is_project_root():
         return
 
-    # Infer model name if not provided
-    if generate_model and model_name is None:
-        non_nested_model_name, nested_model_name = model_generate_model_name_from_controller_name(controller_name)
-        if nested_model_name:
-            _, parent_models, _ = \
-                model_generate_hierarchy_from_controller_name(controller_name)
+    # Infer model name(s) if not provided
+    model_names: list[str] = []
 
-            click.echo(
-                "Detected nested models:\n" +
-                " -> ".join(parent_models)
-            )
-            click.echo(f"Y (nested generated model) = {nested_model_name}")
-            click.echo(f"N (single resource model)  = {non_nested_model_name}")
-            use_nested = click.confirm("Use nested pattern?", default=True)
-            model_name = nested_model_name if use_nested else non_nested_model_name
+    if model_name:
+        model_names = [model_name]
+    # Infer model name if not provided
+    elif generate_model:
+        non_nested_model_name, nested_model_names = \
+            model_generate_model_name_from_controller_name(controller_name)
+        if nested_model_names:
+            namespace, parent_models, child_model_names = \
+                model_generate_hierarchy_from_controller_name(controller_name)
+            if len(parent_models) > 1:
+                click.echo(
+                    "Detected nested models:\n" + " -> ".join(parent_models)
+                )
+                click.echo(f"1 (single resource model)  = {non_nested_model_name}")
+                click.echo(f"2 (nested generated model) = {nested_model_names[0]}")
+                choice = click.prompt(
+                    "Enter choice:",
+                    type=click.Choice(["1", "2", "single", "nested"], case_sensitive=False),
+                    default=1,
+                    show_choices=False)
+                use_single = choice in ("1", "single").lower()
+                chosen = non_nested_model_name if use_single else nested_model_names[0]
+                model_names = [chosen]
+
+            else:
+                click.echo(
+                    "Detected multiple child like segments:\n" +
+                    ", ".join(child_model_names))
+                click.echo(f"1 (single resource model)  = {non_nested_model_name}")
+                click.echo(f"2 (generate the folowing models) = {', '.join(nested_model_names)}")
+                choice = click.prompt(
+                    "Enter choice:",
+                    type=click.Choice(["1", "2", "single", "nested"], case_sensitive=False),
+                    default=1,
+                    show_choices=False).lower()
+                use_single = choice in ("1", "single")
+                model_names = [non_nested_model_name] if use_single else nested_model_names
         else:
-            model_name = non_nested_model_name
-        click.secho(f"💡 Info: Generated model {click.style(model_name, bold=True)}", fg="cyan")
+            model_names = [non_nested_model_name]
+        generated_models = click.style(', '.join(model_names), bold=True)
+        click.secho(f"💡 Info: Generated model(s) {generated_models}", fg="cyan")
+
+    # If a model_name was provided or inferred
+    if model_names:
+        for model_name in model_names:
+            model_init_path = os.path.join("app", "models", "__init__.py")
+            model_file_path = os.path.join("app", "models", f"{model_name.lower()}.py")
+            is_successful, message = model_make_file(
+                model_name, model_init_path, model_file_path)
+            click.echo(message)
+            all_successful = all_successful and is_successful
 
     controller_file_path = \
         os.path.join(
@@ -92,15 +128,6 @@ def make_controller(
 
             for message in messages:
                 click.echo(message)
-
-    # If a model_name was provided or inferred
-    if model_name:
-        model_init_path = os.path.join("app", "models", "__init__.py")
-        model_file_path = os.path.join("app", "models", f"{model_name.lower()}.py")
-        is_successful, message = model_make_file(
-            model_name, model_init_path, model_file_path)
-        click.echo(message)
-        all_successful = all_successful and is_successful
 
     if not all_successful:
         click.secho("⚠️  Warning: One or more make controller steps produced a warning or failure.", fg="yellow", bold=True)
