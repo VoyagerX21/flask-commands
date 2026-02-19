@@ -12,26 +12,30 @@ from .scaffold import (
 
 def model_generate_hierarchy_from_controller_name(controller_name: str) -> tuple[list[str], list[str], str]:
     """
-    Split a controller class name into namespace, parent models, and child model.
+    Split a controller class name into `namespace`, `parent_models`, and `child_model_name`.
 
-    A trailing `Controller` suffix is removed when present. The remaining
-    PascalCase name is split into segments and resolved against the currently
-    registered models.
+    This function removes a trailing `Controller` suffix (if present), splits the
+    remaining PascalCase name into segments, then resolves those segments against
+    registered model class names from `app/models/__init__.py`.
 
-    Resolution flow:
-    1. Segments that do not match a model (from the current index) are collected
-    into `namespace`.
-    2. Contiguous model matches are collected into `parent_models`.
-    3. Any remaining segments are joined into `child_model_name`.
+    Resolution rules:
+    1. Leading unmatched segments are collected as `namespace`.
+    2. A contiguous run of matched model segments is collected as `parent_models`.
+    At each position, the longest joined model match is chosen.
+    3. Remaining unmatched segments are joined into `child_model_name` (PascalCase).
 
+    Edge cases:
+    - If the name is empty after removing `Controller`, returns `([], [], "")`.
+    - If no model match is found, all segments become `namespace` and
+    `child_model_name` is `""`.
     If no model is registered, all parsed segments are treated as `namespace`.
 
     Args:
-        controller_name (str): Controller class name to parse
-            (examples: "UserController", "AdminUserAvatarController").
+        controller_name (str): Controller class name, e.g.
+            `"AdminUserProfileAvatarController"`.
 
     Returns:
-        tuple[list[str], list[str], str]: A tuple of
+        tuple[list[str], list[str], str]:
             `(namespace, parent_models, child_model_name)`.
 
     Examples:
@@ -42,14 +46,19 @@ def model_generate_hierarchy_from_controller_name(controller_name: str) -> tuple
         >>> model_generate_hierarchy_from_controller_name("PostCommentImagesController")
         (['Post', 'Comment', 'Images'], [], '')
 
-        # Registered models include: User
+        # Registered models: User
         >>> model_generate_hierarchy_from_controller_name("AdminUserAvatarController")
         (['Admin'], ['User'], 'Avatar')
 
-        # Registered models include: User, Profile
+        # Registered models: User, Profile
         >>> model_generate_hierarchy_from_controller_name("AdminUserProfileController")
         (['Admin'], ['User', 'Profile'], '')
+
+        # Registered models: User, UserProfile
+        >>> model_generate_hierarchy_from_controller_name("AdminUserProfileAvatarController")
+        (['Admin'], ['UserProfile'], 'Avatar')
     """
+
     name_without_suffix = controller_name
     if controller_name.endswith("Controller"):
         name_without_suffix = controller_name[:-len("Controller")]
@@ -62,31 +71,52 @@ def model_generate_hierarchy_from_controller_name(controller_name: str) -> tuple
 
 def model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action: str) -> tuple[list[str], list[str], str]:
     """
-    Split a dotted path into namespace, parent_models, and child_model segments.
+    Split a dotted route-like path into namespace, parent model chain, and child model.
 
-    This uses a left-to-right scan of the dotted path segments. Leading segments
-    that do not match registered models become the namespace. The first
-    contiguous run of matched model segments becomes parent_models. Any remaining
-    unmatched segments are collapsed into a single compound child_model.
+    The function first separates `dotted_path_with_action` into a relative path and
+    an action segment, then analyzes only the relative path segments from left to right.
+
+    Resolution rules:
+    1. Leading segments that are *not* registered models are collected as `namespace`.
+    2. The next contiguous run of registered model segments is collected as `parent_models`.
+    3. Remaining segments are folded into a single `child_model` joined with `_`.
+    If no remainder exists, the child model may be promoted from the parent chain
+    by `_finalize_child_model_name_for_routing`, or end up empty when nothing can
+    be inferred.
+
+    Model matching is done in snake_case against registered models from
+    `app/models/__init__.py`, with each path segment singularized before comparison.
 
     Args:
-        dotted_path_with_action: A dotted path like
-            "admin.posts.shop.images.show".
+        dotted_path_with_action (str): Dotted path that may include a trailing action,
+            e.g. "admin.posts.comments.index" or "posts.index".
 
     Returns:
-        A tuple of (namespace, parent_models, child_model), where:
-        - namespace: list of unmatched leading segments
-        - parent_models: list of contiguous matched model segments
-        - child_model: a single segment (possibly compound) for the child model
+        tuple[list[str], list[str], str]:
+            - namespace: unmatched leading path segments
+            - parent_models: contiguous matched model segments
+            - child_model: final child segment (possibly compound with `_`), or ""
 
     Examples:
-        >>> model_generate_hierarchy_from_dotted_path_with_action("admin.posts.comments.show")
+        >>> model_generate_hierarchy_from_dotted_path_with_action("posts.index")
+        ([], [], 'posts')
+
+        >>> model_generate_hierarchy_from_dotted_path_with_action("admin.posts.show")
+        (['admin'], [], 'posts')
+
+        >>> model_generate_hierarchy_from_dotted_path_with_action("admin.posts.comments.index")
         (['admin'], ['posts'], 'comments')
+
         >>> model_generate_hierarchy_from_dotted_path_with_action("admin.posts.shop.images.show")
         (['admin'], ['posts'], 'shop_images')
-        >>> model_generate_hierarchy_from_dotted_path_with_action("reports.index")
-        ([], [], 'reports')
+
+        >>> model_generate_hierarchy_from_dotted_path_with_action("admin.users.user_profile.index")
+        (['admin'], ['users'], 'user_profile')
+
+        >>> model_generate_hierarchy_from_dotted_path_with_action("landinng")
+        ([], [], '')
     """
+
     registered_models = model_get_registered_models()
     registered_snake_case_models = \
         model_model_names_to_snake_case_names(registered_models)
@@ -116,57 +146,53 @@ def model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_actio
 
     return namespace, parent_models, child_model
 
+# TODO: Stopped here (the doc string is good need to make better test for this function there is currently only one test)
 def model_generate_model_name_from_controller_name(controller_name: str) -> tuple[str, list[str]]:
     """
-    Infer a model class name from a controller class name.
+    Generate model name candidates from a controller class name.
 
-    A trailing `Controller` suffix is removed when present. The remaining
-    PascalCase name is split into segments and resolved against registered
-    model hierarchy to pick the child model when possible. If no child model
-    is resolved, the last segment is singularized and the segments are joined
-    back into PascalCase.
+    This function returns two values:
+    1. `non_nested_model_name`: a direct PascalCase model candidate.
+    2. `nested_model_names`: hierarchy-derived nested candidate(s).
+
+    `non_nested_model_name` is computed by:
+    - removing a trailing `Controller` suffix when present,
+    - splitting the remaining value with `split_pascal_case`,
+    - singularizing only the final segment,
+    - joining segments back into PascalCase.
+    If no PascalCase segments are found, it returns `""`.
+
+    `nested_model_names` is computed as follows:
+    - Call `_generate_nested_model_names_from_controller_name(controller_name)`.
+    - That helper first obtains `namespace`, `parent_models`, and `child_model_name`
+    from `model_generate_hierarchy_from_controller_name(controller_name)`.
+    - If `child_model_name == ""` and `parent_models == []`, return `namespace`.
+    - If `child_model_name == ""` and `parent_models != []`, return `[]`.
+    - Otherwise, return `[child_model_name]`.
 
     Args:
-        controller_name (str): Controller class name to parse
-            (examples: "PostsController", "PostCommentImageController").
+        controller_name (str): Controller class name to parse, e.g.
+            `"PostsController"` or `"AdminUserAvatarController"`.
 
     Returns:
-        str: Inferred model class name, or an empty string if the input does
-            not produce PascalCase segments.
+        tuple[str, list[str]]: `(non_nested_model_name, nested_model_names)`.
 
     Examples:
-        # No registered models (app/models/__init__.py missing or empty):
+        # No registered models
         >>> model_generate_model_name_from_controller_name("PostCommentImageController")
-        'PostCommentImage'
+        ('PostCommentImage', ['Post', 'Comment', 'Image'])
         >>> model_generate_model_name_from_controller_name("PostsController")
-        'Post'
+        ('Post', ['Posts'])
         >>> model_generate_model_name_from_controller_name("Controller")
-        ''
+        ('', [])
 
-        # Registered models in app/models/__init__.py include:
-        # from .post import Post
-        # from .comment import Comment
-        # from .image import Image
-        # from .user import User
-        >>> model_generate_model_name_from_controller_name("PostCommentImageController")
-        'Image'
-        >>> model_generate_model_name_from_controller_name("AdminPostCommentImageController")
-        'Image'
-        >>> model_generate_model_name_from_controller_name("PostCommentAuditController")
-        'Audit'
-        >>> model_generate_model_name_from_controller_name("APIKeysController")
-        'APIKey'
+        # Registered models include: User
+        >>> model_generate_model_name_from_controller_name("AdminUserAvatarController")
+        ('AdminUserAvatar', ['Avatar'])
 
-        # Registered models in app/models/__init__.py include:
-        # from .recipe_comment import RecipeComment
-        >>> model_generate_model_name_from_controller_name("AdminRecipeCommentImageCommentController")
-        'ImageComment'
-
-        # Registered models include:
-        # from .user import User
-        >>> model_generate_model_name_from_controller_name("UserController")
-        ('User', '')
-
+        # Registered models include: User, Profile
+        >>> model_generate_model_name_from_controller_name("AdminUserProfileController")
+        ('AdminUserProfile', [])
     """
 
     non_nested_model_name = \
@@ -388,8 +414,10 @@ def _find_longest_running_model_segment_match_from_index(
 def _generate_nested_model_names_from_controller_name(controller_name: str) -> list[str]:
     namespace, parent_models, child_model_name = \
         model_generate_hierarchy_from_controller_name(controller_name)
-    if child_model_name == '' and parent_models == []:
-        return namespace
+    if child_model_name == "":
+        if parent_models == []:
+            return namespace
+        return []
     return [child_model_name]
 
 def _generate_non_nested_model_name_from_controller_name(controller_name: str) -> str:
@@ -397,6 +425,9 @@ def _generate_non_nested_model_name_from_controller_name(controller_name: str) -
     if controller_name.endswith("Controller"):
         name_without_suffix = controller_name[:-len("Controller")]
     model_segments = split_pascal_case(name_without_suffix)
+    if not model_segments:
+        return ""
+
     model_segments[-1] = singularize(model_segments[-1]).title()
     return "".join(model_segments)
 

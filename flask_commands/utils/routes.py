@@ -606,8 +606,6 @@ def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
         'show'
         >>> spec.is_restful
         True
-        >>> spec.flat_route
-        '/posts-show'
         >>> spec.generated_route_name  # assuming "Post" is a registered model
         '/posts/<int:post_id>'
 

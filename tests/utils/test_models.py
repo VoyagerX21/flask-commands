@@ -2,6 +2,7 @@ import os
 import pytest
 from pathlib import Path
 from flask_commands.utils.models import (
+    model_generate_hierarchy_from_controller_name,
     model_generate_model_name_from_dotted_path_with_action,
     model_get_registered_models,
     model_generate_model_name_from_controller_name,
@@ -23,6 +24,192 @@ def model_project(tmp_path, monkeypatch):
     monkeypatch.chdir(project_root)
 
     return project_root
+
+def test_model_generate_hierarchy_from_controller_name_suffix_only_returns_empty(model_project):
+    namespace, parents, child = model_generate_hierarchy_from_controller_name("Controller")
+
+    assert namespace == []
+    assert parents == []
+    assert child == ""
+
+def test_model_generate_hierarchy_from_controller_name_no_registered_models(model_project):
+    namespace, parents, child = model_generate_hierarchy_from_controller_name("PostCommentImagesController")
+
+    assert namespace == ["Post", "Comment", "Images"]
+    assert parents == []
+    assert child == ""
+
+def test_model_generate_hierarchy_from_controller_name_namespace_parent_child(model_project):
+    (model_project / "app" / "models" / "__init__.py")\
+        .write_text("from .user import User\n")
+
+    namespace, parents, child = model_generate_hierarchy_from_controller_name("AdminUserAvatarController")
+
+    assert namespace == ["Admin"]
+    assert parents == ["User"]
+    assert child == "Avatar"
+
+def test_model_generate_hierarchy_from_controller_name_contiguous_parent_models(model_project):
+    (model_project / "app" / "models" / "__init__.py")\
+        .write_text(
+            "from .user import User\n"
+            "from .profile import Profile\n")
+
+    namespace, parents, child = model_generate_hierarchy_from_controller_name("AdminUserProfileController")
+
+    assert namespace == ["Admin"]
+    assert parents == ["User", "Profile"]
+    assert child == ""
+
+def test_model_generate_hierarchy_from_controller_name_prefers_longest_model_match(model_project):
+    (model_project / "app" / "models" / "__init__.py")\
+        .write_text(
+            "from .user import User\n"
+            "from .user_profile import UserProfile\n")
+
+    namespace, parents, child = model_generate_hierarchy_from_controller_name("AdminUserProfileAvatarController")
+
+    assert namespace == ["Admin"]
+    assert parents == ["UserProfile"]
+    assert child == "Avatar"
+
+def test_model_generate_hierarchy_from_controller_name_remaining_segments_become_child(model_project):
+    (model_project / "app" / "models" / "__init__.py")\
+        .write_text("from .user import User\n")
+
+    namespace, parents, child = model_generate_hierarchy_from_controller_name("AdminUserProfileAvatarController")
+
+    assert namespace == ["Admin"]
+    assert parents == ["User"]
+    assert child == "ProfileAvatar"
+
+def test_model_generate_hierarchy_from_controller_name_without_controller_suffix(model_project):
+    (model_project / "app" / "models" / "__init__.py")\
+        .write_text("from .user import User\n")
+
+    namespace, parents, child = model_generate_hierarchy_from_controller_name("AdminUserProfileAvatar")
+
+    assert namespace == ["Admin"]
+    assert parents == ["User"]
+    assert child == "ProfileAvatar"
+
+def test_model_generate_hierarchy_from_dotted_path_with_action_simple_resource(tmp_path, monkeypatch):
+    dotted_path_with_action = "posts.index"
+    init_content = (
+        "from .post import Post\n"
+    )
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(init_content, encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+
+    namespace, parents, child = \
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+
+    assert namespace == []
+    assert parents == []
+    assert child == "posts"
+
+def test_model_generate_hierarchy_from_dotted_path_with_action_with_namespace(tmp_path, monkeypatch):
+    dotted_path_with_action = "admin.posts.show"
+    init_content = (
+        "from .post import Post\n"
+    )
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(init_content, encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+
+    namespace, parents, child = \
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+
+    assert namespace == ["admin"]
+    assert parents == []
+    assert child == "posts"
+
+def test_model_generate_hierarchy_from_dotted_path_with_action_nested_models(tmp_path, monkeypatch):
+    dotted_path_with_action = "admin.posts.comments.index"
+    init_content = (
+        "from .post import Post\n"
+        "from .comment import Comment\n"
+    )
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(init_content, encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+
+    namespace, parents, child = \
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+
+    assert namespace == ["admin"]
+    assert parents == ["posts"]
+    assert child == "comments"
+
+def test_model_generate_hierarchy_from_dotted_path_with_action_no_dots(tmp_path, monkeypatch):
+    dotted_path_with_action = "landinng"
+    init_content = (
+        "from .post import Post\n"
+        "from .comment import Comment\n"
+    )
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(init_content, encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+
+    namespace, parents, child = \
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+
+    assert namespace == []
+    assert parents == []
+    assert child == ""
+
+def test_model_generate_hierarchy_from_dotted_path_with_action_remaining_segments(tmp_path, monkeypatch):
+    dotted_path_with_action = "admin.posts.shop.images.show"
+    init_content = (
+        "from .post import Post\n"
+    )
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(init_content, encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+
+    namespace, parents, child = \
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+
+    assert namespace == ["admin"]
+    assert parents == ["posts"]
+    assert child == "shop_images"
+
+def test_model_generate_hierarchy_from_dotted_path_with_action_with_underscore(tmp_path, monkeypatch):
+    dotted_path_with_action = "admin.users.user_profile.index"
+    init_content = (
+        "from .user import User\n"
+        "from .post import Post\n"
+        "from .user_profile import UserProfile\n"
+    )
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(init_content, encoding="utf-8")
+
+    monkeypatch.chdir(tmp_path)
+
+    namespace, parents, child = \
+        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
+
+    assert namespace == ["admin"]
+    assert parents == ["users"]
+    assert child == "user_profile"
 
 def test_model_get_registered_models_parses_imports(tmp_path, monkeypatch):
     models_dir = tmp_path / "app" / "models"
@@ -213,121 +400,3 @@ def test_model_model_names_to_snake_case_names_empty():
 
 def test_model_model_names_to_snake_case_names_preserves_order():
     assert model_model_names_to_snake_case_names(["Comment", "Post"]) == ["comment", "post"]
-
-def test_model_generate_hierarchy_from_dotted_path_with_action_simple_resource(tmp_path, monkeypatch):
-    dotted_path_with_action = "posts.index"
-    init_content = (
-        "from .post import Post\n"
-    )
-    models_dir = tmp_path / "app" / "models"
-    models_dir.mkdir(parents=True)
-    init_file = models_dir / "__init__.py"
-    init_file.write_text(init_content, encoding="utf-8")
-
-    monkeypatch.chdir(tmp_path)
-
-    namespace, parents, child = \
-        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
-
-    assert namespace == []
-    assert parents == []
-    assert child == "posts"
-
-def test_model_generate_hierarchy_from_dotted_path_with_action_with_namespace(tmp_path, monkeypatch):
-    dotted_path_with_action = "admin.posts.show"
-    init_content = (
-        "from .post import Post\n"
-    )
-    models_dir = tmp_path / "app" / "models"
-    models_dir.mkdir(parents=True)
-    init_file = models_dir / "__init__.py"
-    init_file.write_text(init_content, encoding="utf-8")
-
-    monkeypatch.chdir(tmp_path)
-
-    namespace, parents, child = \
-        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
-
-    assert namespace == ["admin"]
-    assert parents == []
-    assert child == "posts"
-
-def test_model_generate_hierarchy_from_dotted_path_with_action_nested_models(tmp_path, monkeypatch):
-    dotted_path_with_action = "admin.posts.comments.index"
-    init_content = (
-        "from .post import Post\n"
-        "from .comment import Comment\n"
-    )
-    models_dir = tmp_path / "app" / "models"
-    models_dir.mkdir(parents=True)
-    init_file = models_dir / "__init__.py"
-    init_file.write_text(init_content, encoding="utf-8")
-
-    monkeypatch.chdir(tmp_path)
-
-    namespace, parents, child = \
-        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
-
-    assert namespace == ["admin"]
-    assert parents == ["posts"]
-    assert child == "comments"
-
-def test_model_generate_hierarchy_from_dotted_path_with_action_no_dots(tmp_path, monkeypatch):
-    dotted_path_with_action = "landinng"
-    init_content = (
-        "from .post import Post\n"
-        "from .comment import Comment\n"
-    )
-    models_dir = tmp_path / "app" / "models"
-    models_dir.mkdir(parents=True)
-    init_file = models_dir / "__init__.py"
-    init_file.write_text(init_content, encoding="utf-8")
-
-    monkeypatch.chdir(tmp_path)
-
-    namespace, parents, child = \
-        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
-
-    assert namespace == []
-    assert parents == []
-    assert child == ""
-
-def test_model_generate_hierarchy_from_dotted_path_with_action_remaining_segments(tmp_path, monkeypatch):
-    dotted_path_with_action = "admin.posts.shop.images.show"
-    init_content = (
-        "from .post import Post\n"
-    )
-    models_dir = tmp_path / "app" / "models"
-    models_dir.mkdir(parents=True)
-    init_file = models_dir / "__init__.py"
-    init_file.write_text(init_content, encoding="utf-8")
-
-    monkeypatch.chdir(tmp_path)
-
-    namespace, parents, child = \
-        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
-
-    assert namespace == ["admin"]
-    assert parents == ["posts"]
-    assert child == "shop_images"
-
-def test_model_generate_hierarchy_from_dotted_path_with_action_with_underscore(tmp_path, monkeypatch):
-    dotted_path_with_action = "admin.users.user_profile.index"
-    init_content = (
-        "from .user import User\n"
-        "from .post import Post\n"
-        "from .user_profile import UserProfile\n"
-    )
-    models_dir = tmp_path / "app" / "models"
-    models_dir.mkdir(parents=True)
-    init_file = models_dir / "__init__.py"
-    init_file.write_text(init_content, encoding="utf-8")
-
-    monkeypatch.chdir(tmp_path)
-
-    namespace, parents, child = \
-        model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_action)
-
-    assert namespace == ["admin"]
-    assert parents == ["users"]
-    assert child == "user_profile"

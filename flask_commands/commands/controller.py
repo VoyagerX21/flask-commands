@@ -32,6 +32,31 @@ def make_controller(
     if not file_is_project_root():
         return
 
+    controller_file_path = \
+        os.path.join(
+            "app",
+            "controllers",
+            f"{camel_to_snake(controller_name)}.py")
+
+    # if controller exist warn the user that the controller already exist
+    if os.path.exists(controller_file_path):
+        click.secho("⚠️  Warning: Controller Already Exists", fg="yellow", bold=True)
+        click.echo(
+            click.style(f"    - Controller File for {click.style(controller_name, bold=True)}", fg="yellow") +
+            click.style(" already exists", fg="yellow"))
+        click.secho("    - No changes were made", fg="yellow")
+        return
+
+    # create the controller
+    all_successful: bool = True
+    is_successful, message = controller_make_file(
+        relative_path=None,
+        action=None,
+        controller_name=controller_name,
+        route_name=None)
+    click.echo(message)
+    all_successful = all_successful and is_successful
+
     # Infer model name(s) if not provided
     model_names: list[str] = []
 
@@ -41,28 +66,30 @@ def make_controller(
     elif generate_model:
         non_nested_model_name, nested_model_names = \
             model_generate_model_name_from_controller_name(controller_name)
-        if nested_model_names:
-            namespace, parent_models, child_model_names = \
+        if any(nested_model_names):
+            namespace, parent_models, child_model_name = \
                 model_generate_hierarchy_from_controller_name(controller_name)
-            if len(parent_models) > 1:
+            if parent_models:
                 click.echo(
                     "Detected nested models:\n" + " -> ".join(parent_models)
                 )
-                click.echo(f"1 (single resource model)  = {non_nested_model_name}")
+                click.echo(f"1 (flatten resource model)  = {non_nested_model_name}")
                 click.echo(f"2 (nested generated model) = {nested_model_names[0]}")
                 choice = click.prompt(
                     "Enter choice:",
                     type=click.Choice(["1", "2", "single", "nested"], case_sensitive=False),
                     default=1,
-                    show_choices=False)
-                use_single = choice in ("1", "single").lower()
+                    show_choices=False).lower()
+                use_single = choice in ("1", "single")
                 chosen = non_nested_model_name if use_single else nested_model_names[0]
                 model_names = [chosen]
-
+            # If parent_models are empty and nested_model_names is not then
+            # then _generate_nested_model_names_from_controller_name
+            # puts the namespace in nested_model_names
             else:
                 click.echo(
                     "Detected multiple child like segments:\n" +
-                    ", ".join(child_model_names))
+                    ", ".join(nested_model_names))
                 click.echo(f"1 (single resource model)  = {non_nested_model_name}")
                 click.echo(f"2 (generate the folowing models) = {', '.join(nested_model_names)}")
                 choice = click.prompt(
@@ -87,30 +114,7 @@ def make_controller(
             click.echo(message)
             all_successful = all_successful and is_successful
 
-    controller_file_path = \
-        os.path.join(
-            "app",
-            "controllers",
-            f"{camel_to_snake(controller_name)}.py")
 
-    # if controller exist warn the user that the controller already exist
-    if os.path.exists(controller_file_path):
-        click.secho("⚠️  Warning: Controller Already Exists", fg="yellow", bold=True)
-        click.echo(
-            click.style(f"    - Controller File for {click.style(controller_name, bold=True)}", fg="yellow") +
-            click.style(" already exists", fg="yellow"))
-        click.secho("    - No changes were made", fg="yellow")
-        return
-
-    # create the controller
-    all_successful = True
-    is_successful, message = controller_make_file(
-        relative_path=None,
-        action=None,
-        controller_name=controller_name,
-        route_name=None)
-    click.echo(message)
-    all_successful = all_successful and is_successful
 
     if crud:
         restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
