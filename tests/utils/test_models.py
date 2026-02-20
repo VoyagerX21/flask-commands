@@ -8,7 +8,8 @@ from flask_commands.utils.models import (
     model_generate_model_name_from_controller_name,
     model_make_file,
     model_model_names_to_snake_case_names,
-    model_generate_hierarchy_from_dotted_path_with_action
+    model_generate_hierarchy_from_dotted_path_with_action,
+    _find_longest_running_model_segment_match_from_index
 )
 
 @pytest.fixture
@@ -278,6 +279,79 @@ def test_model_get_registered_models_ignores_non_models_absolute_imports(tmp_pat
 
     assert model_get_registered_models() == ["Post"]
 
+def test_model_get_registered_models_deduplicates_and_sorts_with_user_profile(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(
+        "from .user_profile import UserProfile\n"
+        "from app.models.user_profile import UserProfile\n"
+        "from .post import Post\n"
+        "from app.models.comment import Comment\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == ["Comment", "Post", "UserProfile"]
+
+def test_model_get_registered_models_uses_imported_symbol_not_alias_name(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(
+        "from .post import Post as PostModel\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == ["Post"]
+
+def test_model_get_registered_models_ignores_base_app_models_import(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(
+        "from app.models import Post\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == []
+
+def test_model_get_registered_models_ignores_wildcard_import(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(
+        "from .post import *\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == []
+
+def test_model_get_registered_models_absolute_submodule_with_mixed_names(tmp_path, monkeypatch):
+    models_dir = tmp_path / "app" / "models"
+    models_dir.mkdir(parents=True)
+
+    init_file = models_dir / "__init__.py"
+    init_file.write_text(
+        "from app.models.user_profile import UserProfile, helper\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+
+    assert model_get_registered_models() == ["UserProfile"]
+
 def test_model_generate_model_name_from_dotted_path_with_action_with_dot():
     model_name = model_generate_model_name_from_dotted_path_with_action("posts.index")
     assert model_name == "Post"
@@ -286,16 +360,119 @@ def test_model_generate_model_name_from_dotted_path_with_action_without_dot():
     model_name = model_generate_model_name_from_dotted_path_with_action("posts")
     assert model_name == "Post"
 
-def test_model_generate_model_name_from_controller_name():
-    non_nested_model_name, nested_model_name = model_generate_model_name_from_controller_name("PostCommentImageController")
-    assert non_nested_model_name, nested_model_name == ("PostCommentImage", "")
+def test_model_generate_model_name_from_dotted_path_with_action_with_namespace():
+    model_name = model_generate_model_name_from_dotted_path_with_action("admin.posts.show")
+    assert model_name == "Post"
+
+def test_model_generate_model_name_from_dotted_path_with_action_action_only():
+    model_name = model_generate_model_name_from_dotted_path_with_action("index")
+    assert model_name == "Index"
+
+def test_model_generate_model_name_from_dotted_path_with_action_with_underscore_resource():
+    model_name = model_generate_model_name_from_dotted_path_with_action("user_profiles.index")
+    assert model_name == "UserProfile"
+
+def test_model_generate_model_name_from_dotted_path_with_action_namespace_and_underscore_resource():
+    model_name = model_generate_model_name_from_dotted_path_with_action("admin.user_profiles.show")
+    assert model_name == "UserProfile"
+
+def test_model_generate_model_name_from_dotted_path_with_action_singularizes_ies():
+    model_name = model_generate_model_name_from_dotted_path_with_action("categories.index")
+    assert model_name == "Category"
+
+def test_model_generate_model_name_from_dotted_path_with_action_singularizes_ses():
+    model_name = model_generate_model_name_from_dotted_path_with_action("classes.index")
+    assert model_name == "Class"
+
+def test_model_generate_model_name_from_dotted_path_with_action_compound_snake_case():
+    model_name = model_generate_model_name_from_dotted_path_with_action("post_comments.index")
+    assert model_name == "PostComment"
+
+def test_model_generate_model_name_from_dotted_path_with_action_without_dot_and_underscore():
+    model_name = model_generate_model_name_from_dotted_path_with_action("user_profiles")
+    assert model_name == "UserProfile"
+
+def test_model_generate_model_name_from_controller_name_suffix_only_returns_empty(model_project):
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_controller_name("Controller")
+
+    assert non_nested_model_name == ""
+    assert nested_model_names == []
+
+def test_model_generate_model_name_from_controller_name_no_registered_models(model_project):
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_controller_name("PostCommentImageController")
+
+    assert non_nested_model_name == "PostCommentImage"
+    assert nested_model_names == ["Post", "Comment", "Image"]
+
+def test_model_generate_model_name_from_controller_name_no_registered_models_plural(model_project):
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_controller_name("PostsController")
+
+    assert non_nested_model_name == "Post"
+    assert nested_model_names == ["Posts"]
+
+def test_model_generate_model_name_from_controller_name_namespace_parent_child(model_project):
+    (model_project / "app" / "models" / "__init__.py") \
+        .write_text("from .user import User\n", encoding="utf-8")
+
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_controller_name("AdminUserAvatarController")
+
+    assert non_nested_model_name == "AdminUserAvatar"
+    assert nested_model_names == ["Avatar"]
+
+def test_model_generate_model_name_from_controller_name_contiguous_parent_models(model_project):
+    (model_project / "app" / "models" / "__init__.py") \
+        .write_text(
+            "from .user import User\n"
+            "from .profile import Profile\n",
+            encoding="utf-8",
+        )
+
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_controller_name("AdminUserProfileController")
+
+    assert non_nested_model_name == "AdminUserProfile"
+    assert nested_model_names == []
+
+def test_model_generate_model_name_from_controller_name_prefers_longest_model_match(model_project):
+    (model_project / "app" / "models" / "__init__.py") \
+        .write_text(
+            "from .user import User\n"
+            "from .user_profile import UserProfile\n",
+            encoding="utf-8",
+        )
+
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_controller_name("AdminUserProfileAvatarController")
+
+    assert non_nested_model_name == "AdminUserProfileAvatar"
+    assert nested_model_names == ["Avatar"]
+
+def test_model_generate_model_name_from_controller_name_remaining_segments_become_child(model_project):
+    (model_project / "app" / "models" / "__init__.py") \
+        .write_text("from .user import User\n", encoding="utf-8")
+
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_controller_name("AdminUserProfileAvatarController")
+
+    assert non_nested_model_name == "AdminUserProfileAvatar"
+    assert nested_model_names == ["ProfileAvatar"]
+
+def test_model_generate_model_name_from_controller_name_without_controller_suffix(model_project):
+    (model_project / "app" / "models" / "__init__.py") \
+        .write_text("from .user import User\n", encoding="utf-8")
+
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_controller_name("AdminUserProfileAvatar")
+
+    assert non_nested_model_name == "AdminUserProfileAvatar"
+    assert nested_model_names == ["ProfileAvatar"]
 
 def test_model_make_file_success(model_project):
-    is_successful, message = model_make_file(
-        model_name="Post",
-        model_init_path=os.path.join("app", "models", "__init__.py"),
-        model_file_path=os.path.join("app", "models", "post.py"),
-    )
+    is_successful, message = model_make_file(model_name="Post")
 
     # --- Return value assertions ---
     assert is_successful is True
@@ -308,13 +485,15 @@ def test_model_make_file_success(model_project):
     assert model_file.exists()
     assert init_file.exists()
 
-    # --- Content assertions (model file) ---
+
     model_contents = model_file.read_text(encoding="utf-8")
+    init_contents = init_file.read_text(encoding="utf-8")
 
     assert "class Post(db.Model):" in model_contents
-    assert "__tablename__" in model_contents
+    assert "__tablename__ = 'posts'" in model_contents
     assert "def store_in_database" in model_contents
     assert "def delete_from_database" in model_contents
+    assert "from .post import Post" in init_contents
 
     # --- Content assertions (__init__.py) ---
     init_contents = init_file.read_text(encoding="utf-8")
@@ -322,13 +501,9 @@ def test_model_make_file_success(model_project):
 
 def test_model_make_file_file_already_exists(model_project):
     model_file = model_project / "app" / "models" / "post.py"
-    model_file.write_text("\n")
+    model_file.write_text("\n", encoding="utf-8")
 
-    is_successful, message = model_make_file(
-        model_name="Post",
-        model_init_path=os.path.join("app", "models", "__init__.py"),
-        model_file_path=os.path.join("app", "models", "post.py"),
-    )
+    is_successful, message = model_make_file(model_name="Post")
 
     assert is_successful is False
     assert "Model Already Exists" in message
@@ -343,11 +518,7 @@ def test_model_make_file_file_write_file_exception(model_project, monkeypatch):
         boom
     )
 
-    is_successful, message = model_make_file(
-        model_name="Post",
-        model_init_path=os.path.join("app", "models", "__init__.py"),
-        model_file_path=os.path.join("app", "models", "post.py"),
-    )
+    is_successful, message = model_make_file(model_name="Post")
 
     assert is_successful is False
     assert "Failed to create model" in message
@@ -359,11 +530,7 @@ def test_model_make_file_init_missing(tmp_path, monkeypatch):
 
     monkeypatch.chdir(project_root)
 
-    is_successful, message = model_make_file(
-        model_name="Post",
-        model_init_path=os.path.join("app", "models", "__init__.py"),
-        model_file_path=os.path.join("app", "models", "post.py"),
-    )
+    is_successful, message = model_make_file(model_name="Post")
 
     assert is_successful is False
     assert " Model __init__.py Missing" in message
@@ -378,14 +545,75 @@ def test_model_make_file_file_append_file_exception(model_project, monkeypatch):
         boom
     )
 
-    is_successful, message = model_make_file(
-        model_name="Post",
-        model_init_path=os.path.join("app", "models", "__init__.py"),
-        model_file_path=os.path.join("app", "models", "post.py"),
-    )
+    is_successful, message = model_make_file(model_name="Post")
 
     assert is_successful is False
     assert "Failed to update __init__.py" in message
+
+def test_model_make_file_compound_name_uses_snake_case_file_import_and_table(model_project):
+    is_successful, message = model_make_file(model_name="UserProfile")
+
+    assert is_successful is True
+    assert "Created New Model" in message
+
+    model_file = model_project / "app" / "models" / "user_profile.py"
+    init_file = model_project / "app" / "models" / "__init__.py"
+
+    assert model_file.exists()
+    assert init_file.exists()
+
+    model_contents = model_file.read_text(encoding="utf-8")
+    init_contents = init_file.read_text(encoding="utf-8")
+
+    assert "class UserProfile(db.Model):" in model_contents
+    assert "__tablename__ = 'user_profiles'" in model_contents
+    assert "from .user_profile import UserProfile" in init_contents
+
+def test_model_make_file_acronym_name_uses_camel_to_snake(model_project):
+    is_successful, message = model_make_file(model_name="UserAPI")
+
+    assert is_successful is True
+    assert "Created New Model" in message
+
+    model_file = model_project / "app" / "models" / "user_api.py"
+    init_file = model_project / "app" / "models" / "__init__.py"
+
+    assert model_file.exists()
+
+    model_contents = model_file.read_text(encoding="utf-8")
+    init_contents = init_file.read_text(encoding="utf-8")
+
+    assert "class UserAPI(db.Model):" in model_contents
+    assert "__tablename__ = 'user_apis'" in model_contents
+    assert "from .user_api import UserAPI" in init_contents
+
+def test_model_make_file_compound_name_file_already_exists(model_project):
+    model_file = model_project / "app" / "models" / "user_profile.py"
+    model_file.write_text("\n", encoding="utf-8")
+
+    is_successful, message = model_make_file(model_name="UserProfile")
+
+    assert is_successful is False
+    assert "Model Already Exists" in message
+
+def test_model_make_file_init_missing_still_creates_compound_model_file(tmp_path, monkeypatch):
+    project_root = tmp_path
+    model_dir = project_root / "app" / "models"
+    model_dir.mkdir(parents=True)
+
+    monkeypatch.chdir(project_root)
+
+    is_successful, message = model_make_file(model_name="UserProfile")
+
+    assert is_successful is False
+    assert "Model __init__.py Missing" in message
+
+    model_file = project_root / "app" / "models" / "user_profile.py"
+    assert model_file.exists()
+
+    model_contents = model_file.read_text(encoding="utf-8")
+    assert "class UserProfile(db.Model):" in model_contents
+    assert "__tablename__ = 'user_profiles'" in model_contents
 
 def test_model_model_names_to_snake_case_names_basic():
     assert model_model_names_to_snake_case_names(["Post"]) == ["post"]
@@ -400,3 +628,29 @@ def test_model_model_names_to_snake_case_names_empty():
 
 def test_model_model_names_to_snake_case_names_preserves_order():
     assert model_model_names_to_snake_case_names(["Comment", "Post"]) == ["comment", "post"]
+
+def test_model_model_names_to_snake_case_names_acronym_run():
+    assert model_model_names_to_snake_case_names(["HTTPResponse"]) == ["http_response"]
+
+def test_model_model_names_to_snake_case_names_single_letter_prefix():
+    assert model_model_names_to_snake_case_names(["XCoordinate"]) == ["x_coordinate"]
+
+def test_model_model_names_to_snake_case_names_with_numbers():
+    assert model_model_names_to_snake_case_names(["Version2API"]) == ["version2_api"]
+    assert model_model_names_to_snake_case_names(["User2FASetting"]) == ["user2_fa_setting"]
+
+def test_model_model_names_to_snake_case_names_mixed_inputs():
+    assert model_model_names_to_snake_case_names(
+        ["UserProfile", "HTTPResponse", "XCoordinate", "User2FASetting"]
+    ) == ["user_profile", "http_response", "x_coordinate", "user2_fa_setting"]
+
+def test_model_model_names_to_snake_case_names_already_snake_case_input():
+    assert model_model_names_to_snake_case_names(["user_profile"]) == ["user_profile"]
+
+def test__find_longest_running_model_segment_match_from_index_index_to_large():
+    match, match_length = \
+        _find_longest_running_model_segment_match_from_index(
+            ["Admin", "User", "Profile", "Avatar"], ["User", "UserProfile"], 5)
+
+    assert match is None
+    assert match_length == 0

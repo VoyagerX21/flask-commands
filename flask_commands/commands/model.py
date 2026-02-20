@@ -3,7 +3,7 @@ import click
 
 from flask_commands.utils.files import file_is_project_root
 from flask_commands.utils.models import model_make_file
-from flask_commands.utils.naming import pluralize
+from flask_commands.utils.naming import camel_to_snake, pluralize
 from flask_commands.utils.routes import route_generate_route_name
 from flask_commands.utils.wirings import wire_controller_route_view
 
@@ -18,10 +18,7 @@ def make_model(model_name: str, crud:bool) -> None:
     all_successful = True
 
     if model_name:
-        model_init_path = os.path.join("app", "models", "__init__.py")
-        model_file_path = os.path.join("app", "models", f"{model_name.lower()}.py")
-        is_successful, message = model_make_file(
-            model_name, model_init_path, model_file_path)
+        is_successful, message = model_make_file(model_name)
         click.echo(message)
         all_successful = all_successful and is_successful
 

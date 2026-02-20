@@ -146,7 +146,6 @@ def model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_actio
 
     return namespace, parent_models, child_model
 
-# TODO: Stopped here (the doc string is good need to make better test for this function there is currently only one test)
 def model_generate_model_name_from_controller_name(controller_name: str) -> tuple[str, list[str]]:
     """
     Generate model name candidates from a controller class name.
@@ -204,56 +203,81 @@ def model_generate_model_name_from_controller_name(controller_name: str) -> tupl
 
 def model_generate_model_name_from_dotted_path_with_action(dotted_path_with_action: str) -> str:
     """
-    Infer a model name from a dotted view path.
+    Infer a model class name from a dotted path that may include an action.
 
-    Uses split_dotted_path_with_action_into_relative_path_and_action to
-    derive the relative path, then singularizes the final segment
-    and converts it to title case.
+    The input is split into `(relative_path, action)` using
+    `split_dotted_path_with_action_into_relative_path_and_action`, where `action`
+    is always the last dot-separated segment.
+
+    Rules:
+    1. If `relative_path` is not empty, use the last slash-separated segment from
+       `relative_path`.
+    2. Otherwise, use `action`.
+    3. Singularize the chosen segment, then convert snake_case to PascalCase.
 
     Args:
-        dotted_path_with_action (str): The dotted module path or name.
+        dotted_path_with_action (str): Dotted path such as `"posts.index"`,
+            `"admin.user_profiles.show"`, or `"posts"`.
 
     Returns:
-        str: The inferred model name in title case.
+        str: Inferred model class name in PascalCase.
 
-    Example:
-        >>> name = model_generate_model_name_from_dotted_path_with_action("posts.index")
-        >>> name
+    Examples:
+        >>> model_generate_model_name_from_dotted_path_with_action("posts.index")
         'Post'
-        >>> name = model_generate_model_name_from_dotted_path_with_action("posts")
-        >>> name
+        >>> model_generate_model_name_from_dotted_path_with_action("posts")
         'Post'
+        >>> model_generate_model_name_from_dotted_path_with_action("admin.posts.show")
+        'Post'
+        >>> model_generate_model_name_from_dotted_path_with_action("user_profiles.index")
+        'UserProfile'
+        >>> model_generate_model_name_from_dotted_path_with_action("index")
+        'Index'
     """
+
+
     relative_path, action = \
         split_dotted_path_with_action_into_relative_path_and_action(
             dotted_path_with_action)
+
     if relative_path != "":
         relative_path_last_segment = relative_path.split('/')[-1]
-        model_name = singularize(relative_path_last_segment).title()
+        signularized_segment = singularize(relative_path_last_segment).title()
     else:
-        model_name = singularize(action).title()
-    return model_name
+        signularized_segment = singularize(action).title()
+
+    return "".join([part.title() for part in signularized_segment.split("_") if part])
 
 def model_get_registered_models() -> list[str]:
     """
-    Return the list of registered model class names from `app/models/__init__.py`.
+    Return registered model class names from `app/models/__init__.py`.
 
-    The function parses the file’s import statements (relative imports or
-    `app.models.*` absolute imports) and collects any imported names that start
-    with an uppercase letter, treating them as model classes.
+    This function parses `app/models/__init__.py` with `ast` and inspects only
+    top-level `from ... import ...` statements (`ast.ImportFrom`).
+
+    Accepted import sources:
+    - Relative imports (for example, `from .post import Post`)
+    - Absolute submodule imports under `app.models.` (for example,
+    `from app.models.post import Post`)
+
+    From accepted imports, only imported names that begin with an uppercase
+    letter are treated as model classes. Names are deduplicated and returned
+    sorted alphabetically.
 
     Returns:
-        list[str]: Sorted model class names. Returns an empty list if the file
-            is missing or contains invalid Python syntax.
+        list[str]: Sorted model class names. Returns `[]` when
+            `app/models/__init__.py` is missing or contains invalid Python syntax.
 
     Examples:
         # app/models/__init__.py:
         #   from .post import Post
+        #   from .user_profile import UserProfile
         #   from app.models.comment import Comment
         #   from .helpers import format_slug
+        #   from app.controllers.users import UsersController
         #
         # model_get_registered_models()
-        # -> ['Comment', 'Post']
+        # -> ['Comment', 'Post', 'UserProfile']
     """
     models_init_file_path = os.path.join("app", "models", "__init__.py")
     try:
@@ -277,32 +301,54 @@ def model_get_registered_models() -> list[str]:
                 models.add(alias.name)
     return sorted(models)
 
-def model_make_file(model_name: str, model_init_path: str, model_file_path: str) -> tuple[bool, str]:
+def model_make_file(model_name: str) -> tuple[bool, str]:
     """
-    Create a new SQLAlchemy model file with standard boilerplate code.
+    Create and register a SQLAlchemy model file for `model_name`.
 
-    This function generates a model class file with common attributes (id, created_at, updated_at)
-    and database operations (store_in_database, delete_from_database). It also registers the model
-    in the __init__.py file by adding an import statement.
+    The function derives a snake_case slug from `model_name` using
+    `camel_to_snake` and writes the model file to:
+
+    - `app/models/{model_slug}.py`
+
+    It generates a model class named `model_name` and sets:
+
+    - `__tablename__ = pluralize(model_slug)`
+
+    It also appends a relative import to `app/models/__init__.py`:
+
+    - `from .{model_slug} import {model_name}`
 
     Args:
-        model_name (str): The name of the model class to create (example, 'User', 'Post').
-        model_init_path (str): The file path to the models __init__.py file where the import
-                               statement will be appended.
-        model_file_path (str): The file path where the new model file will be created.
+        model_name (str): Model class name (PascalCase), e.g. `"Post"` or
+            `"UserProfile"`.
 
     Returns:
-        tuple[bool, str]: A tuple containing:
-            - bool: True if the model was created successfully.
-            - str: A formatted success message with file paths and status indicators.
+        tuple[bool, str]:
+            - `True` with a success message when file creation and registration
+              both succeed.
+            - `False` with a warning if the model file already exists.
+            - `False` with a warning if `app/models/__init__.py` is missing
+              (model file may still be created).
+            - `False` with an error message for unexpected write/append failures.
+
+    Examples:
+        >>> model_make_file("Post")
+        (True, "...")
+
+        >>> model_make_file("UserProfile")
+        # Creates app/models/user_profile.py and table name 'user_profiles'
     """
+
+    model_init_path = os.path.join("app", "models", "__init__.py")
+    model_file_path = os.path.join("app", "models", f"{camel_to_snake(model_name)}.py")
     try:
+
         file_contents = [
             "from app import db",
             "from datetime import datetime, timezone",
             "",
             f"class {model_name}(db.Model):",
-            f"    __tablename__ = '{pluralize(model_name.lower())}'",
+            f"    __tablename__ = '{pluralize(camel_to_snake(model_name))}'",
             "    # Columns",
             "    id = db.Column(db.Integer, primary_key=True)",
             "    created_at = db.Column(db.DateTime(timezone=True),",
@@ -337,7 +383,7 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
             f"💣 Error: Failed to create model:\n{exception}", fg="red")
 
     try:
-        init_contents = [f"from .{model_name.lower()} import {model_name}"]
+        init_contents = [f"from .{camel_to_snake(model_name)} import {model_name}"]
         file_append_file(model_init_path, init_contents)
     except FileNotFoundError:
         message = (
@@ -364,19 +410,25 @@ def model_make_file(model_name: str, model_init_path: str, model_file_path: str)
 
 def model_model_names_to_snake_case_names(model_names:list[str]) -> list[str]:
     """
-    Convert a list of PascalCase model class names to snake_case slugs.
+    Convert model class names to snake_case names.
+
+    Each item is transformed with `camel_to_snake` and returned in the same order.
 
     Args:
-        model_names: Model class names in PascalCase, e.g. ["Post", "UserAPI"].
+        model_names (list[str]): Model class names (typically PascalCase), e.g.
+            `["Post", "UserAPI"]`.
 
     Returns:
-        A list of snake_case names in the same order, e.g. ["post", "user_api"].
+        list[str]: Snake_case names in the same order, e.g.
+            `["post", "user_api"]`.
 
     Examples:
         >>> model_model_names_to_snake_case_names(["Post", "Comment"])
         ['post', 'comment']
-        >>> model_model_names_to_snake_case_names(["RecipeCommentImage"])
-        ['recipe_comment_image']
+        >>> model_model_names_to_snake_case_names(["RecipeCommentImage", "UserAPI"])
+        ['recipe_comment_image', 'user_api']
+        >>> model_model_names_to_snake_case_names([])
+        []
     """
     return [camel_to_snake(model) for model in model_names]
 
@@ -384,6 +436,34 @@ def _finalize_child_model_name_for_routing(
         parent_models: list[str],
         remaining_segments: list[str],
         joiner: str) -> str:
+    """
+    Finalize `(parent_models, child_model)` for route-based hierarchy parsing.
+
+    Rules:
+    1. If `remaining_segments` exist, keep `parent_models` as-is and join the
+       remaining segments into `child_model` using `joiner`.
+    2. If `remaining_segments` are empty but `parent_models` is non-empty,
+       promote the last parent model to `child_model` and return the rest as
+       parents.
+    3. If both are empty, return an empty child model.
+
+    Args:
+        parent_models (list[str]): Contiguous matched model segments.
+        remaining_segments (list[str]): Unmatched tail segments.
+        joiner (str): Separator used when combining tail segments (for example,
+            `"_"` for route segments).
+
+    Returns:
+        tuple[list[str], str]: Finalized `(parent_models, child_model)`.
+
+    Examples:
+        >>> _finalize_child_model_name_for_routing(["posts"], ["shop", "images"], "_")
+        (['posts'], 'shop_images')
+        >>> _finalize_child_model_name_for_routing(["posts"], [], "_")
+        ([], 'posts')
+        >>> _finalize_child_model_name_for_routing([], [], "_")
+        ([], '')
+    """
     if remaining_segments:
         return parent_models, joiner.join(remaining_segments)
     if parent_models:
@@ -394,6 +474,35 @@ def _find_longest_running_model_segment_match_from_index(
         segments: list[str],
         registered_models: list[str],
         starting_index: int) -> tuple[str | None, int]:
+    """
+    Find the longest registered model name formed by concatenating segments
+    starting at `starting_index`.
+
+    The function incrementally joins `segments[starting_index:]` without a
+    separator and tracks the longest value present in `registered_models`.
+
+    Args:
+        segments (list[str]): PascalCase-like segments to scan.
+        registered_models (list[str]): Registered model class names.
+        starting_index (int): Index at which matching begins.
+
+    Returns:
+        tuple[str | None, int]:
+            - matched model name, or `None` when no match exists.
+            - number of consumed segments for that match (0 when no match).
+
+    Examples:
+        >>> _find_longest_running_model_segment_match_from_index(
+        ...     ["Admin", "User", "Profile", "Avatar"],
+        ...     ["User", "UserProfile"],
+        ...     1
+        ... )
+        ('UserProfile', 2)
+        >>> _find_longest_running_model_segment_match_from_index(
+        ...     ["Admin", "User"], ["Post"], 0
+        ... )
+        (None, 0)
+    """
     if starting_index < 0 or starting_index >= len(segments):
         return None, 0
 
@@ -412,6 +521,37 @@ def _find_longest_running_model_segment_match_from_index(
     return longest_running_model_segment, longest_running_match_length
 
 def _generate_nested_model_names_from_controller_name(controller_name: str) -> list[str]:
+    """
+    Generate nested model candidate names from a controller name hierarchy.
+
+    Behavior is derived from `model_generate_hierarchy_from_controller_name`:
+    - If `child_model_name` exists, return `[child_model_name]`.
+    - If no child exists and no parent models were matched, return `namespace`.
+    - If no child exists and parent models were matched, return `[]`.
+
+    Args:
+        controller_name (str): Controller class name.
+
+    Returns:
+        list[str]: Nested model name candidates.
+
+    Examples:
+        # Registered models: none
+        >>> _generate_nested_model_names_from_controller_name("PostCommentImageController")
+        ['Post', 'Comment', 'Image']
+
+        # Registered models: User
+        >>> _generate_nested_model_names_from_controller_name("AdminUserAvatarController")
+        ['Avatar']
+
+        # Registered models: User, Profile
+        >>> _generate_nested_model_names_from_controller_name("AdminUserProfileController")
+        []
+
+        # Registered models: User
+        >>> _generate_nested_model_names_from_controller_name("AdminUserProfileAvatarController")
+        ['ProfileAvatar']
+    """
     namespace, parent_models, child_model_name = \
         model_generate_hierarchy_from_controller_name(controller_name)
     if child_model_name == "":
@@ -421,6 +561,32 @@ def _generate_nested_model_names_from_controller_name(controller_name: str) -> l
     return [child_model_name]
 
 def _generate_non_nested_model_name_from_controller_name(controller_name: str) -> str:
+    """
+    Generate a single non-nested model candidate from a controller name.
+
+    Steps:
+    1. Remove a trailing `Controller` suffix when present.
+    2. Split the remaining name with `split_pascal_case`.
+    3. Singularize only the final segment.
+    4. Join segments back into PascalCase.
+
+    Args:
+        controller_name (str): Controller class name.
+
+    Returns:
+        str: Non-nested model candidate, or `""` when no PascalCase segments
+        can be parsed.
+
+    Examples:
+        >>> _generate_non_nested_model_name_from_controller_name("PostController")
+        'Post'
+        >>> _generate_non_nested_model_name_from_controller_name("PostsController")
+        'Post'
+        >>> _generate_non_nested_model_name_from_controller_name("AdminUserProfilesController")
+        'AdminUserProfile'
+         >>> _generate_non_nested_model_name_from_controller_name("Controller")
+        ''
+    """
     name_without_suffix = controller_name
     if controller_name.endswith("Controller"):
         name_without_suffix = controller_name[:-len("Controller")]
@@ -432,6 +598,41 @@ def _generate_non_nested_model_name_from_controller_name(controller_name: str) -
     return "".join(model_segments)
 
 def _split_hierarchy_from_segments(segments: list[str]) -> tuple[list[str], list[str], str]:
+    """
+    Split PascalCase segments into `namespace`, `parent_models`, and `child_model_name`.
+
+    Resolution uses registered models from `model_get_registered_models()` and
+    longest-running segment matches:
+
+    1. Consume leading non-matching segments as `namespace`.
+    2. Consume the next contiguous run of model matches as `parent_models`,
+       preferring the longest match at each step.
+    3. Join the remaining segments into `child_model_name`.
+
+    Args:
+        segments (list[str]): Parsed PascalCase segments.
+
+    Returns:
+        tuple[list[str], list[str], str]:
+            `(namespace, parent_models, child_model_name)`.
+
+    Examples:
+        # Registered models: none
+        >>> _split_hierarchy_from_segments(["Post", "Comment", "Images"])
+        (['Post', 'Comment', 'Images'], [], '')
+
+        # Registered models: User
+        >>> _split_hierarchy_from_segments(["Admin", "User", "Avatar"])
+        (['Admin'], ['User'], 'Avatar')
+
+        # Registered models: User, Profile
+        >>> _split_hierarchy_from_segments(["Admin", "User", "Profile"])
+        (['Admin'], ['User', 'Profile'], '')
+
+        # Registered models: User, UserProfile
+        >>> _split_hierarchy_from_segments(["Admin", "User", "Profile", "Avatar"])
+        (['Admin'], ['UserProfile'], 'Avatar')
+    """
     namespace: list[str] = []
     parent_models: list[str] = []
     child_model_name = ""

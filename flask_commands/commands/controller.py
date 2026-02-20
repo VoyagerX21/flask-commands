@@ -77,11 +77,11 @@ def make_controller(
                 click.echo(f"2 (nested generated model) = {nested_model_names[0]}")
                 choice = click.prompt(
                     "Enter choice:",
-                    type=click.Choice(["1", "2", "single", "nested"], case_sensitive=False),
+                    type=click.Choice(["1", "2", "flatten", "nested"], case_sensitive=False),
                     default=1,
                     show_choices=False).lower()
-                use_single = choice in ("1", "single")
-                chosen = non_nested_model_name if use_single else nested_model_names[0]
+                use_flatten = choice in ("1", "flatten")
+                chosen = non_nested_model_name if use_flatten else nested_model_names[0]
                 model_names = [chosen]
             # If parent_models are empty and nested_model_names is not then
             # then _generate_nested_model_names_from_controller_name
@@ -90,15 +90,15 @@ def make_controller(
                 click.echo(
                     "Detected multiple child like segments:\n" +
                     ", ".join(nested_model_names))
-                click.echo(f"1 (single resource model)  = {non_nested_model_name}")
+                click.echo(f"1 (flatten resource model)  = {non_nested_model_name}")
                 click.echo(f"2 (generate the folowing models) = {', '.join(nested_model_names)}")
                 choice = click.prompt(
                     "Enter choice:",
-                    type=click.Choice(["1", "2", "single", "nested"], case_sensitive=False),
+                    type=click.Choice(["1", "2", "flatten", "nested"], case_sensitive=False),
                     default=1,
                     show_choices=False).lower()
-                use_single = choice in ("1", "single")
-                model_names = [non_nested_model_name] if use_single else nested_model_names
+                use_flatten = choice in ("1", "flatten")
+                model_names = [non_nested_model_name] if use_flatten else nested_model_names
         else:
             model_names = [non_nested_model_name]
         generated_models = click.style(', '.join(model_names), bold=True)
@@ -107,10 +107,7 @@ def make_controller(
     # If a model_name was provided or inferred
     if model_names:
         for model_name in model_names:
-            model_init_path = os.path.join("app", "models", "__init__.py")
-            model_file_path = os.path.join("app", "models", f"{model_name.lower()}.py")
-            is_successful, message = model_make_file(
-                model_name, model_init_path, model_file_path)
+            is_successful, message = model_make_file(model_name)
             click.echo(message)
             all_successful = all_successful and is_successful
 

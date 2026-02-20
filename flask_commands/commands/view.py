@@ -7,6 +7,7 @@ from flask_commands.utils.models import (
     model_make_file
 )
 from flask_commands.utils.files import file_is_project_root
+from flask_commands.utils.naming import camel_to_snake
 from flask_commands.utils.routes import route_generate_route_name_with_model_prompt
 from flask_commands.utils.scaffold import (
     normalize_dotted_path_with_action,
@@ -108,10 +109,7 @@ def make_view(
 
     # If a model_name was provided or inferred
     if model_name:
-        model_init_path = os.path.join("app", "models", "__init__.py")
-        model_file_path = os.path.join("app", "models", f"{model_name.lower()}.py")
-        is_successful, message = model_make_file(
-            model_name, model_init_path, model_file_path)
+        is_successful, message = model_make_file(model_name)
         click.echo(message)
         all_successful = all_successful and is_successful
 
@@ -122,10 +120,7 @@ def make_view(
                 dotted_path_with_action, allow_model_prompt)
         click.secho(f"💡 Info: Generated route {click.style(route_name, bold=True)}\n", fg="cyan")
         if new_model_name:
-            model_init_path = os.path.join("app", "models", "__init__.py")
-            model_file_path = os.path.join("app", "models", f"{new_model_name.lower()}.py")
-            is_successful, message = model_make_file(
-                new_model_name, model_init_path, model_file_path)
+            is_successful, message = model_make_file(new_model_name)
             click.echo(message)
             all_successful = all_successful and is_successful
 
