@@ -111,105 +111,105 @@ def test_make_model_component_one(project):
     init_contents = init_file_path.read_text(encoding="utf-8")
     assert "from .post import Post" in init_contents
 
-# def test_make_model_with_crud(project):
-    # runner = CliRunner()
-    # result = runner.invoke(make_model, ["Comment", "--crud"])
+def test_make_model_with_crud(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["Comment", "--crud"])
 
-    # assert result.exit_code == 0
+    assert result.exit_code == 0
 
-    #     # File comment_controller should exist
-    # comment_controller_file_path = project / "app" / "controllers" / "comment_controller.py"
-    # assert comment_controller_file_path.exists()
+        # File comment_controller should exist
+    comment_controller_file_path = project / "app" / "controllers" / "comment_controller.py"
+    assert comment_controller_file_path.exists()
 
-    # # Check the contents of the new controller file
-    # expected_contents = (
-    #     "from flask import render_template\n"
-    #     "from flask import redirect, url_for\n"
-    #     "\n"
-    #     "class CommentController:\n"
-    #     "    @staticmethod\n"
-    #     "    def index() -> str:\n"
-    #     "        return render_template('comments/index.html')\n"
-    #     "\n"
-    #     "    @staticmethod\n"
-    #     "    def show(comment_id: int) -> str:\n"
-    #     "        return render_template('comments/show.html')\n"
-    #     "\n"
-    #     "    @staticmethod\n"
-    #     "    def create() -> str:\n"
-    #     "        return render_template('comments/create.html')\n"
-    #     "\n"
-    #     "    @staticmethod\n"
-    #     "    def store() -> str:\n"
-    #     "        return redirect(url_for('comments.index'))\n"
-    #     "\n"
-    #     "    @staticmethod\n"
-    #     "    def edit(comment_id: int) -> str:\n"
-    #     "        return render_template('comments/edit.html')\n"
-    #     "\n"
-    #     "    @staticmethod\n"
-    #     "    def update(comment_id: int) -> str:\n"
-    #     "        return redirect(url_for('comments.index'))\n"
-    #     "\n"
-    #     "    @staticmethod\n"
-    #     "    def destroy(comment_id: int) -> str:\n"
-    #     "        return redirect(url_for('comments.index'))"
-    # )
-    # assert comment_controller_file_path.read_text(encoding="utf-8") == expected_contents
+    # Check the contents of the new controller file
+    expected_contents = (
+        "from flask import render_template\n"
+        "from flask import redirect, url_for\n"
+        "\n"
+        "class CommentController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('comments/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def show(comment_id: int) -> str:\n"
+        "        return render_template('comments/show.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def create() -> str:\n"
+        "        return render_template('comments/create.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def store() -> str:\n"
+        "        return redirect(url_for('comments.index'))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def edit(comment_id: int) -> str:\n"
+        "        return render_template('comments/edit.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def update(comment_id: int) -> str:\n"
+        "        return redirect(url_for('comments.index'))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def destroy(comment_id: int) -> str:\n"
+        "        return redirect(url_for('comments.index'))"
+    )
+    assert comment_controller_file_path.read_text(encoding="utf-8") == expected_contents
 
 
-    # # Check the contents of the new routes
-    # routes_comments_directory_path = project / "app" / "routes" / "comments"
-    # assert routes_comments_directory_path.exists()
+    # Check the contents of the new routes
+    routes_comments_directory_path = project / "app" / "routes" / "comments"
+    assert routes_comments_directory_path.exists()
 
-    # routes_comments_init_file_path = routes_comments_directory_path / "__init__.py"
-    # assert routes_comments_init_file_path.exists()
+    routes_comments_init_file_path = routes_comments_directory_path / "__init__.py"
+    assert routes_comments_init_file_path.exists()
 
-    # routes_comments_route_file_path = routes_comments_directory_path / "routes.py"
-    # assert routes_comments_route_file_path.exists()
-    # expected_contents = (
-    #     "from app.controllers import CommentController\n"
-    #     "from app.routes.comments import bp\n"
-    #     "\n"
-    #     "@bp.route('/comments', methods=['GET'])\n"
-    #     "def index():\n"
-    #     "    return CommentController.index()\n"
-    #     "\n"
-    #     "@bp.route('/comments/<int:comment_id>', methods=['GET'])\n"
-    #     "def show(comment_id: int):\n"
-    #     "    return CommentController.show(comment_id)\n"
-    #     "\n"
-    #     "@bp.route('/comments/create', methods=['GET'])\n"
-    #     "def create():\n"
-    #     "    return CommentController.create()\n"
-    #     "\n"
-    #     "@bp.route('/comments', methods=['POST'])\n"
-    #     "def store():\n"
-    #     "    return CommentController.store()\n"
-    #     "\n"
-    #     "@bp.route('/comments/<int:comment_id>/edit', methods=['GET'])\n"
-    #     "def edit(comment_id: int):\n"
-    #     "    return CommentController.edit(comment_id)\n"
-    #     "\n"
-    #     "@bp.route('/comments/<int:comment_id>', methods=['POST'])\n"
-    #     "def update(comment_id: int):\n"
-    #     "    return CommentController.update(comment_id)\n"
-    #     "\n"
-    #     "@bp.route('/comments/<int:comment_id>/delete', methods=['POST'])\n"
-    #     "def destroy(comment_id: int):\n"
-    #     "    return CommentController.destroy(comment_id)\n"
-    # )
-    # assert routes_comments_route_file_path.read_text(encoding="utf-8") == expected_contents
+    routes_comments_route_file_path = routes_comments_directory_path / "routes.py"
+    assert routes_comments_route_file_path.exists()
+    expected_contents = (
+        "from app.controllers import CommentController\n"
+        "from app.routes.comments import bp\n"
+        "\n"
+        "@bp.route('/comments', methods=['GET'])\n"
+        "def index():\n"
+        "    return CommentController.index()\n"
+        "\n"
+        "@bp.route('/comments/<int:comment_id>', methods=['GET'])\n"
+        "def show(comment_id: int):\n"
+        "    return CommentController.show(comment_id)\n"
+        "\n"
+        "@bp.route('/comments/create', methods=['GET'])\n"
+        "def create():\n"
+        "    return CommentController.create()\n"
+        "\n"
+        "@bp.route('/comments', methods=['POST'])\n"
+        "def store():\n"
+        "    return CommentController.store()\n"
+        "\n"
+        "@bp.route('/comments/<int:comment_id>/edit', methods=['GET'])\n"
+        "def edit(comment_id: int):\n"
+        "    return CommentController.edit(comment_id)\n"
+        "\n"
+        "@bp.route('/comments/<int:comment_id>', methods=['POST'])\n"
+        "def update(comment_id: int):\n"
+        "    return CommentController.update(comment_id)\n"
+        "\n"
+        "@bp.route('/comments/<int:comment_id>/delete', methods=['POST'])\n"
+        "def destroy(comment_id: int):\n"
+        "    return CommentController.destroy(comment_id)\n"
+    )
+    assert routes_comments_route_file_path.read_text(encoding="utf-8") == expected_contents
 
-    # # Check the contents of the new templates
-    # create_template_file_path = project / "app" / "templates" / "comments" / "create.html"
-    # assert create_template_file_path.exists()
-    # edit_template_file_path = project / "app" / "templates" / "comments" / "edit.html"
-    # assert edit_template_file_path.exists()
-    # index_template_file_path = project / "app" / "templates" / "comments" / "index.html"
-    # assert index_template_file_path.exists()
-    # show_template_file_path = project / "app" / "templates" / "comments" / "show.html"
-    # assert show_template_file_path.exists()
+    # Check the contents of the new templates
+    create_template_file_path = project / "app" / "templates" / "comments" / "create.html"
+    assert create_template_file_path.exists()
+    edit_template_file_path = project / "app" / "templates" / "comments" / "edit.html"
+    assert edit_template_file_path.exists()
+    index_template_file_path = project / "app" / "templates" / "comments" / "index.html"
+    assert index_template_file_path.exists()
+    show_template_file_path = project / "app" / "templates" / "comments" / "show.html"
+    assert show_template_file_path.exists()
 
 def test_make_model_warns_when_init_missing(project):
     model_init_path = project / "app" / "models" / "__init__.py"
@@ -220,3 +220,13 @@ def test_make_model_warns_when_init_missing(project):
 
     assert result.exit_code == 0
     assert "Warning: One or more make model steps produced a warning or failure." in result.output
+
+def test_make_model_not_in_project_root(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(make_model, ["Post"])
+
+    assert result.exit_code == 0
+    assert "Warning: You are not currently in a Flask project root directory" in result.output
+    assert not (tmp_path / "app" / "models" / "post.py").exists()

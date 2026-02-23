@@ -2,7 +2,6 @@ import re
 import os
 import click
 from dataclasses import dataclass
-from enum import StrEnum
 from flask_commands.utils.models import (
     model_get_registered_models,
     model_model_names_to_snake_case_names)
@@ -155,11 +154,11 @@ def route_generate_parameter_reference(parameters: list[str]) -> str:
         f"{parameter}={parameter}" for parameter in parameters)
 
 def route_generate_route_name(
-        relative_path: str,
-        action: str,
-        is_restful: bool,
-        relative_path_segments: list[str],
-        relative_path_segment_models: list[str]
+    relative_path: str,
+    action: str,
+    is_restful: bool,
+    relative_path_segments: list[str],
+    relative_path_segment_models: list[str]
 ) -> str:
     """
     Build a nested Flask route path using model-aware IDs and RESTful rules.

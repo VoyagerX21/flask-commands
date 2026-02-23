@@ -1,7 +1,11 @@
-from calendar import c
 import os
 import re
 import click
+from enum import StrEnum
+from dataclasses import dataclass
+
+from flask_commands.utils.models import model_generate_hierarchy_from_controller_name
+from flask_commands.utils.scaffold import filter_falsy
 
 from .files import (
     file_append_file,
@@ -20,10 +24,13 @@ def controller_add_method(
         controller_name: str,
         route_name: str | None = None) -> tuple[bool, str]:
     """
-    Adds a static method to an existing controller class.  Ensures the
-    required Flask imports exist, inserts the method into the class, and
-    returns a (success, message) tuple.  If the method or class is missing,
-    no changes are made and a warning is returned.
+    Add a static method to an existing controller class.
+
+    Ensures needed Flask imports exist (`render_template` for GET-style actions,
+    `redirect, url_for` for POST-style actions), inserts the method into the target
+    controller class, and returns a `(success, message)` tuple. If the method
+    already exists or the class cannot be found, no file changes are made and a
+    warning is returned.
     """
     try:
         controller_file_path = os.path.join(
@@ -144,56 +151,101 @@ def controller_add_method(
 
 def controller_generate_controller_name_from_relative_path(relative_path: str) -> str:
     """
-    Build a controller class name from a slash-delimited relative path by
-    singularizing each segment and appending "Controller".
+    Build a controller class name from a slash-delimited relative path.
+
+    Each path segment is singularized, converted to TitleCase, and stripped of
+    underscores, then all segments are concatenated with a trailing
+    ``"Controller"``.
 
     Args:
-        relative_path (str): Slash-delimited path (e.g., "posts/comments").
+        relative_path (str): Slash-delimited path (for example,
+            ``"posts/comments"`` or ``"admin/users/user_profiles"``).
 
     Returns:
-        str: The generated controller class name.
+        str: Generated controller class name.
 
     Examples:
         >>> controller_generate_controller_name_from_relative_path("posts/comments/images")
         'PostCommentImageController'
         >>> controller_generate_controller_name_from_relative_path("user_profiles")
         'UserProfileController'
+        >>> controller_generate_controller_name_from_relative_path("admin/users/user_profiles")
+        'AdminUserUserProfileController'
+        >>> controller_generate_controller_name_from_relative_path("")
+        'Controller'
     """
     return ''.join([singularize(part).title().replace('_', '')
                     for part in relative_path.split('/')]) + "Controller"
 
 def controller_generate_relative_path_from_controller_name(controller_name: str) -> str:
     """
-    Return a pluralized relative path derived from a controller class name.
-    The "Controller" suffix is optional.
+    Generate a slash-delimited relative path from a controller class name.
+
+    This function derives hierarchy segments using
+    ``model_generate_hierarchy_from_controller_name``, then converts each
+    non-empty segment from PascalCase to snake_case, pluralizes it, and joins
+    the result with ``/``.
 
     Args:
-        controller_name (str): Controller class name with or without "Controller".
+        controller_name (str): Controller class name (for example,
+            ``"PostCommentController"`` or ``"AdminUserProfileController"``).
 
     Returns:
-        str: Slash-delimited relative path.
+        str: Relative path (for example, ``"posts/comments"``). Returns ``""``
+        when no segments can be derived.
 
     Examples:
-        >>> controller_generate_relative_path_from_controller_name("PostCommentImageController")
-        'posts/comments/images'
-        >>> controller_generate_relative_path_from_controller_name("UserProfile")
-        'users/profiles'
+        # Registered models: Post
+        >>> controller_generate_relative_path_from_controller_name("PostController")
+        'posts'
+
+        # Registered models: Post, Comment
+        >>> controller_generate_relative_path_from_controller_name("PostCommentController")
+        'posts/comments'
+
+        # Registered models: User, UserProfile   (multi-word model)
+        >>> controller_generate_relative_path_from_controller_name("AdminUserProfileAvatarController")
+        'admins/user_profiles/avatars'
+
+        # Registered models: User
+        >>> controller_generate_relative_path_from_controller_name("UserAPIController")
+        'users/apis'
+
+    Note:
+        Output depends on registered models  in ``app/models/__init__.py``
+        because hierarchy detection is model-aware.
     """
-    name_without_suffix = controller_name
-    if controller_name.endswith("Controller"):
-        name_without_suffix = controller_name[:-len("Controller")]
-    parts = camel_to_snake(name_without_suffix).split('_')
-    return '/'.join(list(map(lambda part: pluralize(part), parts)))
+    namespace, parent_models, child_model_name = \
+        model_generate_hierarchy_from_controller_name(controller_name)
+    segments = namespace + parent_models + [child_model_name]
+    return '/'.join(pluralize(camel_to_snake(segment))
+                    for segment in filter_falsy(segments))
 
 def controller_make_file(
         relative_path: str | None,
         action: str | None, # method_name
         controller_name: str,
         route_name: str | None = None) -> tuple[bool, str]:
-    """Creates a new controller file and optionally adds an initial method.
-    Registers the controller in app/controllers/__init__.py and returns a
-    (success, message) tuple.  Returns warnings for existing controllers or
-    missing __init__.py.
+    """Create a new controller file and optionally scaffold one initial method.
+
+    When `action` is provided, `relative_path` must also be provided (and vice versa).
+    With no `action`, the generated class body is `pass`. With an `action`, this
+    function adds a `@staticmethod` method and required Flask imports:
+    `render_template` for GET-style actions, or `redirect, url_for` for POST-style
+    actions (`store`, `update`, `destroy`, `delete`). If `route_name` is provided,
+    typed parameters are parsed and included in the generated method signature.
+
+    After creating `app/controllers/<controller_file>.py`, the function attempts to
+    append the controller import to `app/controllers/__init__.py`.
+
+    Returns:
+        tuple[bool, str]: `(is_successful, message)` where messages are styled for
+        success/warning/error cases. Returns `False` for validation failures, existing
+        controller file, controller registration failures, or unexpected exceptions.
+
+    Note:
+        If `__init__.py` is missing, the controller file may still be created even
+        though the function returns `False` with a warning.
     """
     if action and relative_path is None:
         return False, click.style("💣 Error: relative_path required when action present", fg="red")

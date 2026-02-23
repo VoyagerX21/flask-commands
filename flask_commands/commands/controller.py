@@ -9,10 +9,13 @@ from flask_commands.utils.files import file_is_project_root
 from flask_commands.utils.models import (
     model_generate_hierarchy_from_controller_name,
     model_generate_model_name_from_controller_name,
-    model_make_file
+    model_generate_model_name_from_dotted_path_with_action,
+    model_get_registered_models,
+    model_make_file,
+    model_model_names_to_snake_case_names
 )
-from flask_commands.utils.naming import camel_to_snake
-from flask_commands.utils.routes import route_generate_route_name
+from flask_commands.utils.naming import camel_to_snake, singularize
+from flask_commands.utils.routes import route_generate_route_name, route_generate_route_name_with_model_prompt
 from flask_commands.utils.wirings import wire_controller_route_view
 
 
@@ -73,14 +76,15 @@ def make_controller(
                 click.echo(
                     "Detected nested models:\n" + " -> ".join(parent_models)
                 )
-                click.echo(f"1 (flatten resource model)  = {non_nested_model_name}")
-                click.echo(f"2 (nested generated model) = {nested_model_names[0]}")
+                click.echo(f"  1) (flatten resource model) = {non_nested_model_name}")
+                click.echo(f"  2) (nested generated model) = {nested_model_names[0]}")
                 choice = click.prompt(
-                    "Enter choice:",
+                    "Choose model structure (1/2, flatten/nested):",
                     type=click.Choice(["1", "2", "flatten", "nested"], case_sensitive=False),
-                    default=1,
-                    show_choices=False).lower()
-                use_flatten = choice in ("1", "flatten")
+                    default="1",
+                    show_choices=False,
+                    show_default=True).lower()
+                use_flatten = choice in ["1", "flatten"]
                 chosen = non_nested_model_name if use_flatten else nested_model_names[0]
                 model_names = [chosen]
             # If parent_models are empty and nested_model_names is not then
@@ -111,14 +115,45 @@ def make_controller(
             click.echo(message)
             all_successful = all_successful and is_successful
 
-
-
     if crud:
         restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
         relative_path = controller_generate_relative_path_from_controller_name(controller_name)
+        relative_path_segments = [
+            segment for segment in relative_path.split("/") if segment]
+
+        registered_models = model_get_registered_models()
+        registered_snake_models = model_model_names_to_snake_case_names(
+            registered_models)
+
+        if relative_path_segments:
+            relative_path_last_segment = relative_path_segments[-1]
+            is_last_segment_a_model = \
+                relative_path_last_segment in registered_snake_models
+
+            if not is_last_segment_a_model:
+                inferred_model_name = model_generate_model_name_from_dotted_path_with_action(
+                    f"{relative_path.replace('/', '.')}.index"
+                )
+                is_successful, message = model_make_file(inferred_model_name)
+                click.echo(message)
+                all_successful = all_successful and is_successful
+
+                registered_models = model_get_registered_models()
+                registered_snake_models = model_model_names_to_snake_case_names(
+                    registered_models)
+
+        relative_path_segment_models = [
+            segment for segment in relative_path_segments
+            if singularize(segment) in registered_snake_models]
+
         for action in restful_actions:
-            dotted_path_with_action = f"{relative_path.replace('/', '.')}.{action}"
-            route_name = route_generate_route_name(dotted_path_with_action)
+            route_name = route_generate_route_name(
+                relative_path=relative_path,
+                action=action,
+                is_restful=True,
+                relative_path_segments=relative_path_segments,
+                relative_path_segment_models=relative_path_segment_models
+            )
 
             is_successful, messages = wire_controller_route_view(
                 relative_path,
