@@ -82,7 +82,7 @@ def model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_actio
     3. Remaining segments are folded into a single `child_model` joined with `_`.
     If no remainder exists, the child model may be promoted from the parent chain
     by `_finalize_child_model_name_for_routing`, or end up empty when nothing can
-    be inferred.
+    be generated.
 
     Model matching is done in snake_case against registered models from
     `app/models/__init__.py`, with each path segment singularized before comparison.
@@ -146,6 +146,59 @@ def model_generate_hierarchy_from_dotted_path_with_action(dotted_path_with_actio
 
     return namespace, parent_models, child_model
 
+def model_generate_hierarchy_from_model_name(model_name: str) -> tuple[list[str], list[str], str]:
+    """
+    Split a model class name into `namespace`, `parent_models`, and `child_model_name`.
+
+    The function parses `model_name` with `split_pascal_case`, then resolves the
+    segments against registered model class names from `app/models/__init__.py`
+    via `_split_hierarchy_from_segments`.
+
+    Resolution rules:
+    1. Leading unmatched segments are collected as `namespace`.
+    2. A contiguous run of matched model segments is collected as `parent_models`,
+    choosing the longest joined model match at each position.
+    3. Remaining segments are joined into `child_model_name` (PascalCase).
+
+    Edge cases:
+    - If `model_name` yields no PascalCase segments, returns `([], [], "")`.
+    - If no model match is found, all segments become `namespace` and
+    `child_model_name` is `""`.
+    - If no models are registered, all parsed segments are treated as `namespace`.
+
+    Args:
+        model_name (str): Model class name, e.g. `"AdminUserProfileAvatar"`.
+
+    Returns:
+        tuple[list[str], list[str], str]:
+            `(namespace, parent_models, child_model_name)`.
+
+    Examples:
+        >>> model_generate_hierarchy_from_model_name("")
+        ([], [], '')
+
+        # No registered models
+        >>> model_generate_hierarchy_from_model_name("PostCommentImages")
+        (['Post', 'Comment', 'Images'], [], '')
+
+        # Registered models: User
+        >>> model_generate_hierarchy_from_model_name("AdminUserAvatar")
+        (['Admin'], ['User'], 'Avatar')
+
+        # Registered models: User, Profile
+        >>> model_generate_hierarchy_from_model_name("AdminUserProfile")
+        (['Admin'], ['User', 'Profile'], '')
+
+        # Registered models: User, UserProfile
+        >>> model_generate_hierarchy_from_model_name("AdminUserProfileAvatar")
+        (['Admin'], ['UserProfile'], 'Avatar')
+    """
+    model_segments = split_pascal_case(model_name)
+    if not model_segments:
+        return [], [], ""
+
+    return _split_hierarchy_from_segments(model_segments)
+
 def model_generate_model_name_from_controller_name(controller_name: str) -> tuple[str, list[str]]:
     """
     Generate model name candidates from a controller class name.
@@ -203,7 +256,7 @@ def model_generate_model_name_from_controller_name(controller_name: str) -> tupl
 
 def model_generate_model_name_from_dotted_path_with_action(dotted_path_with_action: str) -> str:
     """
-    Infer a model class name from a dotted path that may include an action.
+    Generate a model class name from a dotted path that may include an action.
 
     The input is split into `(relative_path, action)` using
     `split_dotted_path_with_action_into_relative_path_and_action`, where `action`
@@ -220,7 +273,7 @@ def model_generate_model_name_from_dotted_path_with_action(dotted_path_with_acti
             `"admin.user_profiles.show"`, or `"posts"`.
 
     Returns:
-        str: Inferred model class name in PascalCase.
+        str: Generated model class name in PascalCase.
 
     Examples:
         >>> model_generate_model_name_from_dotted_path_with_action("posts.index")
@@ -247,6 +300,59 @@ def model_generate_model_name_from_dotted_path_with_action(dotted_path_with_acti
         signularized_segment = singularize(action).title()
 
     return "".join([part.title() for part in signularized_segment.split("_") if part])
+
+def model_generate_model_name_from_model_name(model_name: str) -> tuple[str, list[str]]:
+    """
+    Generate model name candidates from a model class name.
+
+    This function returns two values:
+    1. `non_nested_model_name`: a direct PascalCase model candidate.
+    2. `nested_model_names`: hierarchy-derived nested candidate(s).
+
+    `non_nested_model_name` is computed by:
+    - splitting `model_name` with `split_pascal_case`,
+    - singularizing only the final segment,
+    - joining segments back into PascalCase.
+    If no PascalCase segments are found, it returns `""`.
+
+    `nested_model_names` is computed as follows:
+    - Call `_generate_nested_model_names_from_model_name(model_name)`.
+    - That helper first obtains `namespace`, `parent_models`, and `child_model_name`
+      from `model_generate_hierarchy_from_model_name(model_name)`.
+    - If `child_model_name == ""` and `parent_models == []`, return `namespace`.
+    - If `child_model_name == ""` and `parent_models != []`, return `[]`.
+    - Otherwise, return `[child_model_name]`.
+
+    Args:
+        model_name (str): Model class name to parse, e.g.
+            `"Posts"` or `"AdminUserAvatar"`.
+
+    Returns:
+        tuple[str, list[str]]: `(non_nested_model_name, nested_model_names)`.
+
+    Examples:
+        # No registered models
+        >>> model_generate_model_name_from_model_name("PostCommentImages")
+        ('PostCommentImage', ['Post', 'Comment', 'Images'])
+        >>> model_generate_model_name_from_model_name("Posts")
+        ('Post', ['Posts'])
+        >>> model_generate_model_name_from_model_name("")
+        ('', [])
+
+        # Registered models include: User
+        >>> model_generate_model_name_from_model_name("AdminUserAvatar")
+        ('AdminUserAvatar', ['Avatar'])
+
+        # Registered models include: User, Profile
+        >>> model_generate_model_name_from_model_name("AdminUserProfile")
+        ('AdminUserProfile', [])
+    """
+    non_nested_model_name = \
+        _generate_non_nested_model_name_from_model_name(model_name)
+    nested_model_names = \
+        _generate_nested_model_names_from_model_name(model_name)
+
+    return non_nested_model_name, nested_model_names
 
 def model_get_registered_models() -> list[str]:
     """
@@ -560,6 +666,46 @@ def _generate_nested_model_names_from_controller_name(controller_name: str) -> l
         return []
     return [child_model_name]
 
+def _generate_nested_model_names_from_model_name(model_name: str) -> list[str]:
+    """
+    Generate nested model candidate names from a model name hierarchy.
+
+    Behavior is derived from `model_generate_hierarchy_from_model_name`:
+    - If `child_model_name` exists, return `[child_model_name]`.
+    - If no child exists and no parent models were matched, return `namespace`.
+    - If no child exists and parent models were matched, return `[]`.
+
+    Args:
+        model_name (str): Model class name.
+
+    Returns:
+        list[str]: Nested model name candidates.
+
+    Examples:
+        # Registered models: none
+        >>> _generate_nested_model_names_from_model_name("PostCommentImages")
+        ['Post', 'Comment', 'Images']
+
+        # Registered models: User
+        >>> _generate_nested_model_names_from_model_name("AdminUserAvatar")
+        ['Avatar']
+
+        # Registered models: User, Profile
+        >>> _generate_nested_model_names_from_model_name("AdminUserProfile")
+        []
+
+        # Registered models: User
+        >>> _generate_nested_model_names_from_model_name("AdminUserProfileAvatar")
+        ['ProfileAvatar']
+    """
+    namespace, parent_models, child_model_name = \
+        model_generate_hierarchy_from_model_name(model_name)
+    if child_model_name == "":
+        if parent_models == []:
+            return namespace
+        return []
+    return [child_model_name]
+
 def _generate_non_nested_model_name_from_controller_name(controller_name: str) -> str:
     """
     Generate a single non-nested model candidate from a controller name.
@@ -591,6 +737,39 @@ def _generate_non_nested_model_name_from_controller_name(controller_name: str) -
     if controller_name.endswith("Controller"):
         name_without_suffix = controller_name[:-len("Controller")]
     model_segments = split_pascal_case(name_without_suffix)
+    if not model_segments:
+        return ""
+
+    model_segments[-1] = singularize(model_segments[-1]).title()
+    return "".join(model_segments)
+
+def _generate_non_nested_model_name_from_model_name(model_name: str) ->str:
+    """
+    Generate a single non-nested model candidate from a model name.
+
+    Steps:
+    1. Split `model_name` with `split_pascal_case`.
+    2. Singularize only the final segment.
+    3. Join segments back into PascalCase.
+
+    Args:
+        model_name (str): Model class name.
+
+    Returns:
+        str: Non-nested model candidate, or `""` when no PascalCase segments
+        can be parsed.
+
+    Examples:
+        >>> _generate_non_nested_model_name_from_model_name("Post")
+        'Post'
+        >>> _generate_non_nested_model_name_from_model_name("Posts")
+        'Post'
+        >>> _generate_non_nested_model_name_from_model_name("AdminUserProfiles")
+        'AdminUserProfile'
+        >>> _generate_non_nested_model_name_from_model_name("")
+        ''
+    """
+    model_segments = split_pascal_case(model_name)
     if not model_segments:
         return ""
 

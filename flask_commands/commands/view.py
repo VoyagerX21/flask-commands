@@ -18,17 +18,17 @@ from flask_commands.utils.wirings import wire_controller_route_view
 @click.command(name="make:view")
 @click.argument("dotted_path_with_action")
 @click.option("--controller", "controller_name", default=None,
-              help="Optional controller class name (example PostController).")
+              help="Use this controller class (for example: PostController).")
 @click.option("-c", "--generate-controller", is_flag=True,
-              help="Optional controller flag to generate an inferred controller from the dotted path name.")
+              help="Generate controller name from the dotted path (ignored if --controller is set)")
 @click.option("--route", "route_name", default=None,
-              help="Optional route class name (example /posts).")
+              help="Use this route path (for example: /posts or /posts/<int:post_id>)..")
 @click.option("-r", "--generate-route", is_flag=True,
-              help="Optional route flag to generate an inferred route from the dotted path name.")
+              help="Generate route from the dotted path (ignored if --route is set). May prompt to create a missing model.")
 @click.option("--model", "model_name", default=None,
-              help="Optional model name (example Post which makes the database table 'posts').")
+              help="Use/create this model name (for example: Post which makes the database table 'posts').")
 @click.option("-m", "--generate-model", is_flag=True,
-              help="Optional model flag to generate an inferred model from the dotted path name.")
+              help="Generate and create model from the dotted path (ignored if --model is set).")
 def make_view(
     dotted_path_with_action: str,
     controller_name: str | None,
@@ -38,43 +38,10 @@ def make_view(
     model_name: str | None,
     generate_model: bool) -> None:
     """
-    \b
-    Create a template view file under app/templates/<folder>/<name>.html.
-    You can also optionally connect this view to a controller, route, and model.
-    \b
-    ─── Understanding DOTTED_PATH_WITH_NAME ───
-    The dotted path defines the folder and file name:
-        <folder>.<name> → app/templates/<folder>/<name>.html
-        Example: posts.index → app/templates/posts/index.html
-    \b
-    You can also nest folders for relationships:
-        admin.users.index → app/templates/admin/users/index.html
-        posts.images.index → app/templates/posts/images/index.html
-    \b
-    ─── Simple Component Views ───
-    For standalone components like a button:
-        flask make:view button
-    \b
-    ─── CRUD Views ───
-    For RESTful actions (index, show, create, store, edit, update, destroy/delete):
-    Initial CRUD setup (controller, route, and model):
-        flask make:view posts.index -crm
-        flask make:view posts.index --controller PostController --route /posts --model Post
-    \b
-    Additional CRUD actions (e.g., show):
-        flask make:view posts.show -cr
-        flask make:view posts.show --controller PostController --route /posts/<int:post_id>
-    \b
-    ─── Flags ───
-    Optional flags can be combined as seen above:
-        -c / --generate-controller    generate inferred controller
-        -r / --generate-route         generate inferred route
-        -m / --generate-model         generate inferred model
-    \b
-    If you prefer explicit control:
-        --controller CONTROLLER_NAME  set a specific controller
-        --route ROUTE_NAME            set a specific route
-        --model MODEL_NAME            set a specific model
+    Create a view template and optionally wire controller, route, and model.
+
+    `dotted_path_with_action` maps to `app/templates/...` (for example, `posts.index`).
+    Use `-c/-r/-m` to generate controller/route/model, or provide `--controller`, `--route`, and `--model`.
     """
     if not file_is_project_root():
         return
@@ -91,7 +58,7 @@ def make_view(
         split_dotted_path_with_action_into_relative_path_and_action(
             dotted_path_with_action)
 
-    # 1) Infer controller name if not provided
+    # 1) Generate controller name if not provided
     if generate_controller and controller_name is None:
         if relative_path != '':
             controller_name = controller_generate_controller_name_from_relative_path(relative_path)
@@ -99,7 +66,7 @@ def make_view(
         else:
             controller_name = 'MainController'
 
-    # Infer model name if not provided
+    # Generate model name if not provided
     if generate_model and model_name is None:
         model_name = \
             model_generate_model_name_from_dotted_path_with_action(dotted_path_with_action)
@@ -107,13 +74,13 @@ def make_view(
 
     allow_model_prompt = not bool(model_name)
 
-    # If a model_name was provided or inferred
+    # If a model_name was provided or generated
     if model_name:
         is_successful, message = model_make_file(model_name)
         click.echo(message)
         all_successful = all_successful and is_successful
 
-    # Infer route name if not provided
+    # Generate route name if not provided
     if generate_route and route_name is None:
         route_name, new_model_name = \
             route_generate_route_name_with_model_prompt(

@@ -3,7 +3,9 @@ import pytest
 from pathlib import Path
 from flask_commands.utils.models import (
     model_generate_hierarchy_from_controller_name,
+    model_generate_hierarchy_from_model_name,
     model_generate_model_name_from_dotted_path_with_action,
+    model_generate_model_name_from_model_name,
     model_get_registered_models,
     model_generate_model_name_from_controller_name,
     model_make_file,
@@ -212,6 +214,64 @@ def test_model_generate_hierarchy_from_dotted_path_with_action_with_underscore(t
     assert parents == ["users"]
     assert child == "user_profile"
 
+def test_model_generate_hierarchy_from_model_name_empty_returns_empty(model_project):
+    namespace, parents, child = model_generate_hierarchy_from_model_name("")
+
+    assert namespace == []
+    assert parents == []
+    assert child == ""
+
+def test_model_generate_hierarchy_from_model_name_no_registered_models(model_project):
+    namespace, parents, child = model_generate_hierarchy_from_model_name("PostCommentImages")
+
+    assert namespace == ["Post", "Comment", "Images"]
+    assert parents == []
+    assert child == ""
+
+def test_model_generate_hierarchy_from_model_name_namespace_parent_child(model_project):
+    (model_project / "app" / "models" / "__init__.py")\
+        .write_text("from .user import User\n")
+
+    namespace, parents, child = model_generate_hierarchy_from_model_name("AdminUserAvatar")
+
+    assert namespace == ["Admin"]
+    assert parents == ["User"]
+    assert child == "Avatar"
+
+def test_model_generate_hierarchy_from_model_name_contiguous_parent_models(model_project):
+    (model_project / "app" / "models" / "__init__.py")\
+        .write_text(
+            "from .user import User\n"
+            "from .profile import Profile\n")
+
+    namespace, parents, child = model_generate_hierarchy_from_model_name("AdminUserProfile")
+
+    assert namespace == ["Admin"]
+    assert parents == ["User", "Profile"]
+    assert child == ""
+
+def test_model_generate_hierarchy_from_model_name_prefers_longest_model_match(model_project):
+    (model_project / "app" / "models" / "__init__.py")\
+        .write_text(
+            "from .user import User\n"
+            "from .user_profile import UserProfile\n")
+
+    namespace, parents, child = model_generate_hierarchy_from_model_name("AdminUserProfileAvatar")
+
+    assert namespace == ["Admin"]
+    assert parents == ["UserProfile"]
+    assert child == "Avatar"
+
+def test_model_generate_hierarchy_from_model_name_remaining_segments_become_child(model_project):
+    (model_project / "app" / "models" / "__init__.py")\
+        .write_text("from .user import User\n")
+
+    namespace, parents, child = model_generate_hierarchy_from_model_name("AdminUserProfileAvatar")
+
+    assert namespace == ["Admin"]
+    assert parents == ["User"]
+    assert child == "ProfileAvatar"
+
 def test_model_get_registered_models_parses_imports(tmp_path, monkeypatch):
     models_dir = tmp_path / "app" / "models"
     models_dir.mkdir(parents=True)
@@ -352,46 +412,6 @@ def test_model_get_registered_models_absolute_submodule_with_mixed_names(tmp_pat
 
     assert model_get_registered_models() == ["UserProfile"]
 
-def test_model_generate_model_name_from_dotted_path_with_action_with_dot():
-    model_name = model_generate_model_name_from_dotted_path_with_action("posts.index")
-    assert model_name == "Post"
-
-def test_model_generate_model_name_from_dotted_path_with_action_without_dot():
-    model_name = model_generate_model_name_from_dotted_path_with_action("posts")
-    assert model_name == "Post"
-
-def test_model_generate_model_name_from_dotted_path_with_action_with_namespace():
-    model_name = model_generate_model_name_from_dotted_path_with_action("admin.posts.show")
-    assert model_name == "Post"
-
-def test_model_generate_model_name_from_dotted_path_with_action_action_only():
-    model_name = model_generate_model_name_from_dotted_path_with_action("index")
-    assert model_name == "Index"
-
-def test_model_generate_model_name_from_dotted_path_with_action_with_underscore_resource():
-    model_name = model_generate_model_name_from_dotted_path_with_action("user_profiles.index")
-    assert model_name == "UserProfile"
-
-def test_model_generate_model_name_from_dotted_path_with_action_namespace_and_underscore_resource():
-    model_name = model_generate_model_name_from_dotted_path_with_action("admin.user_profiles.show")
-    assert model_name == "UserProfile"
-
-def test_model_generate_model_name_from_dotted_path_with_action_singularizes_ies():
-    model_name = model_generate_model_name_from_dotted_path_with_action("categories.index")
-    assert model_name == "Category"
-
-def test_model_generate_model_name_from_dotted_path_with_action_singularizes_ses():
-    model_name = model_generate_model_name_from_dotted_path_with_action("classes.index")
-    assert model_name == "Class"
-
-def test_model_generate_model_name_from_dotted_path_with_action_compound_snake_case():
-    model_name = model_generate_model_name_from_dotted_path_with_action("post_comments.index")
-    assert model_name == "PostComment"
-
-def test_model_generate_model_name_from_dotted_path_with_action_without_dot_and_underscore():
-    model_name = model_generate_model_name_from_dotted_path_with_action("user_profiles")
-    assert model_name == "UserProfile"
-
 def test_model_generate_model_name_from_controller_name_suffix_only_returns_empty(model_project):
     non_nested_model_name, nested_model_names = \
         model_generate_model_name_from_controller_name("Controller")
@@ -467,6 +487,115 @@ def test_model_generate_model_name_from_controller_name_without_controller_suffi
 
     non_nested_model_name, nested_model_names = \
         model_generate_model_name_from_controller_name("AdminUserProfileAvatar")
+
+    assert non_nested_model_name == "AdminUserProfileAvatar"
+    assert nested_model_names == ["ProfileAvatar"]
+
+def test_model_generate_model_name_from_dotted_path_with_action_with_dot():
+    model_name = model_generate_model_name_from_dotted_path_with_action("posts.index")
+    assert model_name == "Post"
+
+def test_model_generate_model_name_from_dotted_path_with_action_without_dot():
+    model_name = model_generate_model_name_from_dotted_path_with_action("posts")
+    assert model_name == "Post"
+
+def test_model_generate_model_name_from_dotted_path_with_action_with_namespace():
+    model_name = model_generate_model_name_from_dotted_path_with_action("admin.posts.show")
+    assert model_name == "Post"
+
+def test_model_generate_model_name_from_dotted_path_with_action_action_only():
+    model_name = model_generate_model_name_from_dotted_path_with_action("index")
+    assert model_name == "Index"
+
+def test_model_generate_model_name_from_dotted_path_with_action_with_underscore_resource():
+    model_name = model_generate_model_name_from_dotted_path_with_action("user_profiles.index")
+    assert model_name == "UserProfile"
+
+def test_model_generate_model_name_from_dotted_path_with_action_namespace_and_underscore_resource():
+    model_name = model_generate_model_name_from_dotted_path_with_action("admin.user_profiles.show")
+    assert model_name == "UserProfile"
+
+def test_model_generate_model_name_from_dotted_path_with_action_singularizes_ies():
+    model_name = model_generate_model_name_from_dotted_path_with_action("categories.index")
+    assert model_name == "Category"
+
+def test_model_generate_model_name_from_dotted_path_with_action_singularizes_ses():
+    model_name = model_generate_model_name_from_dotted_path_with_action("classes.index")
+    assert model_name == "Class"
+
+def test_model_generate_model_name_from_dotted_path_with_action_compound_snake_case():
+    model_name = model_generate_model_name_from_dotted_path_with_action("post_comments.index")
+    assert model_name == "PostComment"
+
+def test_model_generate_model_name_from_dotted_path_with_action_without_dot_and_underscore():
+    model_name = model_generate_model_name_from_dotted_path_with_action("user_profiles")
+    assert model_name == "UserProfile"
+
+def test_model_generate_model_name_from_model_name_empty_returns_empty(model_project):
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_model_name("")
+
+    assert non_nested_model_name == ""
+    assert nested_model_names == []
+
+def test_model_generate_model_name_from_model_name_no_registered_models(model_project):
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_model_name("PostCommentImages")
+
+    assert non_nested_model_name == "PostCommentImage"
+    assert nested_model_names == ["Post", "Comment", "Images"]
+
+def test_model_generate_model_name_from_model_name_no_registered_models_plural(model_project):
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_model_name("Posts")
+
+    assert non_nested_model_name == "Post"
+    assert nested_model_names == ["Posts"]
+
+def test_model_generate_model_name_from_model_name_namespace_parent_child(model_project):
+    (model_project / "app" / "models" / "__init__.py") \
+        .write_text("from .user import User\n")
+
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_model_name("AdminUserAvatar")
+
+    assert non_nested_model_name == "AdminUserAvatar"
+    assert nested_model_names == ["Avatar"]
+
+def test_model_generate_model_name_from_model_name_contiguous_parent_models(model_project):
+    (model_project / "app" / "models" / "__init__.py") \
+        .write_text(
+            "from .user import User\n"
+            "from .profile import Profile\n",
+            encoding="utf-8",
+        )
+
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_model_name("AdminUserProfile")
+
+    assert non_nested_model_name == "AdminUserProfile"
+    assert nested_model_names == []
+
+def test_model_generate_model_name_from_model_name_prefers_longest_model_match(model_project):
+    (model_project / "app" / "models" / "__init__.py") \
+        .write_text(
+            "from .user import User\n"
+            "from .user_profile import UserProfile\n",
+            encoding="utf-8",
+        )
+
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_model_name("AdminUserProfileAvatar")
+
+    assert non_nested_model_name == "AdminUserProfileAvatar"
+    assert nested_model_names == ["Avatar"]
+
+def test_model_generate_model_name_from_model_name_remaining_segments_become_child(model_project):
+    (model_project / "app" / "models" / "__init__.py") \
+        .write_text("from .user import User\n", encoding="utf-8")
+
+    non_nested_model_name, nested_model_names = \
+        model_generate_model_name_from_model_name("AdminUserProfileAvatar")
 
     assert non_nested_model_name == "AdminUserProfileAvatar"
     assert nested_model_names == ["ProfileAvatar"]

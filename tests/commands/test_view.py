@@ -104,7 +104,7 @@ def test_make_view_with_generated_controller(project):
     """
     This should
     1) create app/templates/posts/index.html
-    2) infer controller name = PostController
+    2) generate controller name = PostController
     3) create controller file
     4) add the method to the controller file
     """
@@ -135,7 +135,7 @@ def test_make_view_with_generated_route_declines_model_prompt(project):
     """
     This should
     1) create app/templates/posts/index.html
-    2) infer route + blueprint for posts
+    2) generate route + blueprint for posts
     3) decline model prompt (no model file)
     4) use declined route: /posts/index (not /posts)
     """

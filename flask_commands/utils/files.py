@@ -47,7 +47,13 @@ def file_copy_templates(project_path: str, include_db: bool, replacements: Optio
                 continue
             destination_path = os.path.join(project_path, relative_path)
 
-            content = _read_template(source_path)
+            if not include_db and relative_path == os.path.join("app", "__init__.py"):
+                no_db_app_init_template = \
+                    os.path.join(
+                        package_root, "project_no_db", "app", "__init__.py")
+                content = _read_template(no_db_app_init_template)
+            else:
+                content = _read_template(source_path)
 
             if replacements:
                 for key, value in replacements.items():

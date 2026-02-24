@@ -294,7 +294,6 @@ def test_make_controller_generate_model_nested_parent_chain_nested_choice_with_n
     )
     assert observed_contents == expected_contents
 
-
 def test_make_controller_generate_model_nested_parent_chain_flatten_choice(project):
     runner = CliRunner()
     result = runner.invoke(make_controller, ["PostCommentController", "-m"], input="1\n")
@@ -368,7 +367,6 @@ def test_make_controller_generate_model_nested_parent_chain_flatten_choice_with_
     )
     assert observed_contents == expected_contents
 
-
 def test_make_controller_generate_model_multi_child_segments_nested_choice(project):
     runner = CliRunner()
     result = runner.invoke(
@@ -426,7 +424,6 @@ def test_make_controller_generate_model_multi_child_segments_flatten_choice(proj
     )
     assert observed_contents == expected_contents
 
-
 def test_make_controller_generate_model_no_nested_candidates_uses_non_nested(project):
     runner = CliRunner()
     result = runner.invoke(make_controller, ["AdminPostController", "-m"])
@@ -455,8 +452,6 @@ def test_make_controller_generate_model_no_nested_candidates_uses_non_nested(pro
         "from .admin_post import AdminPost\n"
     )
     assert observed_contents == expected_contents
-
-
 
 def test_make_controller_with_crud(project):
     runner = CliRunner()
@@ -717,3 +712,117 @@ def test_make_controller_warns_when_init_missing(project):
 
     assert result.exit_code == 0
     assert "Warning: One or more make controller steps produced a warning or failure." in result.output
+
+def test_make_controller_generate_model_flat_flag_skips_prompt_and_creates_flat_model(project):
+    runner = CliRunner()
+    result = runner.invoke(make_controller, ["PostCommentController", "-m", "--flat"])
+
+    assert result.exit_code == 0, result.output
+    assert "Choose model structure" not in result.output
+    assert "Detected nested models:" not in result.output
+    assert "💡 Info: Using --flat. Generated model(s): PostComment" in result.output
+
+    # Controller file created
+    controller_file_path = project / "app" / "controllers" / "post_comment_controller.py"
+    assert controller_file_path.exists()
+    assert controller_file_path.read_text(encoding="utf-8") == (
+        "class PostCommentController:\n"
+        "    pass\n"
+    )
+
+    # Controller registration updated
+    controller_init_file_path = project / "app" / "controllers" / "__init__.py"
+    assert controller_init_file_path.read_text(encoding="utf-8") == (
+        "from .main_controller import MainController\n"
+        "from .post_controller import PostController\n"
+        "from .post_comment_controller import PostCommentController\n"
+    )
+
+    # Flat model created, nested model not created
+    assert (project / "app" / "models" / "post_comment.py").exists()
+    assert not (project / "app" / "models" / "comment.py").exists()
+
+    # Model registration updated correctly
+    models_init_file_path = project / "app" / "models" / "__init__.py"
+    assert models_init_file_path.read_text(encoding="utf-8") == (
+        "from .post import Post\n"
+        "from .post_comment import PostComment\n"
+    )
+
+    # No CRUD artifacts
+    assert not (project / "app" / "routes" / "post_comments").exists()
+    assert not (project / "app" / "templates" / "post_comments").exists()
+
+def test_make_controller_generate_model_nest_flag_skips_prompt_and_creates_nested_model(project):
+    runner = CliRunner()
+    result = runner.invoke(make_controller, ["PostCommentController", "-m", "--nest"])
+
+    assert result.exit_code == 0, result.output
+    assert "Choose model structure" not in result.output
+    assert "Detected nested models:" not in result.output
+    assert "💡 Info: Using --nest. Generated model(s): Comment" in result.output
+
+    # Controller file created
+    controller_file_path = project / "app" / "controllers" / "post_comment_controller.py"
+    assert controller_file_path.exists()
+    assert controller_file_path.read_text(encoding="utf-8") == (
+        "class PostCommentController:\n"
+        "    pass\n"
+    )
+
+    # Controller registration updated
+    controller_init_file_path = project / "app" / "controllers" / "__init__.py"
+    assert controller_init_file_path.read_text(encoding="utf-8") == (
+        "from .main_controller import MainController\n"
+        "from .post_controller import PostController\n"
+        "from .post_comment_controller import PostCommentController\n"
+    )
+
+    # Nested model created, flat model not created
+    assert not (project / "app" / "models" / "post_comment.py").exists()
+    assert (project / "app" / "models" / "comment.py").exists()
+
+    # Model registration updated correctly
+    models_init_file_path = project / "app" / "models" / "__init__.py"
+    assert models_init_file_path.read_text(encoding="utf-8") == (
+        "from .post import Post\n"
+        "from .comment import Comment\n"
+    )
+
+    # No CRUD artifacts
+    assert not (project / "app" / "routes" / "post_comments").exists()
+    assert not (project / "app" / "templates" / "post_comments").exists()
+
+def test_make_controller_rejects_flat_and_nest_together(project):
+    runner = CliRunner()
+    result = runner.invoke(
+        make_controller,
+        ["GuardOneController", "-m", "--flat", "--nest"],
+    )
+
+    assert result.exit_code == 2
+    assert "Use either --flat or --nest, not both." in result.output
+    assert not (project / "app" / "controllers" / "guard_one_controller.py").exists()
+
+def test_make_controller_rejects_flat_without_generate_model(project):
+    runner = CliRunner()
+    result = runner.invoke(
+        make_controller,
+        ["GuardTwoController", "--flat"],
+    )
+
+    assert result.exit_code == 2
+    assert "--flat and --nest can only be used with --generate-model." in result.output
+    assert not (project / "app" / "controllers" / "guard_two_controller.py").exists()
+
+def test_make_controller_rejects_flat_with_explicit_model(project):
+    runner = CliRunner()
+    result = runner.invoke(
+        make_controller,
+        ["GuardThreeController", "-m", "--flat", "--model", "Tag"],
+    )
+
+    assert result.exit_code == 2
+    assert "--flat and --nest cannot be used with --model." in result.output
+    assert not (project / "app" / "controllers" / "guard_three_controller.py").exists()
+    assert not (project / "app" / "models" / "tag.py").exists()

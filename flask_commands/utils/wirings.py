@@ -57,7 +57,7 @@ def wire_controller_route_view(
         all_successful = all_successful and is_successful
         messages.append(message)
 
-    # If a controller_name was provided or inferred
+    # If a controller_name was provided or generated
     if controller_name:
         controller_file_path = \
             os.path.join(
@@ -82,7 +82,7 @@ def wire_controller_route_view(
         all_successful = all_successful and is_successful
         messages.append(message)
 
-    # If a controller_name was provided or inferred
+    # If a controller_name was provided or generated
     if route_name:
         route_directory_path = os.path.join("app", "routes", relative_path)
         try:

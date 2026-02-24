@@ -8,9 +8,13 @@ from flask_commands.utils.databases import install_sqlitedb
 
 @click.command()
 @click.argument("project_name")
-@click.option("--db/--no-db", default=None, help="Include a database with your project")
-def new(project_name, db):
-    """Create a new Flask project"""
+@click.option("--no-db", is_flag=True, help="Skip database setup. By default, DB support is included")
+def new(project_name, no_db):
+    """Create a new Flask project scaffold.
+
+    Creates the project directory, virtual environment, starter files, and Tailwind setup.
+    Includes database support by default; pass --no-db to skip DB setup.
+    """
     project_path = os.path.abspath(project_name)
     project_started = False
     if os.path.exists(project_path):
@@ -20,7 +24,7 @@ def new(project_name, db):
         return
     try:
         project_started = True
-        include_db = db if db is not None else click.confirm("Include a Sqlite Database?", default=True)
+        include_db = not no_db
         os.makedirs(project_path)
 
         # Create a Virtual Enviroment and install dependancies and

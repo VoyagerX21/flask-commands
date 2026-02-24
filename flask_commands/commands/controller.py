@@ -22,18 +22,38 @@ from flask_commands.utils.wirings import wire_controller_route_view
 @click.command(name="make:controller")
 @click.argument("controller_name")
 @click.option("--crud", is_flag=True,
-              help="Optional CRUD flag to generate all seven RESTful actions routes and controller methods along with get views.")
+              help="Generate all seven RESTful wirings: routes and controller methods for index/show/create/store/edit/update/destroy, plus view templates for GET actions.")
 @click.option("--model", "model_name", default=None,
-              help="Optional model name (example Post which makes the database table 'posts').")
+              help="Use/create this model name before wiring (for example: Post).")
 @click.option("-m", "--generate-model", is_flag=True,
-              help="Optional model flag to generate an inferred model from the controller name.")
+              help="Generate and create model name(s) from the controller name (ignored if --model is set).")
+@click.option("--flat", "force_flat", is_flag=True,
+              help="With --generate-model, force flatten model generation and skip nested-model prompt.")
+@click.option("--nest", "force_nest", is_flag=True,
+              help="With --generate-model, force nested model generation and skip nested-model prompt.")
 def make_controller(
     controller_name: str,
     crud: bool,
     model_name: str | None,
-    generate_model: bool) -> None:
+    generate_model: bool,
+    force_flat: bool,
+    force_nest: bool,) -> None:
+    """Create a controller and optionally scaffold CRUD routes, views, and models.
+
+    Generates `app/controllers/<controller>.py`.
+    Use `--crud` for RESTful scaffolding and `--model` or `-m` to create model file(s).
+    """
     if not file_is_project_root():
         return
+
+    if force_flat and force_nest:
+        raise click.UsageError("Use either --flat or --nest, not both.")
+
+    if (force_flat or force_nest) and not generate_model:
+        raise click.UsageError("--flat and --nest can only be used with --generate-model.")
+
+    if (force_flat or force_nest) and model_name:
+        raise click.UsageError("--flat and --nest cannot be used with --model.")
 
     controller_file_path = \
         os.path.join(
@@ -60,19 +80,22 @@ def make_controller(
     click.echo(message)
     all_successful = all_successful and is_successful
 
-    # Infer model name(s) if not provided
+    # Generate model name(s) if not provided
     model_names: list[str] = []
 
     if model_name:
         model_names = [model_name]
-    # Infer model name if not provided
+    # Generate model name if not provided
     elif generate_model:
         non_nested_model_name, nested_model_names = \
             model_generate_model_name_from_controller_name(controller_name)
+        forced_choice = "flatten" if force_flat else "nested" if force_nest else None
         if any(nested_model_names):
             namespace, parent_models, child_model_name = \
                 model_generate_hierarchy_from_controller_name(controller_name)
-            if parent_models:
+            if forced_choice:
+                use_flatten = forced_choice == "flatten"
+            elif parent_models:
                 click.echo(
                     "Detected nested models:\n" + " -> ".join(parent_models)
                 )
@@ -85,8 +108,6 @@ def make_controller(
                     show_choices=False,
                     show_default=True).lower()
                 use_flatten = choice in ["1", "flatten"]
-                chosen = non_nested_model_name if use_flatten else nested_model_names[0]
-                model_names = [chosen]
             # If parent_models are empty and nested_model_names is not then
             # then _generate_nested_model_names_from_controller_name
             # puts the namespace in nested_model_names
@@ -102,13 +123,26 @@ def make_controller(
                     default=1,
                     show_choices=False).lower()
                 use_flatten = choice in ("1", "flatten")
+
+            if parent_models:
+                chosen = non_nested_model_name if use_flatten else nested_model_names[0]
+                model_names = [chosen]
+            else:
                 model_names = [non_nested_model_name] if use_flatten else nested_model_names
         else:
             model_names = [non_nested_model_name]
-        generated_models = click.style(', '.join(model_names), bold=True)
-        click.secho(f"💡 Info: Generated model(s) {generated_models}", fg="cyan")
+        generated_models = ', '.join(model_names)
+        if forced_choice == "flatten":
+            click.secho(f"💡 Info: Using --flat. Generated model(s): "
+                        f"{generated_models}", fg="cyan")
+        elif forced_choice == "nested":
+            click.secho(f"💡 Info: Using --nest. Generated model(s): "
+                        f"{generated_models}", fg="cyan")
+        else:
+            click.secho(f"💡 Info: Generated model(s): "
+                        f"{generated_models}", fg="cyan")
 
-    # If a model_name was provided or inferred
+    # If a model_name was provided or generated
     if model_names:
         for model_name in model_names:
             is_successful, message = model_make_file(model_name)
@@ -131,10 +165,10 @@ def make_controller(
                 relative_path_last_segment in registered_snake_models
 
             if not is_last_segment_a_model:
-                inferred_model_name = model_generate_model_name_from_dotted_path_with_action(
+                new_model_name = model_generate_model_name_from_dotted_path_with_action(
                     f"{relative_path.replace('/', '.')}.index"
                 )
-                is_successful, message = model_make_file(inferred_model_name)
+                is_successful, message = model_make_file(new_model_name)
                 click.echo(message)
                 all_successful = all_successful and is_successful
 

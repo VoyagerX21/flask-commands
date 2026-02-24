@@ -230,3 +230,486 @@ def test_make_model_not_in_project_root(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert "Warning: You are not currently in a Flask project root directory" in result.output
     assert not (tmp_path / "app" / "models" / "post.py").exists()
+
+def test_make_model_errors_when_name_cannot_be_generated(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["comment"])
+
+    assert result.exit_code == 0
+    expected_output = "💣 Error: Could not generate model name from input."
+    observed_output = result.output
+    assert expected_output in observed_output
+
+    model_file_path = project / "app" / "models" / "comment.py"
+    assert not model_file_path.exists()
+
+def test_make_model_with_crud_nested_leaf_flatten_choice(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["UserComment", "--crud"], input="flatten\n")
+
+    assert result.exit_code == 0, result.output
+
+    expected_output = (
+        "Detected nested model structure:\n"
+        "  1) (flatten model) = UserComment\n"
+        "  2) (nested leaf model) = Comment"
+    )
+    observed_output = result.output
+    assert expected_output in observed_output
+
+    user_comment_controller_file_path = project / "app" / "controllers" / "user_comment_controller.py"
+    assert user_comment_controller_file_path.exists()
+    expected_contents = (
+        "from flask import render_template\n"
+        "from flask import redirect, url_for\n"
+        "\n"
+        "class UserCommentController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('user_comments/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def show(user_comment_id: int) -> str:\n"
+        "        return render_template('user_comments/show.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def create() -> str:\n"
+        "        return render_template('user_comments/create.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def store() -> str:\n"
+        "        return redirect(url_for('user_comments.index'))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def edit(user_comment_id: int) -> str:\n"
+        "        return render_template('user_comments/edit.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def update(user_comment_id: int) -> str:\n"
+        "        return redirect(url_for('user_comments.index'))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def destroy(user_comment_id: int) -> str:\n"
+        "        return redirect(url_for('user_comments.index'))"
+    )
+    observed_contents = user_comment_controller_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    routes_user_comments_route_file_path = project / "app" / "routes" / "user_comments" / "routes.py"
+    assert routes_user_comments_route_file_path.exists()
+    expected_contents = (
+        "from app.controllers import UserCommentController\n"
+        "from app.routes.user_comments import bp\n"
+        "\n"
+        "@bp.route('/user-comments', methods=['GET'])\n"
+        "def index():\n"
+        "    return UserCommentController.index()\n"
+        "\n"
+        "@bp.route('/user-comments/<int:user_comment_id>', methods=['GET'])\n"
+        "def show(user_comment_id: int):\n"
+        "    return UserCommentController.show(user_comment_id)\n"
+        "\n"
+        "@bp.route('/user-comments/create', methods=['GET'])\n"
+        "def create():\n"
+        "    return UserCommentController.create()\n"
+        "\n"
+        "@bp.route('/user-comments', methods=['POST'])\n"
+        "def store():\n"
+        "    return UserCommentController.store()\n"
+        "\n"
+        "@bp.route('/user-comments/<int:user_comment_id>/edit', methods=['GET'])\n"
+        "def edit(user_comment_id: int):\n"
+        "    return UserCommentController.edit(user_comment_id)\n"
+        "\n"
+        "@bp.route('/user-comments/<int:user_comment_id>', methods=['POST'])\n"
+        "def update(user_comment_id: int):\n"
+        "    return UserCommentController.update(user_comment_id)\n"
+        "\n"
+        "@bp.route('/user-comments/<int:user_comment_id>/delete', methods=['POST'])\n"
+        "def destroy(user_comment_id: int):\n"
+        "    return UserCommentController.destroy(user_comment_id)\n"
+    )
+    observed_contents = routes_user_comments_route_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    models_init_file_path = project / "app" / "models" / "__init__.py"
+    expected_contents = (
+        "from .user import User\n"
+        "from .user_comment import UserComment\n"
+    )
+    observed_contents = models_init_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    # Check the contents of the new templates
+    create_template_file_path = project / "app" / "templates" / "user_comments" / "create.html"
+    assert create_template_file_path.exists()
+    edit_template_file_path = project / "app" / "templates" / "user_comments" / "edit.html"
+    assert edit_template_file_path.exists()
+    index_template_file_path = project / "app" / "templates" / "user_comments" / "index.html"
+    assert index_template_file_path.exists()
+    show_template_file_path = project / "app" / "templates" / "user_comments" / "show.html"
+    assert show_template_file_path.exists()
+
+def test_make_model_with_crud_nested_leaf_nested_choice(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["UserComment", "--crud"], input="nested\n")
+
+    assert result.exit_code == 0, result.output
+
+    expected_output = (
+        "Detected nested model structure:\n"
+        "  1) (flatten model) = UserComment\n"
+        "  2) (nested leaf model) = Comment"
+    )
+    observed_output = result.output
+    assert expected_output in observed_output
+
+    user_comment_controller_file_path = project / "app" / "controllers" / "user_comment_controller.py"
+    assert user_comment_controller_file_path.exists()
+    expected_contents = (
+        "from flask import render_template\n"
+        "from flask import redirect, url_for\n"
+        "\n"
+        "class UserCommentController:\n"
+        "    @staticmethod\n"
+        "    def index(user_id: int) -> str:\n"
+        "        return render_template('users/comments/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def show(user_id: int, comment_id: int) -> str:\n"
+        "        return render_template('users/comments/show.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def create(user_id: int) -> str:\n"
+        "        return render_template('users/comments/create.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def store(user_id: int) -> str:\n"
+        "        return redirect(url_for('users.comments.index', user_id=user_id))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def edit(user_id: int, comment_id: int) -> str:\n"
+        "        return render_template('users/comments/edit.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def update(user_id: int, comment_id: int) -> str:\n"
+        "        return redirect(url_for('users.comments.index', user_id=user_id))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def destroy(user_id: int, comment_id: int) -> str:\n"
+        "        return redirect(url_for('users.comments.index', user_id=user_id))"
+    )
+    observed_contents = user_comment_controller_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    routes_user_comments_route_file_path = project / "app" / "routes" / "users" / "comments" / "routes.py"
+    assert routes_user_comments_route_file_path.exists()
+    expected_contents = (
+        "from app.controllers import UserCommentController\n"
+        "from app.routes.users.comments import bp\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>/comments', methods=['GET'])\n"
+        "def index(user_id: int):\n"
+        "    return UserCommentController.index(user_id)\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>/comments/<int:comment_id>', methods=['GET'])\n"
+        "def show(user_id: int, comment_id: int):\n"
+        "    return UserCommentController.show(user_id, comment_id)\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>/comments/create', methods=['GET'])\n"
+        "def create(user_id: int):\n"
+        "    return UserCommentController.create(user_id)\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>/comments', methods=['POST'])\n"
+        "def store(user_id: int):\n"
+        "    return UserCommentController.store(user_id)\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>/comments/<int:comment_id>/edit', methods=['GET'])\n"
+        "def edit(user_id: int, comment_id: int):\n"
+        "    return UserCommentController.edit(user_id, comment_id)\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>/comments/<int:comment_id>', methods=['POST'])\n"
+        "def update(user_id: int, comment_id: int):\n"
+        "    return UserCommentController.update(user_id, comment_id)\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>/comments/<int:comment_id>/delete', methods=['POST'])\n"
+        "def destroy(user_id: int, comment_id: int):\n"
+        "    return UserCommentController.destroy(user_id, comment_id)\n"
+    )
+    observed_contents = routes_user_comments_route_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    user_comment_model_file_path = project / "app" / "models" / "user_comment.py"
+    assert not user_comment_model_file_path.exists()
+
+    models_init_file_path = project / "app" / "models" / "__init__.py"
+    expected_contents = (
+        "from .user import User\n"
+        "from .comment import Comment\n"
+    )
+    observed_contents = models_init_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    # Check the contents of the new templates
+    create_template_file_path = project / "app" / "templates" / "users" / "comments" / "create.html"
+    assert create_template_file_path.exists()
+    edit_template_file_path = project / "app" / "templates" / "users" / "comments" / "edit.html"
+    assert edit_template_file_path.exists()
+    index_template_file_path = project / "app" / "templates" / "users" / "comments" / "index.html"
+    assert index_template_file_path.exists()
+    show_template_file_path = project / "app" / "templates" / "users" / "comments" / "show.html"
+    assert show_template_file_path.exists()
+
+def test_make_model_with_crud_nested_chain_nested_choice(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["PostComment", "--crud"], input="nested\n")
+
+    assert result.exit_code == 0, result.output
+
+    expected_output = (
+        "Detected nested model structure:\n"
+        "  1) (flatten model) = PostComment\n"
+        "  2) (nested model chain) = Post -> Comment"
+    )
+    observed_output = result.output
+    assert expected_output in observed_output
+
+    post_comment_controller_file_path = project / "app" / "controllers" / "post_comment_controller.py"
+    assert post_comment_controller_file_path.exists()
+    expected_contents = (
+        "from flask import render_template\n"
+        "from flask import redirect, url_for\n"
+        "\n"
+        "class PostCommentController:\n"
+        "    @staticmethod\n"
+        "    def index(post_id: int) -> str:\n"
+        "        return render_template('posts/comments/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def show(post_id: int, comment_id: int) -> str:\n"
+        "        return render_template('posts/comments/show.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def create(post_id: int) -> str:\n"
+        "        return render_template('posts/comments/create.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def store(post_id: int) -> str:\n"
+        "        return redirect(url_for('posts.comments.index', post_id=post_id))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def edit(post_id: int, comment_id: int) -> str:\n"
+        "        return render_template('posts/comments/edit.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def update(post_id: int, comment_id: int) -> str:\n"
+        "        return redirect(url_for('posts.comments.index', post_id=post_id))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def destroy(post_id: int, comment_id: int) -> str:\n"
+        "        return redirect(url_for('posts.comments.index', post_id=post_id))"
+    )
+    observed_contents = post_comment_controller_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    route_post_comment_route_file_path = project / "app" / "routes" / "posts" / "comments" / "routes.py"
+    assert route_post_comment_route_file_path.exists()
+    expected_contents = (
+        "from app.controllers import PostCommentController\n"
+        "from app.routes.posts.comments import bp\n"
+        "\n"
+        "@bp.route('/posts/<int:post_id>/comments', methods=['GET'])\n"
+        "def index(post_id: int):\n"
+        "    return PostCommentController.index(post_id)\n"
+        "\n"
+        "@bp.route('/posts/<int:post_id>/comments/<int:comment_id>', methods=['GET'])\n"
+        "def show(post_id: int, comment_id: int):\n"
+        "    return PostCommentController.show(post_id, comment_id)\n"
+        "\n"
+        "@bp.route('/posts/<int:post_id>/comments/create', methods=['GET'])\n"
+        "def create(post_id: int):\n"
+        "    return PostCommentController.create(post_id)\n"
+        "\n"
+        "@bp.route('/posts/<int:post_id>/comments', methods=['POST'])\n"
+        "def store(post_id: int):\n"
+        "    return PostCommentController.store(post_id)\n"
+        "\n"
+        "@bp.route('/posts/<int:post_id>/comments/<int:comment_id>/edit', methods=['GET'])\n"
+        "def edit(post_id: int, comment_id: int):\n"
+        "    return PostCommentController.edit(post_id, comment_id)\n"
+        "\n"
+        "@bp.route('/posts/<int:post_id>/comments/<int:comment_id>', methods=['POST'])\n"
+        "def update(post_id: int, comment_id: int):\n"
+        "    return PostCommentController.update(post_id, comment_id)\n"
+        "\n"
+        "@bp.route('/posts/<int:post_id>/comments/<int:comment_id>/delete', methods=['POST'])\n"
+        "def destroy(post_id: int, comment_id: int):\n"
+        "    return PostCommentController.destroy(post_id, comment_id)\n"
+    )
+    observed_contents = route_post_comment_route_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    models_init_file_path = project / "app" / "models" / "__init__.py"
+    expected_contents = (
+        "from .user import User\n"
+        "from .post import Post\n"
+        "from .comment import Comment\n"
+    )
+    observed_contents = models_init_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+def test_make_model_with_crud_controller(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["Controller", "--crud"])
+
+    assert result.exit_code == 0, result.output
+    assert "💣 Error: Could not generate model name from input." not in result.output
+    assert "Detected nested model structure:" not in result.output
+
+
+    model_file_path = project / "app" / "models" / "controller.py"
+    assert model_file_path.exists()
+
+    controllers_init_file_path = project / "app" / "controllers" / "__init__.py"
+    assert "from .controller_controller import ControllerController" in \
+        controllers_init_file_path.read_text(encoding="utf-8")
+
+    controller_file_path = project / "app" / "controllers" / "controller_controller.py"
+    assert controller_file_path.exists()
+    expected_contents = (
+        "from flask import render_template\n"
+        "from flask import redirect, url_for\n"
+        "\n"
+        "class ControllerController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('controllers/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def show(controller_id: int) -> str:\n"
+        "        return render_template('controllers/show.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def create() -> str:\n"
+        "        return render_template('controllers/create.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def store() -> str:\n"
+        "        return redirect(url_for('controllers.index'))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def edit(controller_id: int) -> str:\n"
+        "        return render_template('controllers/edit.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def update(controller_id: int) -> str:\n"
+        "        return redirect(url_for('controllers.index'))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def destroy(controller_id: int) -> str:\n"
+        "        return redirect(url_for('controllers.index'))"
+    )
+    observed_contents = controller_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    routes_file_path = project / "app" / "routes" / "controllers" / "routes.py"
+    assert routes_file_path.exists()
+    expected_contents = (
+        "from app.controllers import ControllerController\n"
+        "from app.routes.controllers import bp\n"
+        "\n"
+        "@bp.route('/controllers', methods=['GET'])\n"
+        "def index():\n"
+        "    return ControllerController.index()\n"
+        "\n"
+        "@bp.route('/controllers/<int:controller_id>', methods=['GET'])\n"
+        "def show(controller_id: int):\n"
+        "    return ControllerController.show(controller_id)\n"
+        "\n"
+        "@bp.route('/controllers/create', methods=['GET'])\n"
+        "def create():\n"
+        "    return ControllerController.create()\n"
+        "\n"
+        "@bp.route('/controllers', methods=['POST'])\n"
+        "def store():\n"
+        "    return ControllerController.store()\n"
+        "\n"
+        "@bp.route('/controllers/<int:controller_id>/edit', methods=['GET'])\n"
+        "def edit(controller_id: int):\n"
+        "    return ControllerController.edit(controller_id)\n"
+        "\n"
+        "@bp.route('/controllers/<int:controller_id>', methods=['POST'])\n"
+        "def update(controller_id: int):\n"
+        "    return ControllerController.update(controller_id)\n"
+        "\n"
+        "@bp.route('/controllers/<int:controller_id>/delete', methods=['POST'])\n"
+        "def destroy(controller_id: int):\n"
+        "    return ControllerController.destroy(controller_id)\n"
+    )
+    observed_contents = routes_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    models_init_file_path = project / "app" / "models" / "__init__.py"
+    expected_contents = (
+        "from .user import User\n"
+        "from .controller import Controller\n"
+    )
+    observed_contents = models_init_file_path.read_text(encoding="utf-8")
+    assert observed_contents == expected_contents
+
+    create_template_file_path = project / "app" / "templates" / "controllers" / "create.html"
+    assert create_template_file_path.exists()
+    edit_template_file_path = project / "app" / "templates" / "controllers" / "edit.html"
+    assert edit_template_file_path.exists()
+    index_template_file_path = project / "app" / "templates" / "controllers" / "index.html"
+    assert index_template_file_path.exists()
+    show_template_file_path = project / "app" / "templates" / "controllers" / "show.html"
+    assert show_template_file_path.exists()
+
+def test_make_model_with_crud_flat_flag_skips_prompt(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["UserComment", "--crud", "--flat"])
+
+    assert result.exit_code == 0, result.output
+    assert "Choose model structure" not in result.output
+    assert "Detected nested model structure" not in result.output
+    assert "💡 Info: Using --flat. Generated model(s): UserComment" in result.output
+
+    assert (project / "app" / "models" / "user_comment.py").exists()
+    assert not (project / "app" / "models" / "comment.py").exists()
+
+    models_init = (project / "app" / "models" / "__init__.py").read_text(encoding="utf-8")
+    assert "from .user_comment import UserComment" in models_init
+
+
+def test_make_model_with_crud_nest_flag_skips_prompt(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["UserComment", "--crud", "--nest"])
+
+    assert result.exit_code == 0, result.output
+    assert "Choose model structure" not in result.output
+    assert "Detected nested model structure" not in result.output
+    assert "💡 Info: Using --nest. Generated model(s): Comment" in result.output
+
+    assert not (project / "app" / "models" / "user_comment.py").exists()
+    assert (project / "app" / "models" / "comment.py").exists()
+
+    models_init = (project / "app" / "models" / "__init__.py").read_text(encoding="utf-8")
+    assert "from .comment import Comment" in models_init
+    assert "from .user_comment import UserComment" not in models_init
+
+def test_make_model_rejects_flat_and_nest_together(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["UserComment", "--crud", "--flat", "--nest"])
+
+    assert result.exit_code == 2
+    assert "Use either --flat or --nest, not both." in result.output
+
+def test_make_model_rejects_flat_without_crud(project):
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["UserComment", "--flat"])
+
+    assert result.exit_code == 2
+    assert "--flat and --nest can only be used with --crud." in result.output
+
+
