@@ -18,7 +18,7 @@ Out of the box, Flask-Commands provides:
   - an isolated virtual environment
   - dotenv support
   - Tailwind CSS wiring (when ``npm`` is available)
-  - optional SQLite database with migrations
+  - optional SQLite database with migrations (included by default; use ``--no-db`` to skip)
 
 - ``flask make:view`` — generates HTML views and can optionally scaffold:
 
@@ -26,24 +26,24 @@ Out of the box, Flask-Commands provides:
   - routes / blueprints
   - SQLAlchemy models
   - view templates
-  - supports nesting
+  - supports nesting (interative for RESTful actions with ``-r`` )
 
-- ``flask make:controller`` — generates controller files and can optionally
-  scaffold routes / blueprints.
+- ``flask make:controller`` — generates controller files and can optionally scaffold:
+
+  - controllers
+  - RESTful routes / blueprints
+  - SQLAlchemy models (explicit via ``--model`` or generated via ``-m``)
+  - RESTful view templates
+  - supports nesting and model-structure selection (interactive, ``--flat``, or ``--nest`` with ``-m``)
+
+- ``flask make:model`` — generates SQLAlchemy models and can optionally scaffold:
 
   - controllers
   - RESTful routes / blueprints
   - SQLAlchemy models
   - RESTful view templates
-  - supports nesting
+  - supports nested model-structure selection with ``--crud`` (interactive, ``--flat``, or ``--nest``)
 
-- ``flask make:model`` — generates SQLAlchemy models and can optionally
-  scaffold migrations.
-
-  - controllers
-  - RESTful routes / blueprints
-  - SQLAlchemy models
-  - RESTful view templates
 
 Safeguard: ``flask make:...`` commands only run from a Flask project root (the
 current directory must include ``app/`` and ``run.py``). ``flask new`` can be
@@ -218,8 +218,8 @@ This generates:
 
 - the HTML template
 - a controller method
-- a registered posts route and a url of ``/posts``
-- a corresponding ``Post`` model ready metadata (columns) and a migration
+- a registered posts route and a URL of ``/posts``
+- a corresponding ``Post`` model scaffold (boilerplate columns + helpers)
 
 
 Nested Views and Relationships

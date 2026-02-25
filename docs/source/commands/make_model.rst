@@ -29,32 +29,28 @@ The file includes:
 - ``store_in_database`` and ``delete_from_database`` helpers
 - a simple ``__repr__`` for debugging
 
-CRUD Scaffolding (Optional)
----------------------------
+Nested model selection (with ``--crud``)
+----------------------------------------
 
-Add ``--crud`` to generate a matching controller, routes, and views for the
-seven RESTful actions.
+When a model name can be interpreted as nested (for example ``UserComment``),
+Flask-Commands can prompt you to choose between flattened and nested generation:
 
 .. code-block:: bash
 
-   flask make:model Comment --crud
+   flask make:model UserComment --crud
 
-This uses the pluralized model name for the route group (``comments``) and
-creates:
+You can skip the prompt with:
 
-- ``app/controllers/comment_controller.py``
-- ``app/routes/comments/`` with ``routes.py`` and ``__init__.py``
-- ``app/templates/comments/`` with views for the GET actions
+.. code-block:: bash
 
-The generated routes cover:
+   flask make:model UserComment --crud --flat
+   flask make:model UserComment --crud --nest
 
-- ``index`` (GET)
-- ``show`` (GET)
-- ``create`` (GET)
-- ``store`` (POST)
-- ``edit`` (GET)
-- ``update`` (POST)
-- ``destroy`` (POST)
+Rules:
+
+- ``--flat`` and ``--nest`` are mutually exclusive.
+- ``--flat`` and ``--nest`` require ``--crud``.
+
 
 Wrap-up
 -------

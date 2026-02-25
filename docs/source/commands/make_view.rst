@@ -2,7 +2,7 @@ Generating Views (flask make:view)
 ==================================
 
 Now for the fun (and powerful) part of this package. **First make sure you are
-at the root of your new project.** This is not a correncting behavioral
+at the root of your new project.** This is not a correctional behavioral
 choice; it’s a life saving choice to make sure you don't create a ton of
 files in the wrong location 😥.
 
@@ -26,6 +26,41 @@ make that wiring easier, ``flask make:view`` includes optional generator flags:
   Seeds a SQLAlchemy model with boilerplate columns:
   ``id``, ``created_at``, and ``updated_at``.
 
+Input normalization and route/model prompts
+-------------------------------------------
+
+Before we get to deep into the examples I would like to make some confessions
+about what happens behind the scenes with ``flask make:view``.  It's not that
+I don't trust that you are going to put in a string that Flask-Commands can not
+handle, right 🤣.  Well Oklahoma (Ted-laso fan got that), the truth is
+I know people will put in all kinds non standard inputs (aka 🗑💩💣🥸).  So I
+kind of normalizes 😇 the dotted input before scaffolding:
+
+- lowercases input
+- allows ``/`` input and normalizes it to dotted form
+- normalizes ``-`` to ``_`` within segments
+- collapses repeated separators
+
+When using ``-r`` / ``--generate-route`` on RESTful actions, if the last
+resource segment is not a registered model, Flask-Commands can prompt you to
+accept or decline generating that model and route shape.  I figured you might
+have just forgotten to make that needed model you are trying to perform a RESTful
+action on.
+
+To avoid that prompt, provide one of:
+
+- ``--route`` (explicit route)
+- ``--model`` (explicit model)
+- ``-m`` / ``--generate-model`` (auto-generate model first)
+
+In other words explicitly state the route or tell Flask-Commands to generate the model.
+
+Note: templates are generated for GET actions; POST actions (``store``,
+``update``, ``destroy``/``delete``) wire controller/route behavior without
+creating a view template.
+
+
+Now that feels better, I'm really glad we could get this out of the way.
 Let’s work through a few examples, starting with the basics and ending with
 nested relationships using RESTful actions.
 

@@ -24,13 +24,19 @@ Common patterns
    * - Pattern
      - What it does
    * - ``flask new myproject``
-     - Scaffold a new Flask project.
+     - Scaffold a new Flask project with a database and migrations.
+   * - ``flask new myproject --no-db``
+     - Scaffold a Flask project without DB packages/models/migrations.
    * - ``flask make:view VIEW_NAME``
      - Create a template only (no wiring).
+   * - ``flask make:view admin.reports.index -r``
+     - Generate a route and optionally accept/decline missing-model creation prompt.
    * - ``flask make:view VIEW_NAME -rc``
      - Create a template and wire up a route + controller method.
    * - ``flask make:view VIEW_NAME -rcm``
      - Create a template and wire up route + controller + model (when it makes sense).
+   * - ``flask make:controller RecipeCommentController -m --flat``
+     - Infer model from controller name and force flattened generation.
    * - ``flask make:controller CONTROLLER_NAME --crud``
      - Create a controller, routes, and templates for the seven RESTful actions.
    * - ``flask make:controller CONTROLLER_NAME --crud -m``
@@ -39,3 +45,5 @@ Common patterns
      - Create a model and register it in ``app/models/__init__.py``.
    * - ``flask make:model MODEL_NAME --crud``
      - Create a model plus RESTful controller, routes, and views.
+   * - ``flask make:model RecipeComment --crud --nest``
+     - Scaffold CRUD and force nested model generation.

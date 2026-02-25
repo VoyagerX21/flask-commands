@@ -15,20 +15,20 @@ from flask_commands.utils.scaffold import (
 )
 from flask_commands.utils.wirings import wire_controller_route_view
 
-@click.command(name="make:view")
+@click.command(name="make:view", short_help="Create a view and optionally wire controller, route, and model.")
 @click.argument("dotted_path_with_action")
 @click.option("--controller", "controller_name", default=None,
               help="Use this controller class (for example: PostController).")
 @click.option("-c", "--generate-controller", is_flag=True,
               help="Generate controller name from the dotted path (ignored if --controller is set)")
 @click.option("--route", "route_name", default=None,
-              help="Use this route path (for example: /posts or /posts/<int:post_id>)..")
+              help="Use this route path (for example: /posts or /posts/<int:post_id>).  Skips route inference and model prompt.")
 @click.option("-r", "--generate-route", is_flag=True,
-              help="Generate route from the dotted path (ignored if --route is set). May prompt to create a missing model.")
+              help="Generate route from the dotted path (ignored if --route is set).  For RESTful actions, may prompt to generate a missing model when the last segment is not a registered model.")
 @click.option("--model", "model_name", default=None,
-              help="Use/create this model name (for example: Post which makes the database table 'posts').")
+              help="Use/create this model name (for example: Post which makes the database table 'posts').  Also avoids the missing-model prompt during route inference.")
 @click.option("-m", "--generate-model", is_flag=True,
-              help="Generate and create model from the dotted path (ignored if --model is set).")
+              help="Generate and create model from the dotted path (ignored if --model is set).  Also avoids the missing-model prompt during route inference.")
 def make_view(
     dotted_path_with_action: str,
     controller_name: str | None,
@@ -40,9 +40,14 @@ def make_view(
     """
     Create a view template and optionally wire controller, route, and model.
 
-    `dotted_path_with_action` maps to `app/templates/...` (for example, `posts.index`).
-    Use `-c/-r/-m` to generate controller/route/model, or provide `--controller`, `--route`, and `--model`.
+    `dotted_path_with_action` maps to `app/templates/...` (example: `posts.index`).
+    Use `-c/-r/-m` to generate controller/route/model, or provide `--controller`,
+    `--route`, and `--model`. If `--generate-route` is used on RESTful paths
+    with a missing model segment, you will be prompted before generating that
+    model and route shape.  To avoid that prompt deliberately, use `--route`,
+    `--model`, or `--generate-model`.
     """
+
     if not file_is_project_root():
         return
 

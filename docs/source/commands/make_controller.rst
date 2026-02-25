@@ -123,13 +123,13 @@ Here is what the routes file looks like:
 This is awesome!!! I can litterly see you jumping up and down shouting with
 celebration in joy 🥳.  But wait, what about an **Ingrediant model**?
 
-A controller with a Model (-m / --model)
-----------------------------------------
+A controller with a model (``--model`` vs ``-m``)
+-------------------------------------------------
 
 Often a controller is tied to a model, like in your ingredient example. You
 have two options here you can either use an optional variable ``--model``
-or have Flask-Commands infer your model with a generator flag ``-m``.   The
-following two commands are equivlant
+or have Flask-Commands generate your model with a generator flag ``-m``.   The
+following two commands are equivlant.
 
 .. code-block:: bash
 
@@ -142,6 +142,9 @@ and
    flask make:controller IngredientController -m
 
 both will sub out a plain Ingredient controller class and an Ingrediant model.
+Just remember, use ``--model`` when you want to explicitly set the model name
+and use ``-m`` / ``--generate-model`` when you want Flask-Commands to generate
+the model name(s) from the controller name.
 
 Here is what the controller file looks like:
 
@@ -189,7 +192,7 @@ Nested Controllers with --crud
 ------------------------------
 
 If we wanted to build the relationship **Recipe → Ingredient** Flask-Commands is
-up for the task.  In this case we would PascalCase case (UppserCamelCase)
+up for the task.  In this case we would PascalCase case (UpperCamelCase)
 the controller and then add the crud flag as in this command:
 
 .. code-block:: bash

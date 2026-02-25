@@ -31,9 +31,9 @@ give feedback about what just happened.
    index   GET    /users                        Show all instances of a model
    show    GET    /users/<int:user_id>          Show a single instance
    create  GET    /users/create                 Show the page to create a new instance
-   store   POST   /users/create                 Create a new instance (then redirect)
+   store   POST   /users                        Create a new instance (then redirect)
    edit    GET    /users/<int:user_id>/edit     Show the page to edit an instance
-   update  POST   /users/<int:user_id>/edit     Update an instance (then redirect)
+   update  POST   /users/<int:user_id>          Update an instance (then redirect)
    destroy POST   /users/<int:user_id>/delete   Delete an instance (then redirect)
    ======= ====== ============================= ============================================================
 

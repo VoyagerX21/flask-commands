@@ -19,16 +19,16 @@ from flask_commands.utils.wirings import wire_controller_route_view
 @click.command(name="make:model")
 @click.argument("model_name")
 @click.option("--crud", is_flag=True,
-               help="After creating model file(s), scaffold RESTful controller, routes, and views.")
+               help="After creating model file(s), scaffold RESTful controller, routes, and GET view templates.")
 @click.option("--flat", "force_flat", is_flag=True,
-              help="Use flatten model structure and skip the nested-model prompt (requires --crud).")
+              help="With --crud this skips nested-model prompt by forcing flattened model generation. (requires --crud).")
 @click.option("--nest", "force_nest", is_flag=True,
-              help="Use nested model structure and skip the nested-model prompt (requires --crud).")
+              help="With --crud this skips nested-model prompt by forcing nested model generation. (requires --crud).")
 def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) -> None:
-    """Create a model and optionally scaffold full CRUD wiring.
+    """Create model file(s) and optionally scaffold CRUD wiring.
 
     Generates model file(s) and updates model registration.
-    Use `--crud` to also generate controller, RESTful routes, and view templates.
+    Use `--crud` to also generate controller, RESTful routes, and GET view templates.
     """
     if not file_is_project_root():
         return

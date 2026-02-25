@@ -16,10 +16,10 @@
 
 Flask-Commands bundles opinionated, productivity-focused generators:
 
-- `flask new` boots a ready-to-run Flask project with virtualenv, dotenv, Tailwind wiring, and optional SQLite + migrations (use `--db/--no-db`).
+- `flask new` boots a ready-to-run Flask project with virtualenv, dotenv, Tailwind wiring, and SQLite + migrations by default. Use `--no-db` to skip DB setup.
 - `flask make:view` generates HTML views and can optionally wire controllers, routes/blueprints, and SQLAlchemy models.
-- `flask make:controller` scaffolds a controller class and registers it in `app/controllers/__init__.py`.
-- `flask make:model` scaffolds a SQLAlchemy model and can optionally wire RESTful controllers, routes, and views.
+- `flask make:controller` scaffolds a controller class and can optionally scaffold CRUD routes/views plus model generation (`--model` or `-m`, with `--flat/--nest` for inferred nested candidates).
+- `flask make:model` scaffolds a SQLAlchemy model and can optionally wire RESTful controllers, routes, and views (`--crud`, with `--flat/--nest` for nested model selection).
 
 All generated code is plain Flask with no hidden runtime layers; every file is created on disk.
 The goal is to remove repetitive setup work while keeping everything local and transparent.
@@ -35,8 +35,9 @@ pip install Flask-Commands
 ## Quick Start
 
 ```bash
-flask new myproject          # prompts for SQLite; use --db/--no-db to skip the prompt
+flask new myproject          # includes a SQLite DB scaffolding by default
 cd myproject
+# optional: flask new myproject --no-db
 ```
 
 Recommended (macOS):
@@ -65,10 +66,17 @@ flask run --debug
 
 ## Cheat sheet
 
-- `flask new myproject` — Scaffold a new Flask project.
-- `flask make:view posts.index -rcm` — View + route + controller + model. Nested paths supported.
-- `flask make:controller PostController --crud -m` — RESTful controller, routes, templates, and a model scaffold.  Nested supported.
-- `flask make:model Post --crud` — Model plus RESTful controller, routes, and views. No nesting.
+- `flask new myproject` — Scaffold a new Flask project (DB enabled by default).
+- `flask new myproject --no-db` — Scaffold without DB packages/models/migrations.
+- `flask make:view posts.index -rcm` — View + route + controller + model. Nesting paths supported.
+- `flask make:view admin.reports.index -r` — Generate route and optionally accept/decline missing-model creation prompt.
+- `flask make:controller PostController --crud -m` — RESTful scaffolding controller, routes, views, and model(s).  Nesting supported.
+- `flask make:controller PostCommentController -m --flat` — Infer model from controller name and force a flattened model.
+- `flask make:controller PostCommentController -m --nest` — Infer model and force nested model generation.
+- `flask make:model Post --crud` — Model plus RESTful scaffolding controller, routes, views and model(s). Nesting supported.
+- `flask make:model UserComment --crud --flat` — RESTful scaffolding with flattened model generation.
+- `flask make:model UserComment --crud --nest` — RESTful scaffolding with nested model generation.
+
 
 ## Examples
 

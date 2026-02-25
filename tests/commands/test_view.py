@@ -235,9 +235,6 @@ def test_make_view_with_generated_route_add_method_decline_model_prompt(project)
         "    return MainController.show()\n"
     )
 
-    print('--------')
-    print(routes_text)
-
     assert routes_text == expected_source
     assert result.exit_code == 0
     assert "Added Route" in result.output

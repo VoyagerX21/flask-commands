@@ -15,21 +15,22 @@ Once the command completes, you’ll see a new directory called ``myproject/``.
 This directory contains everything you need to get a Flask application up and
 running.
 
-Database prompt
+Database option
 ---------------
 
-During the installation process you will be prompted to include a SQLite
-Database:
+``flask new`` includes database support by default.
+
+To skip DB setup, use:
 
 .. code-block:: bash
 
-   Include a SQLite Database? [Y/n]:
+   flask new myproject --no-db
 
-If you press enter without typing anything the default setting of *yes* will
-apply. If you type *n* and press enter then the project will load as normal;
-however, you will not get a models folder and a few python dependances will not
-be installed. A use case for this is if you are developing a static site that
-does not customize the user's experience.
+With default DB setup enabled, Flask-Commands installs DB-related packages,
+creates ``app/models/``, and runs the initial migration/upgrade steps.
+With ``--no-db``, those DB-specific pieces are skipped. A use case for this
+is if you are developing a static site that does not customize the user's
+experience.
 
 What you get
 ------------
@@ -39,9 +40,9 @@ defaults:
 
 - A Python virtual environment ``venv/`` with core Flask dependencies
   pre-installed and listed in ``requirements.txt``.
-- When using --db (enabled by default unless --no-db is specified as an option
-  with the new command), the following are also included:
+- With default DB setup (that is, unless ``--no-db`` is used), the following are included:
 
+  - Flask-Login
   - Flask-Migrate
   - Flask-SQLAlchemy
   - A seeded SQLite database with a users table

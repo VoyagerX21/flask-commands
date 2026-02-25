@@ -22,7 +22,7 @@ from flask_commands.utils.wirings import wire_controller_route_view
 @click.command(name="make:controller")
 @click.argument("controller_name")
 @click.option("--crud", is_flag=True,
-              help="Generate all seven RESTful wirings: routes and controller methods for index/show/create/store/edit/update/destroy, plus view templates for GET actions.")
+              help="Scaffold RESTful routes and controller methods (index/show/create/store/edit/update/destroy), plus GET view templates.")
 @click.option("--model", "model_name", default=None,
               help="Use/create this model name before wiring (for example: Post).")
 @click.option("-m", "--generate-model", is_flag=True,
@@ -38,11 +38,12 @@ def make_controller(
     generate_model: bool,
     force_flat: bool,
     force_nest: bool,) -> None:
-    """Create a controller and optionally scaffold CRUD routes, views, and models.
+    """Create a controller and optionally scaffold models and CRUD wiring.
 
-    Generates `app/controllers/<controller>.py`.
-    Use `--crud` for RESTful scaffolding and `--model` or `-m` to create model file(s).
+    Creates `app/controllers/<controller>.py`.
+    Use `--crud` for RESTful scaffolding and `--model` or `--generate-model` for model generation.
     """
+
     if not file_is_project_root():
         return
 
