@@ -5,11 +5,13 @@ Getting Started
 ---------------
 
 Flask-Commands is a productivity tool that adds a small set of **opinionated but
-transparent** commands to your Flask workflow.
+transparent** commands to your Flask workflow so you have consistent scaffolding,
+convential route/controller/view wiring, nested resources handled cleanly, and
+predictable project layout.
 
 It focuses on removing repetitive setup work—project scaffolding, wiring views,
-controllers, routes, and front-end tooling—while keeping everything local,
-readable, and easy to customize.
+controllers, routes, and models while keeping everything local, readable, and
+easy to customize.
 
 Out of the box, Flask-Commands provides:
 
@@ -26,7 +28,7 @@ Out of the box, Flask-Commands provides:
   - routes / blueprints
   - SQLAlchemy models
   - view templates
-  - supports nesting (interative for RESTful actions with ``-r`` )
+  - supports nesting (including interactive RESTful route/model prompts when using ``-r``)
 
 - ``flask make:controller`` — generates controller files and can optionally scaffold:
 
@@ -46,8 +48,11 @@ Out of the box, Flask-Commands provides:
 
 
 Safeguard: ``flask make:...`` commands only run from a Flask project root (the
-current directory must include ``app/`` and ``run.py``). ``flask new`` can be
-run from any directory.
+current directory must include ``app/`` and ``run.py``).  This is to prevent
+accidental file creation in the wrong directory.  Confession, I have done this
+several times and the feeling is no fun 🤨 on the cleanup.  While
+``flask make:...`` can only run in a Flask project root directory ``flask new``
+can be run from any directory.
 
 All generated code is plain python's lovable Flask framework—no hidden runtime
 layers, no framework lock-in.

@@ -66,47 +66,69 @@ flask run --debug
 
 ## Cheat sheet
 
-- `flask new myproject` — Scaffold a new Flask project (DB enabled by default).
-- `flask new myproject --no-db` — Scaffold without DB packages/models/migrations.
-- `flask make:view posts.index -rcm` — View + route + controller + model. Nesting paths supported.
-- `flask make:view admin.reports.index -r` — Generate route and optionally accept/decline missing-model creation prompt.
-- `flask make:controller PostController --crud -m` — RESTful scaffolding controller, routes, views, and model(s).  Nesting supported.
-- `flask make:controller PostCommentController -m --flat` — Infer model from controller name and force a flattened model.
-- `flask make:controller PostCommentController -m --nest` — Infer model and force nested model generation.
-- `flask make:model Post --crud` — Model plus RESTful scaffolding controller, routes, views and model(s). Nesting supported.
-- `flask make:model UserComment --crud --flat` — RESTful scaffolding with flattened model generation.
-- `flask make:model UserComment --crud --nest` — RESTful scaffolding with nested model generation.
+- `flask new blog_app` — New Flask project with DB scaffolding (default).
+- `flask new blog_app --no-db` — New Flask project without DB setup.
+- `flask make:view about` — Template only (`app/templates/about.html`).
+- `flask make:view posts.index -rcm` — View + route + controller + model for blog posts.
+- `flask make:view posts.show -rc` — Add/show route + controller method for an existing post resource.
+- `flask make:controller PostController --crud` — Full RESTful controller/routes/views (and model if missing).
+- `flask make:controller PostCommentController -m --flat` — Generate model from controller name, force flat model.
+- `flask make:controller PostCommentController -m --nest` — Generate model from controller name, force nested model.
+- `flask make:model Post --crud` — Model + RESTful controller/routes/views.
+- `flask make:model PostComment --crud --flat` — CRUD scaffolding with flattened model generation.
+- `flask make:model PostComment --crud --nest` — CRUD scaffolding with nested model generation.
 
 
 ## Examples
 
-Here are a few commands and what they do so you can see the speed and consistency gains.
+Here are a few commands and what they do so you can see the speed,
+consistency gains, and how commands combine in practice.
 
-```bash
-flask make:view about -rc
-```
-Creates a new template, adds a controller method, and wires up a route in one step.
+### 1) Create a post index page with full wiring
 
 ```bash
 flask make:view posts.index -rcm
 ```
-Generates the view, controller method, route, and a matching model scaffold with consistent naming.
 
+This scaffolds:
+
+- the view at ``index.html``
+- controller with method index at ``post_controller.py``
+- routes with /posts at ``routes.py``
+- model at ``post.py`` plus registration in ``__init__.py``
+
+### 2) Add a post detail page to the same resource
 ```bash
-flask make:view recipes.comments.index -rcm
+flask make:view posts.show -rc
 ```
-Scaffolds nested resources with dotted notation, keeping folders and routes consistent.
 
+Because Post is already registered, route inference generates the RESTful show route:
+
+- ``/posts/<int:post_id>``
+- controller method signature includes post_id
+
+
+### 3) Generate a full blog post CRUD surface from controller-first workflow
 ```bash
 flask make:controller PostController --crud
 ```
-Builds a full RESTful controller, routes, and templates so you do not hand-write seven actions.
+This scaffolds the seven RESTful actions across:
 
+- controller (PostController)
+- routes (app/routes/posts/)
+- GET view templates (index, show, create, edit)
+- plus model creation when the terminal resource model is missing
+
+### 4) Handle nested post/comment model shape intentionally
 ```bash
-flask make:model Comment --crud
+flask make:model PostComment --crud
 ```
-Creates a model and wires a RESTful controller, routes, and views for a complete resource.
 
+If nested candidates are detected, you’ll get a prompt to choose flatten vs nested.
+To skip the prompt explicitly:
+
+flask make:model PostComment --crud --flat
+flask make:model PostComment --crud --nest
 
 ## Contributing
 

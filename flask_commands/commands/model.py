@@ -74,12 +74,12 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
                 click.echo(f"  2) (nested model chain) = {' -> '.join(nested_model_names)}")
 
             choice = click.prompt(
-                "Choose model structure (1/2, flatten/nested)",
-                type=click.Choice(["1", "2", "flatten", "nested"], case_sensitive=False),
+                "Choose model structure (1/2, flat/nest)",
+                type=click.Choice(["1", "2", "flat", "nest"], case_sensitive=False),
                 default="1",
                 show_choices=False,
                 show_default=True).lower()
-            if choice in ["2", "nested"]:
+            if choice in ["2", "nest"]:
                 use_nested = True
                 models_to_create = nested_model_names
 

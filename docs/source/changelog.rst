@@ -9,35 +9,35 @@ Unreleased
 ----------
 Added
 ~~~~~
-- Add YouTube tutorial: "Flask Commands - Part 1 - Installing Flask Commands"
-  (https://youtu.be/8O4FeEU_IhM).
-- Add `normalize_dotted_path_with_action` helper for standardizing dotted view inputs.
-- Add `model_get_registered_models` to parse `app/models/__init__.py` imports via AST.
-- Add tests for model registry parsing edge cases, dotted path normalization, and template copy ignores.
-- Document future command goals, routing prompts, and naming conventions in package_goals.md.
-- Added `RouteSpec`-based route analysis in `flask_commands/utils/routes.py`.
-- Added `_generate_route_spec()` to compute normalized route metadata and candidate flat/nested routes.
-- Added route helper functions:
-  - `route_generate_route()`
-  - `_generate_prompt_plan()`
-  - `route_parse_route_name_for_params_and_types()`
-- Added `generate_restful_route()` in `flask_commands/utils/scaffold.py`.
-- Added extensive route/scaffold test coverage for route inference and edge cases.
+- Add ``--no-db`` support to ``flask new`` for no-database project scaffolding.
+- Add no-DB app template scaffold at ``flask_commands/project_no_db/app/__init__.py``.
+- Add model-structure overrides:
+  - ``flask make:model ... --crud --flat|--nest``
+  - ``flask make:controller ... -m --flat|--nest``
+- Add interactive nested model-selection prompts for ``make:model`` and ``make:controller`` inference flows.
+- Add RouteSpec-driven route analysis/prompt planning helpers in ``flask_commands/utils/routes.py``.
+- Add nested parent-route scaffolding helpers for multi-level blueprint setup.
+- Add docs infrastructure for videos/navigation:
+  - custom ``youtube_embed`` directive
+  - docs navigation template override
+- Add new utility test modules for ``venv`` and ``wirings`` and broaden command/utils coverage.
 
 Changed
 ~~~~~~~
-- Normalize dotted path handling across `make:view`, route inference, and wiring using `dotted_path_with_action`.
-- Update `split_dotted_path_with_action_into_relative_path_and_action` to accept pre-normalized input instead of lowercasing internally.
-- Rename internal `file_copy_templates` template root variable for clarity.
-- Updated route generation internals to use explicit model-registration lookups and segment-level model matching.
-- Updated normalization behavior in `normalize_dotted_path_with_action()`.
-- Updated command and wiring modules to align with renamed/relocated route utilities.
-- `normalize_dotted_path_with_action()` now returns `(is_valid, value_or_error)` instead of a plain normalized string.
-- Legacy route utility names were renamed (for example, folder-path and parse helpers), requiring call-site updates.
+- Refactor dotted-path normalization and parsing into a consistent ``dotted_path_with_action`` flow across view/model/route wiring.
+- Refactor model hierarchy inference to be registry-aware and normalize inferred model names to PascalCase.
+- Refactor CRUD scaffolding to be model-aware for nested controller/model generation.
+- Refactor route creation/registration into helper-driven steps with clearer failure aggregation.
+- Update ``flask new`` dependency/template flow to support DB-enabled and no-DB scaffolds.
+- Raise supported Python version to ``>=3.11,<4.0``.
+- Refresh command docs (introduction/new/make_view/nested_resources/rest_actions/index) to match new CLI behavior.
 
 Fixed
 ~~~~~
-- Clarify model/namespace detection rules and compound child model routing behavior.
+- Prevent partial route setup in nested parent-route failure scenarios.
+- Improve failure immutability for route write/registration edge cases.
+- Fix mobile docs logo/navigation behavior on command pages.
+- Remove stale/incorrect unreleased changelog references to non-existent helper names/files.
 
 0.2.4 - 2026-01-26
 -------------------

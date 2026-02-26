@@ -29,28 +29,62 @@ The file includes:
 - ``store_in_database`` and ``delete_from_database`` helpers
 - a simple ``__repr__`` for debugging
 
-Nested model selection (with ``--crud``)
-----------------------------------------
+CRUD Scaffolding and Nested Model Selection
+-------------------------------------------
 
-When a model name can be interpreted as nested (for example ``UserComment``),
-Flask-Commands can prompt you to choose between flattened and nested generation:
-
-.. code-block:: bash
-
-   flask make:model UserComment --crud
-
-You can skip the prompt with:
+Add ``--crud`` to generate a matching controller, routes, and views for the
+seven RESTful actions.
 
 .. code-block:: bash
 
-   flask make:model UserComment --crud --flat
-   flask make:model UserComment --crud --nest
+   flask make:model Recipe --crud
+
+This creates:
+
+- ``app/models/recipe.py``
+- ``app/controllers/recipe_controller.py``
+- ``app/routes/recipes/`` with ``routes.py`` and ``__init__.py``
+- ``app/templates/recipes/`` for GET actions (``index``, ``show``, ``create``, ``edit``)
+
+Prompt behavior for nested candidates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When the model name can be interpreted as nested (for example
+``RecipeIngredient`` with ``Recipe`` already registered), Flask-Commands prompts
+for structure:
+
+.. code-block:: text
+
+   Detected nested model structure:
+     1) (flat model) = RecipeIngredient
+     2) (nest leaf model) = Ingredient
+   Choose model structure (1/2, flat/nest) [1]:
+
+If you choose flat (``1``/``flat``):
+
+- Models generated: ``RecipeIngredient``
+- Controller layer: ``RecipeIngredientController``
+- Route layer: flat CRUD routes under ``/recipe-ingredients``
+- View layer: ``app/templates/recipe_ingredients/``
+
+If you choose nest (``2``/``nest``):
+
+- Models generated: ``Ingredient`` (with existing ``Recipe`` as parent model)
+- Controller layer: ``RecipeIngredientController``
+- Route layer: nested CRUD routes under ``/recipes/<int:recipe_id>/ingredients``
+- View layer: ``app/templates/recipes/ingredients/``
+
+Skip the prompt with overrides:
+
+.. code-block:: bash
+
+   flask make:model RecipeIngredient --crud --flat
+   flask make:model RecipeIngredient --crud --nest
 
 Rules:
 
 - ``--flat`` and ``--nest`` are mutually exclusive.
 - ``--flat`` and ``--nest`` require ``--crud``.
-
 
 Wrap-up
 -------

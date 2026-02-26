@@ -90,12 +90,12 @@ def make_controller(
     elif generate_model:
         non_nested_model_name, nested_model_names = \
             model_generate_model_name_from_controller_name(controller_name)
-        forced_choice = "flatten" if force_flat else "nested" if force_nest else None
+        forced_choice = "flat" if force_flat else "nest" if force_nest else None
         if any(nested_model_names):
             namespace, parent_models, child_model_name = \
                 model_generate_hierarchy_from_controller_name(controller_name)
             if forced_choice:
-                use_flatten = forced_choice == "flatten"
+                use_flatten = forced_choice == "flat"
             elif parent_models:
                 click.echo(
                     "Detected nested models:\n" + " -> ".join(parent_models)
@@ -103,12 +103,12 @@ def make_controller(
                 click.echo(f"  1) (flatten resource model) = {non_nested_model_name}")
                 click.echo(f"  2) (nested generated model) = {nested_model_names[0]}")
                 choice = click.prompt(
-                    "Choose model structure (1/2, flatten/nested):",
-                    type=click.Choice(["1", "2", "flatten", "nested"], case_sensitive=False),
+                    "Choose model structure (1/2, flat/nest):",
+                    type=click.Choice(["1", "2", "flat", "nest"], case_sensitive=False),
                     default="1",
                     show_choices=False,
                     show_default=True).lower()
-                use_flatten = choice in ["1", "flatten"]
+                use_flatten = choice in ["1", "flat"]
             # If parent_models are empty and nested_model_names is not then
             # then _generate_nested_model_names_from_controller_name
             # puts the namespace in nested_model_names
@@ -120,10 +120,10 @@ def make_controller(
                 click.echo(f"2 (generate the folowing models) = {', '.join(nested_model_names)}")
                 choice = click.prompt(
                     "Enter choice:",
-                    type=click.Choice(["1", "2", "flatten", "nested"], case_sensitive=False),
+                    type=click.Choice(["1", "2", "flat", "nest"], case_sensitive=False),
                     default=1,
                     show_choices=False).lower()
-                use_flatten = choice in ("1", "flatten")
+                use_flatten = choice in ("1", "flat")
 
             if parent_models:
                 chosen = non_nested_model_name if use_flatten else nested_model_names[0]
@@ -133,10 +133,10 @@ def make_controller(
         else:
             model_names = [non_nested_model_name]
         generated_models = ', '.join(model_names)
-        if forced_choice == "flatten":
+        if forced_choice == "flat":
             click.secho(f"💡 Info: Using --flat. Generated model(s): "
                         f"{generated_models}", fg="cyan")
-        elif forced_choice == "nested":
+        elif forced_choice == "nest":
             click.secho(f"💡 Info: Using --nest. Generated model(s): "
                         f"{generated_models}", fg="cyan")
         else:

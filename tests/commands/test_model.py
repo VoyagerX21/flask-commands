@@ -245,7 +245,7 @@ def test_make_model_errors_when_name_cannot_be_generated(project):
 
 def test_make_model_with_crud_nested_leaf_flatten_choice(project):
     runner = CliRunner()
-    result = runner.invoke(make_model, ["UserComment", "--crud"], input="flatten\n")
+    result = runner.invoke(make_model, ["UserComment", "--crud"], input="flat\n")
 
     assert result.exit_code == 0, result.output
 
@@ -352,7 +352,7 @@ def test_make_model_with_crud_nested_leaf_flatten_choice(project):
 
 def test_make_model_with_crud_nested_leaf_nested_choice(project):
     runner = CliRunner()
-    result = runner.invoke(make_model, ["UserComment", "--crud"], input="nested\n")
+    result = runner.invoke(make_model, ["UserComment", "--crud"], input="nest\n")
 
     assert result.exit_code == 0, result.output
 
@@ -462,7 +462,7 @@ def test_make_model_with_crud_nested_leaf_nested_choice(project):
 
 def test_make_model_with_crud_nested_chain_nested_choice(project):
     runner = CliRunner()
-    result = runner.invoke(make_model, ["PostComment", "--crud"], input="nested\n")
+    result = runner.invoke(make_model, ["PostComment", "--crud"], input="nest\n")
 
     assert result.exit_code == 0, result.output
 

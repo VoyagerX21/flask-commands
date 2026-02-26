@@ -26,10 +26,6 @@ generates views, routes, controllers, and models so you can stay in flow (and
 spend less time wiring the same things together, impeccably, for the hundredth
 time).
 
-This is still very much in beta, so do try it out with the usual sensible
-precautions: preferably not one you *need* by in the next two days; however,
-my hope is you will be able use this package for this very reason in the near future.
-
 Current Release: |release|
 
 .. toctree::

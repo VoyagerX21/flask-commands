@@ -27,23 +27,27 @@ Common patterns
      - Scaffold a new Flask project with a database and migrations.
    * - ``flask new myproject --no-db``
      - Scaffold a Flask project without DB packages/models/migrations.
-   * - ``flask make:view VIEW_NAME``
+   * - ``flask make:view about``
      - Create a template only (no wiring).
-   * - ``flask make:view admin.reports.index -r``
+   * - ``flask make:view recipes.index -rcm``
+     - Create recipe index view + route + controller + model in one command.
+   * - ``flask make:view recipes.ingredients.show -rc``
+     - Add a nested show template for ingredients under recipes and wire route + controller method.
+   * - ``flask make:view admin.recipes.comments.index -r``
      - Generate a route and optionally accept/decline missing-model creation prompt.
-   * - ``flask make:view VIEW_NAME -rc``
-     - Create a template and wire up a route + controller method.
-   * - ``flask make:view VIEW_NAME -rcm``
-     - Create a template and wire up route + controller + model (when it makes sense).
-   * - ``flask make:controller RecipeCommentController -m --flat``
-     - Infer model from controller name and force flattened generation.
-   * - ``flask make:controller CONTROLLER_NAME --crud``
-     - Create a controller, routes, and templates for the seven RESTful actions.
-   * - ``flask make:controller CONTROLLER_NAME --crud -m``
-     - Create a controller, routes, and templates for the seven RESTful actions, plus a model.
-   * - ``flask make:model MODEL_NAME``
-     - Create a model and register it in ``app/models/__init__.py``.
-   * - ``flask make:model MODEL_NAME --crud``
-     - Create a model plus RESTful controller, routes, and views.
-   * - ``flask make:model RecipeComment --crud --nest``
-     - Scaffold CRUD and force nested model generation.
+   * - ``flask make:controller RecipeController --crud -m``
+     - Scaffold full RESTful recipe controller/routes/views and create a recipe model.
+   * - ``flask make:controller RecipeIngredientController --crud``
+     - Scaffold nested RESTful ingredient routes/views under recipes.
+   * - ``flask make:controller RecipeIngredientController -m --flat``
+     - Infer model from controller name and forces flattened model generation.
+   * - ``flask make:controller RecipeIngredientController -m --nest``
+     - Infer model from controller name and forces nested model generation.
+   * - ``flask make:model Ingredient``
+     - Create and register a single ``Ingredient`` model scaffold.
+   * - ``flask make:model Ingredient --crud``
+     - Create and register a single ``Ingredient`` model scaffold plus RESTful controller, routes, and views.
+   * - ``flask make:model RecipeIngredient --crud --flat``
+     - Create ``RecipeIngredient`` and scaffold flat CRUD layers.
+   * - ``flask make:model RecipeIngredient --crud --nest``
+     - Create nested ``Ingredient`` model flow with nested CRUD routes/views.

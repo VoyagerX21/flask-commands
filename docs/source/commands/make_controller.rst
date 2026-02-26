@@ -25,7 +25,7 @@ A Controller with RESTful actions (--crud)
 ------------------------------------------
 
 Life is all about the options and ``--crud`` is a life saving option. This
-option produces injects the seven RESTful actions, into the controller file,
+option injects the seven RESTful actions, into the controller file,
 and the routes, plus it wires everything up with matching templates.
 
 For our cooking website suppose we need to have an 'ingredient' object. Here
@@ -205,7 +205,7 @@ With this small change you recieve a lot of structure benefits in your code.
     - The controller file registered propertly in ``app/controllers/__init__.py``.
 - A blueprint routes folder under ``app/routes/recipes/ingredients``
     - The routes file contains all seven RESTful routes.
-    - The new ingredients blueprint registered in the recipes blueprint
+    - The new ingredients blueprint registered in the recipes blueprint so nested endpoint names work with the dotted structure ``recipes.ingredients.index``
 - Four templates under ``app/templates/recipes/ingredients`` (``index``, ``show``, ``create``, ``edit``).
 
 
@@ -293,6 +293,48 @@ Notice the ``-m`` generator flag to create the Recipe Model, and then you would 
 .. code-block:: bash
 
    flask make:controller RecipeIngredientController --crud -m
+
+Working with inferred models in nested controllers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you add ``-m`` / ``--generate-model``, Flask-Commands can prompt for model
+structure when nested candidates exist:
+
+.. code-block:: bash
+
+   flask make:controller RecipeIngredientController --crud -m
+
+.. code-block:: text
+
+   Detected nested models:
+   Recipe
+     1) (flat resource model) = RecipeIngredient
+     2) (nest generated model) = Ingredient
+   Choose model structure (1/2, flat/nest): [1]
+
+If you choose flatten:
+
+- model generated: ``RecipeIngredient``
+- CRUD route group: ``/recipe-ingredients``
+
+If you choose nested:
+
+- model generated: ``Ingredient``
+- CRUD route group: ``/recipes/<int:recipe_id>/ingredients``
+
+You can skip the prompt with:
+
+.. code-block:: bash
+
+   flask make:controller RecipeIngredientController --crud -m --flat
+   flask make:controller RecipeIngredientController --crud -m --nest
+
+Rules:
+
+- ``--flat`` and ``--nest`` are mutually exclusive.
+- ``--flat`` / ``--nest`` require ``-m`` / ``--generate-model``.
+- ``--flat`` / ``--nest`` cannot be combined with explicit ``--model``.
+
 
 Wrap-up
 -------
