@@ -61,6 +61,9 @@ html_theme_options = {
     "github_repo": "flask-commands",
     "github_button": True,
     "github_banner": True,
+    "show_relbars": True,
+    "show_relbar_top": False,
+    "show_relbar_bottom": True,
     "extra_nav_links": {
         "GitHub": "https://github.com/drewbutcher/flask-commands",
         "PyPI": "https://pypi.org/project/flask-commands/",

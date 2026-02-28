@@ -77,7 +77,8 @@ def make_controller(
         relative_path=None,
         action=None,
         controller_name=controller_name,
-        route_name=None)
+        route_name=None,
+        view_directory=None)
     click.echo(message)
     all_successful = all_successful and is_successful
 

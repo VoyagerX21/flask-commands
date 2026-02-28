@@ -22,15 +22,43 @@ def controller_add_method(
         relative_path: str,
         action: str,
         controller_name: str,
-        route_name: str | None = None) -> tuple[bool, str]:
+        route_name: str | None = None,
+        view_directory: str | None = None) -> tuple[bool, str]:
     """
     Add a static method to an existing controller class.
 
-    Ensures needed Flask imports exist (`render_template` for GET-style actions,
-    `redirect, url_for` for POST-style actions), inserts the method into the target
-    controller class, and returns a `(success, message)` tuple. If the method
-    already exists or the class cannot be found, no file changes are made and a
-    warning is returned.
+    This function ensures the required Flask imports exist, locates the target
+    controller class, and inserts a new `@staticmethod` method for the given
+    action.
+
+    For GET-style actions, the generated method returns
+    `render_template('<template_path>')`. The template path is built from
+    `view_directory` when it is provided; otherwise it falls back to
+    `relative_path`. In normal usage, `view_directory` is usually the same as
+    `relative_path`, but inferred root wiring may pass `'mains'` so root view
+    templates render from the default namespace.
+
+    For POST-style actions (`store`, `update`, `destroy`, `delete`), the
+    generated method returns a redirect to the `.index` route for the current
+    relative path using `url_for(...)`.
+
+    If `route_name` is provided, typed route parameters are parsed and included
+    in the generated method signature. If the method already exists or the
+    controller class cannot be found, no file changes are made.
+
+    Args:
+        relative_path (str): Slash-delimited path used for route references
+            and as the default template directory.
+        action (str): Method name to add to the controller.
+        controller_name (str): Target controller class name.
+        route_name (str | None): Optional route rule used to derive typed
+            method parameters.
+        view_directory (str | None): Optional template directory override for
+            generated GET methods. This is typically `relative_path`, but may
+            be `'mains'` for inferred root view wiring.
+
+    Returns:
+        tuple[bool, str]: Success flag and styled status message.
     """
     try:
         controller_file_path = os.path.join(
@@ -113,8 +141,10 @@ def controller_add_method(
                 f"return redirect(url_for('{redirect_route_reference}" + \
                 f".index'{parameter_reference}))"
         else:
+            template_directory = \
+                relative_path if view_directory is None else view_directory
             relative_view_file_path = \
-                os.path.join(relative_path, f"{action}.html")
+                os.path.join(template_directory, f"{action}.html")
             return_line = \
                 f"        return render_template('{relative_view_file_path}')"
 
@@ -225,23 +255,51 @@ def controller_make_file(
         relative_path: str | None,
         action: str | None, # method_name
         controller_name: str,
-        route_name: str | None = None) -> tuple[bool, str]:
-    """Create a new controller file and optionally scaffold one initial method.
+        route_name: str | None = None,
+        view_directory: str | None = None) -> tuple[bool, str]:
+    """
+    Create a new controller file and optionally scaffold one initial method.
 
-    When `action` is provided, `relative_path` must also be provided (and vice versa).
-    With no `action`, the generated class body is `pass`. With an `action`, this
-    function adds a `@staticmethod` method and required Flask imports:
-    `render_template` for GET-style actions, or `redirect, url_for` for POST-style
-    actions (`store`, `update`, `destroy`, `delete`). If `route_name` is provided,
-    typed parameters are parsed and included in the generated method signature.
+    When `action` is provided, `relative_path` must also be provided (and vice
+    versa). With no `action`, the generated class body is `pass`.
 
-    After creating `app/controllers/<controller_file>.py`, the function attempts to
-    append the controller import to `app/controllers/__init__.py`.
+    When an `action` is provided, this function adds a `@staticmethod` method
+    and the required Flask imports:
+    - `render_template` for GET-style actions
+    - `redirect, url_for` for POST-style actions (`store`, `update`,
+      `destroy`, `delete`)
+
+    For GET-style actions, the generated method returns
+    `render_template('<template_path>')`. The template path is built from
+    `view_directory` when it is provided; otherwise it falls back to
+    `relative_path`. In normal usage, `view_directory` is usually the same as
+    `relative_path`, but inferred root wiring may pass `'mains'` so root view
+    templates render from the default namespace.
+
+    If `route_name` is provided, typed route parameters are parsed and included
+    in the generated method signature.
+
+    After creating `app/controllers/<controller_file>.py`, the function
+    attempts to append the controller import to `app/controllers/__init__.py`.
+
+    Args:
+        relative_path (str | None): Slash-delimited path used for route
+            references and as the default template directory when `action` is
+            provided.
+        action (str | None): Optional method name to scaffold in the new
+            controller.
+        controller_name (str): Controller class name to create.
+        route_name (str | None): Optional route rule used to derive typed
+            method parameters.
+        view_directory (str | None): Optional template directory override for
+            generated GET methods. This is typically `relative_path`, but may
+            be `'mains'` for inferred root view wiring.
 
     Returns:
-        tuple[bool, str]: `(is_successful, message)` where messages are styled for
-        success/warning/error cases. Returns `False` for validation failures, existing
-        controller file, controller registration failures, or unexpected exceptions.
+        tuple[bool, str]: `(is_successful, message)` where the message is a
+        styled success, warning, or error message. Returns `False` for
+        validation failures, existing controller file, controller registration
+        failures, or unexpected exceptions.
 
     Note:
         If `__init__.py` is missing, the controller file may still be created even
@@ -280,8 +338,10 @@ def controller_make_file(
                 f"        return redirect(url_for('{redirect_route_reference}"
                 f".index'{parameter_reference}))")
         else:
+            template_directory = \
+                relative_path if view_directory is None else view_directory
             relative_view_file_path = \
-                os.path.join(relative_path, f"{action}.html")
+                os.path.join(template_directory, f"{action}.html")
             contents.append(f"        return render_template('"
                             f"{relative_view_file_path}')")
     else:

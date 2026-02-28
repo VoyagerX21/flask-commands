@@ -50,9 +50,9 @@ Out of the box, Flask-Commands provides:
 Safeguard: ``flask make:...`` commands only run from a Flask project root (the
 current directory must include ``app/`` and ``run.py``).  This is to prevent
 accidental file creation in the wrong directory.  Confession, I have done this
-several times and the feeling is no fun 🤨 on the cleanup.  While
+several times and the feeling is not fun 🤨 expecally on the cleanup.  While
 ``flask make:...`` can only run in a Flask project root directory ``flask new``
-can be run from any directory.
+is runnable in any directory.
 
 All generated code is plain python's lovable Flask framework—no hidden runtime
 layers, no framework lock-in.
@@ -182,7 +182,7 @@ Start with something simple, like a static **About** page:
 
 This creates an ``about.html`` template in your templates directory and that's it.
 You are left to wire up the template 😢.  Don't worry that's why we have flags 🎉.
-We will show this in more detail in the :ref:`Commands section <commands>`.
+We will show this in more detail in the :ref:`Commands <commands>` section.
 For now just check your templates folder and you should see the new ``about.html`` file.
 
 
@@ -198,16 +198,22 @@ For example, to generate a button component:
    flask make:view components.buttons
 
 This places the template under the ``components/`` directory, making it easy
-to include across multiple pages while keeping your UI files organized.
+to include across multiple pages while keeping your UI files organized.  Notice
+the dot notation, in Flask-Commands for ``flask make:view`` dots translate
+to folder structure while underscores translate to multi words.
 
 
 Introducing Models
 ~~~~~~~~~~~~~~~~~~
 
-As your application grows, views can be scaffolded and wired up alongside their related
-backend pieces.
+As your application grows you will want more then just simple view files, you
+will want to wire up a view to backend logic.  Flask-Commands provide simple
+to remember generator flags that will scaffold and wire up all you backend
+pieces.
 
-The ``-c``, ``-r``, and ``-m`` flags allow you to automatically generate:
+The ``-c``, ``-r``, and ``-m`` flags allow you to automatically generate the
+needed **controller** (c), **route** (r) and **model** (m) to propertly
+render a view.
 
 - ``-c`` — a controller method
 - ``-r`` — a route and/or blueprint if needed
@@ -247,7 +253,7 @@ visible in the filesystem.
 
 This section is meant to get you started quickly with ``flask make:view``.
 For a deeper dive into flags, behavior, and examples, head over to the
-:ref:`Commands section <commands>`.
+:ref:`Commands <commands>` section.
 
 Video Tutorial
 ~~~~~~~~~~~~~~

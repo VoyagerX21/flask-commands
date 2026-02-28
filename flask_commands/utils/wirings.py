@@ -14,42 +14,58 @@ def wire_controller_route_view(
     relative_path: str,
     action: str,
     controller_name: str | None,
-    route_name: str | None
+    route_name: str | None,
+    is_view_directory_mains: bool = False,
 ) -> tuple[bool, list[str]]:
     """
-    Wire together view, controller, and route for a given action.
+    Wire together the view, controller, and route for a single action.
 
-    Creates a view file for GET actions, ensures a controller method exists
-    (creating the controller if needed), and adds or creates the route and
-    blueprint for the given dotted path. Collects success/error messages for
-    each step and returns overall status.
+    For GET actions, this creates the view template first. The template is
+    normally written under `app/templates/<relative_path>/`. When
+    `is_view_directory_mains` is True, root view generation is grouped under
+    `app/templates/mains/`, and any generated controller method will render
+    that same template path.
+
+    If `controller_name` is provided, this function ensures the controller
+    method exists by adding it to an existing controller file or creating the
+    controller file first.
+
+    If `route_name` is provided, this function appends the route to an existing
+    route package or creates and registers the route package when it does not
+    yet exist. Root routes use the `mains` route package.
 
     Args:
-        dotted_path_with_action (str): Dotted path like "posts.comments.show".
-        relative_path (str): Slash-delimited path like "posts/comments".
-        action (str): Action name (e.g., "index", "show", "store").
-        controller_name (str | None): Controller class name or None.
-        route_name (str | None): URL path like "/posts/<int:post_id>".
+        relative_path (str): Slash-delimited path before the action
+            (examples: "", "posts", "posts/comments").
+        action (str): Action name (examples: "index", "show", "store").
+        controller_name (str | None): Controller class name to use, if any.
+        route_name (str | None): URL rule to wire, if any.
+        is_view_directory_mains (bool): When True, use the default `mains`
+            template namespace for inferred root GET views.
 
     Returns:
-        tuple[bool, list[str]]: Overall success flag and list of messages.
+        tuple[bool, list[str]]: Overall success flag and collected step messages.
 
     Examples:
         >>> is_successful, messages = wire_controller_route_view(
         ...     relative_path="posts",
         ...     action="index",
         ...     controller_name="PostController",
-        ...     route_name="/posts"
+        ...     route_name="/posts",
         ... )
         >>> is_successful
         True
     """
+
     messages = []
     all_successful = True
 
+    view_directory = "mains" if is_view_directory_mains else relative_path
+
     method = route_http_method_for_action(action)
     if method == "GET":
-        relative_view_file_path = os.path.join(relative_path, f"{action}.html")
+        relative_view_file_path = \
+            os.path.join(view_directory, f"{action}.html")
         destination_file_path = \
             os.path.join("app", "templates", relative_view_file_path)
 
@@ -71,20 +87,23 @@ def wire_controller_route_view(
                 relative_path,
                 action,
                 controller_name,
-                route_name)
+                route_name,
+                view_directory)
         # else create the controller and the method
         else:
             is_successful, message = controller_make_file(
                 relative_path,
                 action,
                 controller_name,
-                route_name)
+                route_name,
+                view_directory)
         all_successful = all_successful and is_successful
         messages.append(message)
 
     # If a controller_name was provided or generated
     if route_name:
-        route_directory_path = os.path.join("app", "routes", relative_path)
+        route_directory_path = os.path.join(
+            "app", "routes", relative_path if relative_path else 'mains')
         try:
             if os.path.exists(route_directory_path):
                 is_successful, message = \

@@ -118,14 +118,17 @@ def route_add_method(relative_path: str,  action: str, route_directory_path: str
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
 
-    _, parameters = route_parse_route_name_for_params_and_types(route_name)
-    parameter_reference = _generate_parameter_reference_example(parameters)
-    update_messages = "".join(click.style(f"    - {update}\n", fg="green") for update in updates)
+    updates.extend([
+        _generate_route_visit_example(route_name),
+        _generate_route_url_for_reference_call(relative_path, action, route_name)
+    ])
+
+    update_messages = "".join(
+        click.style(f"    - {update}\n", fg="green") for update in updates)
 
     message = (
         click.style("✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
-        click.style(update_messages, fg="green") +
-        click.style(f"    - Reference route with url_for('{relative_path.replace('/', '.')}.{action}'{parameter_reference})\n", fg="green")
+        click.style(update_messages, fg="green")
     )
     return True, message
 
@@ -434,7 +437,6 @@ def route_write_directory_and_register_blueprint(
             return False, message
 
         #   4) Register the blueprint in either the parent (nested path) or at the app level
-
         is_successful, message = _apply_step_result(
             updates,
             _register_route(
@@ -449,7 +451,13 @@ def route_write_directory_and_register_blueprint(
     except Exception as exception:
         return False, click.style(f"💣 Error: Failed to create route:\n{exception}", fg="red")
 
-    update_messages = "".join(click.style(f"    - {update}\n", fg="green") for update in updates)
+    updates.extend([
+        _generate_route_visit_example(route_name),
+        _generate_route_url_for_reference_call(relative_path, action, route_name)
+    ])
+
+    update_messages = "".join(
+        click.style(f"    - {update}\n", fg="green") for update in updates)
     message = (
         click.style("✅ Success: Created New Route Directory\n", fg="green", bold=True) +
         click.style(update_messages, fg="green")
@@ -469,7 +477,10 @@ def _apply_step_result(
     failure_title: str,
 ) -> tuple[bool, str | None]:
     is_successful, reason = result
-    updates.append(reason)
+
+    if reason:
+        updates.append(reason)
+
     if is_successful:
         return True, None
 
@@ -549,6 +560,23 @@ def _generate_route_init(route_directory_path: str) -> list[str]:
             "",
             f"from {route_directory_path.replace('/', '.')} import routes"
         ]
+
+def _generate_route_url_for_reference_call(relative_path: str, action: str, route_name: str) -> str:
+    _, parameters = route_parse_route_name_for_params_and_types(route_name)
+    parameter_reference = _generate_parameter_reference_example(parameters)
+    return (
+        f"Reference route with url_for(" +
+        f"'{relative_path.replace('/', '.') if relative_path else 'mains'}"
+        f".{action}'{parameter_reference})"
+    )
+
+def _generate_route_visit_example(route_name: str) -> str:
+    _, parameters = route_parse_route_name_for_params_and_types(route_name)
+    relative_url = route_name
+    for i, parameter in enumerate(parameters, start=1):
+        relative_url = \
+            re.sub(rf"<\w+:{parameter}>", str(i), relative_url, count=1)
+    return f"Visit the new route at {relative_url}"
 
 def _generate_route_method(
         action: str,
@@ -700,7 +728,7 @@ def _register_top_level_blueprint_in_app(route_directory_path) -> tuple[bool, st
     new_content = source[:insert_index] + new_blueprint + source[insert_index:]
     with open(app_init_path, "w") as f:
         f.write(new_content)
-    return True, f"Registered the new route directory as {blueprint_name.replace('/', '_')}_blueprint  at app/__init__.py"
+    return True, f"Registered the new route directory as {blueprint_name.replace('/', '_')}_blueprint at app/__init__.py"
 
 def _register_route(relative_path: str, route_directory_path: str) -> tuple[bool, str]:
     is_nested_blueprint = "/" in relative_path
@@ -719,7 +747,7 @@ def _validate_route_method_can_be_added(action: str, route_file_path: str, ) -> 
     if re.search(func_pattern, existing_file_content, re.MULTILINE):
         return False, f"Route function {action} already exists in {route_file_path}"
 
-    return True, f"Route function {action} ready to add to file {route_file_path}"
+    return True, ""
 
 def _write_init_file(route_directory_path: str) -> tuple[bool, str]:
     route_init_path = os.path.join(route_directory_path, "__init__.py")

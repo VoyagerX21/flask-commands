@@ -52,6 +52,29 @@ def project(tmp_path, monkeypatch):
         "        return render_template('mains/index.html')\n"
     )
 
+    mains_routes_dir = root / "app" / "routes" / "mains"
+    mains_routes_dir.mkdir(parents=True)
+
+    (mains_routes_dir / "__init__.py").write_text(
+        "from flask import Blueprint\n"
+        "\n"
+        "bp = Blueprint('mains', __name__)\n"
+        "\n"
+        "from app.routes.mains import routes\n",
+        encoding="utf-8",
+    )
+
+    (mains_routes_dir / "routes.py").write_text(
+        "from app.controllers import MainController\n"
+        "from app.routes.mains import bp\n"
+        "\n"
+        "@bp.route('/', methods=['GET'])\n"
+        "def index():\n"
+        "    return MainController.index()\n",
+        encoding="utf-8",
+    )
+
+
     app_run_file_path = root / "run.py"
     app_run_file_path.write_text(
         "import os\n"
@@ -99,6 +122,40 @@ def test_make_view_component_only(project):
 
     # Output should mention file created
     assert "Created New View" in result.output
+
+def test_make_view_root_component_only_does_not_change_main_wiring(project):
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["landing"])
+
+    observed_controller_content = (
+        project / "app" / "controllers" / "main_controller.py"
+    ).read_text(encoding="utf-8")
+    expected_controller_content = (
+        "from flask import render_template\n"
+        "\n"
+        "class MainController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('mains/index.html')\n"
+    )
+
+    observed_routes_content = (
+        project / "app" / "routes" / "mains" / "routes.py"
+    ).read_text(encoding="utf-8")
+    expected_routes_content = (
+        "from app.controllers import MainController\n"
+        "from app.routes.mains import bp\n"
+        "\n"
+        "@bp.route('/', methods=['GET'])\n"
+        "def index():\n"
+        "    return MainController.index()\n"
+    )
+
+    assert result.exit_code == 0
+    assert observed_controller_content == expected_controller_content
+    assert observed_routes_content == expected_routes_content
+    assert "Method Added To Controller" not in result.output
+    assert "Added Route" not in result.output
 
 def test_make_view_with_generated_controller(project):
     """
@@ -335,3 +392,142 @@ def test_make_view_controller_exist(project):
 
     assert "Method Added" in result.output
     assert "def show" in controller_file.read_text()
+
+def test_make_view_root_action_with_generated_wiring_uses_mains_template_namespace(project):
+
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["landing", "-rc"])
+
+    observed_controller_content = (
+        project / "app" / "controllers" / "main_controller.py"
+    ).read_text(encoding="utf-8")
+    expected_controller_content = (
+        "from flask import render_template\n"
+        "\n"
+        "class MainController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('mains/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def landing() -> str:\n"
+        "        return render_template('mains/landing.html')"
+    )
+
+    observed_routes_content = (
+        project / "app" / "routes" / "mains" / "routes.py"
+    ).read_text(encoding="utf-8")
+    expected_routes_content = (
+        "from app.controllers import MainController\n"
+        "from app.routes.mains import bp\n"
+        "\n"
+        "@bp.route('/', methods=['GET'])\n"
+        "def index():\n"
+        "    return MainController.index()\n"
+        "\n"
+        "@bp.route('/landing', methods=['GET'])\n"
+        "def landing():\n"
+        "    return MainController.landing()\n"
+    )
+
+    assert result.exit_code == 0
+    assert observed_controller_content == expected_controller_content
+    assert observed_routes_content == expected_routes_content
+    assert (project / "app" / "templates" / "mains" / "landing.html").exists()
+    assert not (project / "app" / "templates" / "landing.html").exists()
+    assert "Added view file at app/templates/mains/landing.html" in result.output
+    assert "url_for('mains.landing')" in result.output
+
+def test_make_view_explicit_mains_root_action_keeps_mains_in_url_and_template(project):
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["mains.landing", "-rc"])
+
+    observed_controller_content = (
+        project / "app" / "controllers" / "main_controller.py"
+    ).read_text(encoding="utf-8")
+    expected_controller_content = (
+        "from flask import render_template\n"
+        "\n"
+        "class MainController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('mains/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def landing() -> str:\n"
+        "        return render_template('mains/landing.html')"
+    )
+
+    observed_routes_content = (
+        project / "app" / "routes" / "mains" / "routes.py"
+    ).read_text(encoding="utf-8")
+    expected_routes_content = (
+        "from app.controllers import MainController\n"
+        "from app.routes.mains import bp\n"
+        "\n"
+        "@bp.route('/', methods=['GET'])\n"
+        "def index():\n"
+        "    return MainController.index()\n"
+        "\n"
+        "@bp.route('/mains/landing', methods=['GET'])\n"
+        "def landing():\n"
+        "    return MainController.landing()\n"
+    )
+
+    assert result.exit_code == 0
+    assert observed_controller_content == expected_controller_content
+    assert observed_routes_content == expected_routes_content
+    assert (project / "app" / "templates" / "mains" / "landing.html").exists()
+    assert not (project / "app" / "templates" / "landing.html").exists()
+    assert "Generated route /mains/landing" in result.output
+    assert "Added view file at app/templates/mains/landing.html" in result.output
+    assert "url_for('mains.landing')" in result.output
+
+
+def test_make_view_root_action_with_explicit_wiring_keeps_root_template(project):
+
+    runner = CliRunner()
+    result = runner.invoke(
+        make_view,
+        ["landing", "--route=/landing", "--controller=MainController"],
+    )
+
+    observed_controller_content = (
+        project / "app" / "controllers" / "main_controller.py"
+    ).read_text(encoding="utf-8")
+    expected_controller_content = (
+        "from flask import render_template\n"
+        "\n"
+        "class MainController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('mains/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def landing() -> str:\n"
+        "        return render_template('landing.html')"
+    )
+
+    observed_routes_content = (
+        project / "app" / "routes" / "mains" / "routes.py"
+    ).read_text(encoding="utf-8")
+    expected_routes_content = (
+        "from app.controllers import MainController\n"
+        "from app.routes.mains import bp\n"
+        "\n"
+        "@bp.route('/', methods=['GET'])\n"
+        "def index():\n"
+        "    return MainController.index()\n"
+        "\n"
+        "@bp.route('/landing', methods=['GET'])\n"
+        "def landing():\n"
+        "    return MainController.landing()\n"
+    )
+
+    assert result.exit_code == 0
+    assert observed_controller_content == expected_controller_content
+    assert observed_routes_content == expected_routes_content
+    assert (project / "app" / "templates" / "landing.html").exists()
+    assert not (project / "app" / "templates" / "mains" / "landing.html").exists()
+    assert "Added view file at app/templates/landing.html" in result.output
+    assert "url_for('mains.landing')" in result.output

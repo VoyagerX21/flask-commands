@@ -34,6 +34,76 @@ def model_builder(tmp_path, monkeypatch):
 
     return project_root
 
+@pytest.fixture
+def project(tmp_path, monkeypatch):
+    project_root = tmp_path
+
+    app_dir = project_root / "app"
+    controllers_dir = app_dir / "controllers"
+    routes_dir = app_dir / "routes" / "mains"
+    templates_dir = app_dir / "templates" / "mains"
+
+    controllers_dir.mkdir(parents=True)
+    routes_dir.mkdir(parents=True)
+    templates_dir.mkdir(parents=True)
+
+    (app_dir / "__init__.py").write_text(
+        "from flask import Flask\n"
+        "from config import config\n"
+        "\n"
+        "def create_app(config_name) -> Flask:\n"
+        "    app = Flask(__name__)\n"
+        "    app.config.from_object(config[config_name])\n"
+        "\n"
+        "    from app.routes.mains import bp as mains_blueprint\n"
+        "    app.register_blueprint(mains_blueprint)\n"
+        "\n"
+        "    return app\n",
+        encoding="utf-8",
+    )
+
+    (controllers_dir / "__init__.py").write_text(
+        "from .main_controller import MainController\n",
+        encoding="utf-8",
+    )
+
+    (controllers_dir / "main_controller.py").write_text(
+        "from flask import render_template\n"
+        "\n"
+        "class MainController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('mains/index.html')\n",
+        encoding="utf-8",
+    )
+
+    (routes_dir / "__init__.py").write_text(
+        "from flask import Blueprint\n"
+        "\n"
+        "bp = Blueprint('mains', __name__)\n"
+        "\n"
+        "from app.routes.mains import routes\n",
+        encoding="utf-8",
+    )
+
+    (routes_dir / "routes.py").write_text(
+        "from app.controllers import MainController\n"
+        "from app.routes.mains import bp\n"
+        "\n"
+        "@bp.route('/', methods=['GET'])\n"
+        "def index():\n"
+        "    return MainController.index()\n",
+        encoding="utf-8",
+    )
+
+    (templates_dir / "index.html").write_text(
+        "<h1>Index</h1>\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(project_root)
+    return project_root
+
 def test_route_add_method_success(tmp_path, monkeypatch):
     project_root = tmp_path
     route_dir = project_root / "app" / "routes" / "users"
@@ -55,7 +125,7 @@ def test_route_add_method_success(tmp_path, monkeypatch):
         relative_path='users',
         action='index',
         route_directory_path='app/routes/users',
-        route_name='users.index',
+        route_name='/users',
         controller_name='UserController')
 
     assert is_successful is True
@@ -86,7 +156,7 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
         relative_path='users',
         action='index',
         route_directory_path='app/routes/users',
-        route_name='users.index',
+        route_name='/users',
         controller_name='UserController')
 
     after_content = route_file.read_text(encoding='utf-8')
@@ -105,7 +175,7 @@ def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
         relative_path='users',
         action='index',
         route_directory_path='app/routes/users',
-        route_name='users.index',
+        route_name='/users',
         controller_name='UserController')
 
     assert (route_dir / "routes.py").exists() is False
@@ -144,7 +214,7 @@ def test_route_add_method_exception(tmp_path, monkeypatch):
         relative_path='users',
         action='index',
         route_directory_path='app/routes/users',
-        route_name='users.index',
+        route_name='/users',
         controller_name='UserController')
 
     after_content = route_file.read_text(encoding='utf-8')
@@ -174,6 +244,36 @@ def test_route_add_method_unexpected_exception_path(monkeypatch):
     assert is_successful is False
     assert "Failed to add method to route" in message
     assert "kaboom" in message
+
+def test_route_add_method_root_relative_path_updates_mains_routes_file(project):
+    route_file = project / "app" / "routes" / "mains" / "routes.py"
+
+    is_successful, message = route_add_method(
+        relative_path="",
+        action="landing",
+        route_directory_path="app/routes/mains",
+        route_name="/landing",
+        controller_name="MainController",
+    )
+
+    observed_content = route_file.read_text(encoding="utf-8")
+    expected_content = (
+        "from app.controllers import MainController\n"
+        "from app.routes.mains import bp\n"
+        "\n"
+        "@bp.route('/', methods=['GET'])\n"
+        "def index():\n"
+        "    return MainController.index()\n"
+        "\n"
+        "@bp.route('/landing', methods=['GET'])\n"
+        "def landing():\n"
+        "    return MainController.landing()\n"
+    )
+
+    assert is_successful is True
+    assert observed_content == expected_content
+    assert "Visit the new route at /landing" in message
+    assert "url_for('mains.landing')" in message
 
 def test_route_write_directory_returns_when_write_routes_step_fails(tmp_path, monkeypatch):
     project_root = tmp_path
