@@ -15,7 +15,7 @@ from flask_commands.utils.models import (
     model_model_names_to_snake_case_names
 )
 from flask_commands.utils.naming import camel_to_snake, singularize
-from flask_commands.utils.routes import route_generate_route_name, route_generate_route_name_with_model_prompt
+from flask_commands.utils.routes import route_generate_route_name
 from flask_commands.utils.wirings import wire_controller_route_view
 
 

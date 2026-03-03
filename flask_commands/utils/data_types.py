@@ -1,5 +1,3 @@
-# flask_commands/utils/types.py
-
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -17,8 +15,9 @@ class CreatedModel:
     model_file_path: str
     status: ScaffoldStatus
 
+# This was CrudActionReference
 @dataclass(frozen=True)
-class CrudActionReference:
+class ActionResult:
     action: str
     http_method: str
     route_path: str
@@ -55,7 +54,7 @@ class CrudResourceResult:
     controller: ControllerResult
     model: ModelResult
     route: RouteResult
-    actions: list[CrudActionReference] = field(default_factory=list)
+    actions: list[ActionResult] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

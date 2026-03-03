@@ -1,7 +1,6 @@
 import re
 import os
 import click
-from dataclasses import dataclass
 from flask_commands.utils.models import (
     model_get_registered_models,
     model_model_names_to_snake_case_names)
