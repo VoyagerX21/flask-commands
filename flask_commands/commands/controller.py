@@ -73,13 +73,16 @@ def make_controller(
 
     # create the controller
     all_successful: bool = True
+    info_updates: list[str] = []
+    message_updates: list[str] = []
+
     is_successful, message = controller_make_file(
         relative_path=None,
         action=None,
         controller_name=controller_name,
         route_name=None,
         view_directory=None)
-    click.echo(message)
+    message_updates.append(message)
     all_successful = all_successful and is_successful
 
     # Generate model name(s) if not provided
@@ -92,7 +95,8 @@ def make_controller(
         non_nested_model_name, nested_model_names = \
             model_generate_model_name_from_controller_name(controller_name)
         forced_choice = "flat" if force_flat else "nest" if force_nest else None
-        if any(nested_model_names):
+        if nested_model_names \
+                and nested_model_names != [non_nested_model_name]:
             namespace, parent_models, child_model_name = \
                 model_generate_hierarchy_from_controller_name(controller_name)
             if forced_choice:
@@ -118,9 +122,9 @@ def make_controller(
                     "Detected multiple child like segments:\n" +
                     ", ".join(nested_model_names))
                 click.echo(f"1 (flatten resource model)  = {non_nested_model_name}")
-                click.echo(f"2 (generate the folowing models) = {', '.join(nested_model_names)}")
+                click.echo(f"2 (generate the following models) = {', '.join(nested_model_names)}")
                 choice = click.prompt(
-                    "Enter choice:",
+                    "Choose model structure (1/2, flat/nest):",
                     type=click.Choice(["1", "2", "flat", "nest"], case_sensitive=False),
                     default=1,
                     show_choices=False).lower()
@@ -135,20 +139,19 @@ def make_controller(
             model_names = [non_nested_model_name]
         generated_models = ', '.join(model_names)
         if forced_choice == "flat":
-            click.secho(f"💡 Info: Using --flat. Generated model(s): "
-                        f"{generated_models}", fg="cyan")
+            info_updates.append(
+                f"Using --flat. Generated model(s): {generated_models}")
         elif forced_choice == "nest":
-            click.secho(f"💡 Info: Using --nest. Generated model(s): "
-                        f"{generated_models}", fg="cyan")
+            info_updates.append(
+                f"Using --nest. Generated model(s): {generated_models}")
         else:
-            click.secho(f"💡 Info: Generated model(s): "
-                        f"{generated_models}", fg="cyan")
+            info_updates.append(f"Generated model(s): {generated_models}")
 
     # If a model_name was provided or generated
     if model_names:
         for model_name in model_names:
             is_successful, message = model_make_file(model_name)
-            click.echo(message)
+            message_updates.append(message)
             all_successful = all_successful and is_successful
 
     if crud:
@@ -164,14 +167,15 @@ def make_controller(
         if relative_path_segments:
             relative_path_last_segment = relative_path_segments[-1]
             is_last_segment_a_model = \
-                relative_path_last_segment in registered_snake_models
+                singularize(relative_path_last_segment) \
+                    in registered_snake_models
 
             if not is_last_segment_a_model:
                 new_model_name = model_generate_model_name_from_dotted_path_with_action(
                     f"{relative_path.replace('/', '.')}.index"
                 )
                 is_successful, message = model_make_file(new_model_name)
-                click.echo(message)
+                message_updates.append(message)
                 all_successful = all_successful and is_successful
 
                 registered_models = model_get_registered_models()
@@ -198,8 +202,22 @@ def make_controller(
                 route_name)
             all_successful = all_successful and is_successful
 
-            for message in messages:
-                click.echo(message)
+            message_updates.extend(messages)
+
+    if info_updates:
+        info_messages = (
+            click.style("💡 Info: Generated From Flags\n", fg="cyan", bold=True) +
+            "".join(
+                click.style(f"    - {update}\n", fg="cyan")
+                for update in info_updates
+            )
+        )
+        click.echo(info_messages)
+
+    if message_updates:
+        for update in message_updates:
+            click.echo(update)
+
 
     if not all_successful:
         click.secho("⚠️  Warning: One or more make controller steps produced a warning or failure.", fg="yellow", bold=True)

@@ -1,6 +1,7 @@
 import os
 import click
 
+from flask_commands.utils.data_types import CrudActionReference, ScaffoldStatus
 from .controllers import controller_add_method, controller_make_file
 from .naming import camel_to_snake
 from .routes import (
@@ -9,6 +10,7 @@ from .routes import (
     route_write_directory_and_register_blueprint
 )
 from .views import view_make_file
+
 
 def wire_controller_route_view(
     relative_path: str,
@@ -128,4 +130,3 @@ def wire_controller_route_view(
             messages.append(click.style(f"💣 Error:\n {exception}", fg="red"))
 
     return all_successful, messages
-

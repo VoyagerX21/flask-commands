@@ -74,7 +74,7 @@ def test_make_model_component_one(project):
     runner = CliRunner()
     result = runner.invoke(make_model, ["Post"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     model_file_path = project / "app" / "models" / "post.py"
     assert model_file_path.exists()
     expected_contents = (
@@ -115,8 +115,7 @@ def test_make_model_with_crud(project):
     runner = CliRunner()
     result = runner.invoke(make_model, ["Comment", "--crud"])
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
         # File comment_controller should exist
     comment_controller_file_path = project / "app" / "controllers" / "comment_controller.py"
     assert comment_controller_file_path.exists()
@@ -218,7 +217,7 @@ def test_make_model_warns_when_init_missing(project):
     runner = CliRunner()
     result = runner.invoke(make_model, ["Comment"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Warning: One or more make model steps produced a warning or failure." in result.output
 
 def test_make_model_not_in_project_root(tmp_path, monkeypatch):
@@ -227,7 +226,7 @@ def test_make_model_not_in_project_root(tmp_path, monkeypatch):
 
     result = runner.invoke(make_model, ["Post"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Warning: You are not currently in a Flask project root directory" in result.output
     assert not (tmp_path / "app" / "models" / "post.py").exists()
 
@@ -235,7 +234,7 @@ def test_make_model_errors_when_name_cannot_be_generated(project):
     runner = CliRunner()
     result = runner.invoke(make_model, ["comment"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     expected_output = "💣 Error: Could not generate model name from input."
     observed_output = result.output
     assert expected_output in observed_output

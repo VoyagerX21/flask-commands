@@ -46,7 +46,6 @@ extensions = [
     "youtube_embed",
 ]
 
-templates_path = ['_templates']
 exclude_patterns = []
 
 
@@ -54,26 +53,63 @@ exclude_patterns = []
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "alabaster"
+html_theme = "pydata_sphinx_theme"
+
 html_theme_options = {
-    "description": project_description,
+    # Core layout
+    "navbar_align": "left",
+    "show_prev_next": True,
+    "navigation_with_keys": True,
+    "collapse_navigation": False,
+    "navigation_depth": 4,
+    "show_nav_level": 2,
+    "show_toc_level": 2,
+    "back_to_top_button": False,
+
+    # Header layout
+    "navbar_start": ["navbar-logo"],
+    "navbar_center": ["navbar-nav"],
+    "navbar_persistent": ["search-button-field"],
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+
+    # Article header and right sidebar
+    "article_header_start": ["breadcrumbs"],
+    "article_header_end": [],
+    "secondary_sidebar_items": ["page-toc"],
+
+    # Search
+    "search_bar_text": "Search Flask-Commands docs...",
+
+    # Header links
+    "external_links": [
+        {"name": "PyPI", "url": "https://pypi.org/project/flask-commands/"},
+    ],
+    "icon_links": [
+        {
+            "name": "GitHub",
+            "url": "https://github.com/drewbutcher/flask-commands",
+            "icon": "fa-brands fa-github",
+        },
+    ],
+
+    # Branding / UX cleanup
+    "header_links_before_dropdown": 6,
+}
+
+html_context = {
     "github_user": "drewbutcher",
     "github_repo": "flask-commands",
-    "github_button": True,
-    "github_banner": True,
-    "show_relbars": True,
-    "show_relbar_top": False,
-    "show_relbar_bottom": True,
-    "extra_nav_links": {
-        "GitHub": "https://github.com/drewbutcher/flask-commands",
-        "PyPI": "https://pypi.org/project/flask-commands/",
-    },
+    "github_version": "main",
+    "doc_path": "docs/source/",
 }
+
+html_show_sphinx = False
 html_logo = "_static/flask-commands-logo.png"
 html_favicon = "_static/flask-commands-logo.png"
-html_static_path = ['_static']
+html_static_path = ["_static"]
 html_css_files = ["theme-overrides.css"]
-source_suffix = ".rst"
+
+source_suffix = {'.rst': 'restructuredtext'}
 
 rst_prolog = """
 .. container:: page-logo

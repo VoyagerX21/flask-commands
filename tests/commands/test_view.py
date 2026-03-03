@@ -90,7 +90,7 @@ def test_make_view_with_invalid_dotted_path(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["  ..__  "])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Invalid dotted path" in result.output
 
 def test_make_view_not_in_project_root(tmp_path, monkeypatch):
@@ -99,7 +99,7 @@ def test_make_view_not_in_project_root(tmp_path, monkeypatch):
 
     result = runner.invoke(make_view, ["card"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Warning: You are not currently in a Flask project root directory" in result.output
     assert not (tmp_path / "app" / "templates" / "card.py").exists()
 
@@ -114,8 +114,7 @@ def test_make_view_component_only(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["card"])
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
      # File should exist
     template_file = project / "app" / "templates" / "card.html"
     assert template_file.exists()
@@ -151,7 +150,7 @@ def test_make_view_root_component_only_does_not_change_main_wiring(project):
         "    return MainController.index()\n"
     )
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert observed_controller_content == expected_controller_content
     assert observed_routes_content == expected_routes_content
     assert "Method Added To Controller" not in result.output
@@ -168,8 +167,7 @@ def test_make_view_with_generated_controller(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.index", "-c"])
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
     template_file = project / "app" / "templates" / "posts" / "index.html"
     assert template_file.exists()
 
@@ -185,7 +183,7 @@ def test_make_view_with_generated_controller_and_no_relationship(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["card", "-c"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Method Added To Controller" in result.output
 
 def test_make_view_with_generated_route_declines_model_prompt(project):
@@ -199,8 +197,7 @@ def test_make_view_with_generated_route_declines_model_prompt(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.index", "-r"], input="n\n")
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
     template_file = project / "app" / "templates" / "posts" / "index.html"
     assert template_file.exists()
 
@@ -238,8 +235,7 @@ def test_make_view_with_generated_route_accepts_model_prompt(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.index", "-r"], input="y\n")
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
     template_file = project / "app" / "templates" / "posts" / "index.html"
     assert template_file.exists()
 
@@ -293,7 +289,7 @@ def test_make_view_with_generated_route_add_method_decline_model_prompt(project)
     )
 
     assert routes_text == expected_source
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Added Route" in result.output
 
 def test_make_view_with_generated_route_add_method_accept_model_prompt(project):
@@ -326,7 +322,7 @@ def test_make_view_with_generated_route_add_method_accept_model_prompt(project):
     )
 
     assert routes_text == expected_source
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Added Route" in result.output
 
 def test_make_view_with_generated_route_exception(project, monkeypatch):
@@ -344,7 +340,7 @@ def test_make_view_with_generated_route_exception(project, monkeypatch):
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.index", "-r"], input="n\n")
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "💣 Error:" in result.output
     assert "boom boom boom" in result.output
 
@@ -352,8 +348,7 @@ def test_make_view_with_generated_model(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.index", "-m"])
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
     model_file = project / "app" / "models" / "post.py"
     assert model_file.exists()
 
@@ -369,8 +364,7 @@ def test_make_view_file_exists(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["card"])
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
     assert "View Already Exist" in result.output
     assert "hi" == template_file.read_text()
 
@@ -388,8 +382,7 @@ def test_make_view_controller_exist(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.show", '-c'])
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
     assert "Method Added" in result.output
     assert "def show" in controller_file.read_text()
 
@@ -430,7 +423,7 @@ def test_make_view_root_action_with_generated_wiring_uses_mains_template_namespa
         "    return MainController.landing()\n"
     )
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert observed_controller_content == expected_controller_content
     assert observed_routes_content == expected_routes_content
     assert (project / "app" / "templates" / "mains" / "landing.html").exists()
@@ -474,7 +467,7 @@ def test_make_view_explicit_mains_root_action_keeps_mains_in_url_and_template(pr
         "    return MainController.landing()\n"
     )
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert observed_controller_content == expected_controller_content
     assert observed_routes_content == expected_routes_content
     assert (project / "app" / "templates" / "mains" / "landing.html").exists()
@@ -524,7 +517,7 @@ def test_make_view_root_action_with_explicit_wiring_keeps_root_template(project)
         "    return MainController.landing()\n"
     )
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert observed_controller_content == expected_controller_content
     assert observed_routes_content == expected_routes_content
     assert (project / "app" / "templates" / "landing.html").exists()

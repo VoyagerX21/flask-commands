@@ -1,4 +1,40 @@
 
+/* Cmd+K search dialog */
+#pst-search-dialog {
+  border: 0;
+  border-radius: 22px;
+  padding: 0;
+  background: transparent;
+}
+
+#pst-search-dialog .bd-search {
+  border: 1px solid rgba(183, 169, 255, 0.55);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 14px 38px rgba(79, 109, 245, 0.14);
+  padding: 0.35rem 0.55rem;
+}
+
+#pst-search-dialog .form-control {
+  border: 0 !important;
+  border-radius: 18px;
+  box-shadow: none !important;
+  background: transparent;
+}
+
+#pst-search-dialog .form-control:focus {
+  border: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+#pst-search-dialog .bd-search:focus-within {
+  border-color: #b7a9ff;
+  box-shadow:
+    0 0 0 4px rgba(183, 169, 255, 0.22),
+    0 14px 38px rgba(79, 109, 245, 0.14);
+}
+
 /* Remove underline from linked badges */
 a.reference.external {
   text-decoration: none !important;
@@ -35,3 +71,4 @@ div.highlight {
     margin-left: 1.5rem;
   }
 }
+

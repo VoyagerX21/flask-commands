@@ -72,8 +72,8 @@ def _assert_common_project_scaffold(project_path, project_name):
 
 #     result = runner.invoke(new, ["my_app"])
 
-#     assert result.exit_code == 0
-#     assert "cd my_app" in result.output
+#     assert result.exit_code == 0, result.output
+# #     assert "cd my_app" in result.output
 #     assert "./run.sh" in result.output
 
 #     project = tmp_path / "my_app"
@@ -109,8 +109,8 @@ def _assert_common_project_scaffold(project_path, project_name):
 
 #     result = runner.invoke(new, ["my_app", "--no-db"])
 
-#     assert result.exit_code == 0
-#     assert "cd my_app" in result.output
+#     assert result.exit_code == 0, result.output
+# #     assert "cd my_app" in result.output
 #     assert "./run.sh" in result.output
 
 #     project = tmp_path / "my_app"
@@ -143,7 +143,7 @@ def test_new_command_fails_if_project_exists(tmp_path, monkeypatch):
 
     result = runner.invoke(new, ["existing_project"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "already exists" in result.output
 
 def test_new_command_cleans_up_on_exception(tmp_path, monkeypatch):

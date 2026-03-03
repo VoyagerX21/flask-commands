@@ -123,8 +123,8 @@ Here is what the routes file looks like:
 This is awesome!!! I can litterly see you jumping up and down shouting with
 celebration in joy 🥳.  But wait, what about an **Ingrediant model**?
 
-A controller with a model (``--model`` vs ``-m``)
--------------------------------------------------
+A controller with a model (--model vs -m)
+-----------------------------------------
 
 Often a controller is tied to a model, like in your ingredient example. You
 have two options here you can either use an optional variable ``--model``

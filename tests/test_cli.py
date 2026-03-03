@@ -6,7 +6,7 @@ def test_cli_help():
     runner = CliRunner()
     result = runner.invoke(cli, ["--help"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Flask command line tools" in result.output
 
 def test_commands_registered():

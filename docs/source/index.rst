@@ -26,6 +26,29 @@ generates views, routes, controllers, and models so you can stay in flow (and
 spend less time wiring the same things together, impeccably, for the hundredth
 time).
 
+Quick Start
+-----------
+
+Start a new project:
+
+.. code-block:: bash
+
+   flask new myproject
+
+Generate a view with controller, route, and model wiring:
+
+.. code-block:: bash
+
+   flask make:view posts.index -crm
+
+Why Flask-Commands
+------------------
+
+- Local-first workflow with plain Flask output
+- Fast generators for common Flask structure
+- Predictable file layout you can read and own
+- Minimal ceremony for repeated scaffolding work
+
 Current Release: |release|
 
 .. toctree::

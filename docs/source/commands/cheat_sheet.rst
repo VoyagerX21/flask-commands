@@ -14,6 +14,8 @@ from surprises later.
   ``posts.comments.images.show`` or ``components.buttons``).
 - **Controllers** use PascalCase (Upper CamelCase) and are singular, ending in ``Controller`` (for
   example, ``PostCommentImageController``).
+- **Models** use PascalCase (Upper CamelCase) and are singular (for
+  example, ``Post``, ``Comment``, ``Image``).
 
 Common patterns
 ---------------
@@ -31,10 +33,10 @@ Common patterns
      - Create a template only (no wiring).
    * - ``flask make:view recipes.index -rcm``
      - Create recipe index view + route + controller + model in one command.
-   * - ``flask make:view recipes.ingredients.show -rc``
-     - Add a nested show template for ingredients under recipes and wire route + controller method.
-   * - ``flask make:view admin.recipes.comments.index -r``
-     - Generate a route and optionally accept/decline missing-model creation prompt.
+   * - ``flask make:view recipes.ingredients.show -rcm``
+     - Add a nested show template for ingredients under recipes and wire route + controller + model.
+   * - ``flask make:view admin.recipes.comments.index -rc``
+     - Generate a route + controller method and optionally accept/decline missing-model creation prompt.
    * - ``flask make:controller RecipeController --crud -m``
      - Scaffold full RESTful recipe controller/routes/views and create a recipe model.
    * - ``flask make:controller RecipeIngredientController --crud``

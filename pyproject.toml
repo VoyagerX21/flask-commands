@@ -33,7 +33,8 @@ flask = "flask_commands.cli:cli"
 dev = [
     "pytest (>=9.0.2,<10.0.0)",
     "coverage (>=7.13.0,<8.0.0)",
-    "sphinx-autobuild (>=2025.8.25,<2026.0.0)"
+    "sphinx-autobuild (>=2025.8.25,<2026.0.0)",
+    "pydata-sphinx-theme (>=0.16.1,<0.17.0)"
 ]
 
 [tool.coverage.run]

@@ -140,7 +140,7 @@ def test_make_controller_not_in_project_root(tmp_path, monkeypatch):
 
     result = runner.invoke(make_controller, ["PostController"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Warning: You are not currently in a Flask project root directory" in result.output
     assert not (tmp_path / "app" / "controllers" / "post_controller.py").exists()
 
@@ -148,7 +148,7 @@ def test_make_controller_component_only(project):
     runner = CliRunner()
     result = runner.invoke(make_controller, ["RecipeController"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     new_controller_file_path = project / "app" / "controllers" / "recipe_controller.py"
     assert new_controller_file_path.exists()
     assert new_controller_file_path.read_text(encoding="utf-8") == "class RecipeController:\n    pass\n"
@@ -161,7 +161,7 @@ def test_make_controller_file_exists(project):
     runner = CliRunner()
     result = runner.invoke(make_controller, ["MainController"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Controller Already Exists" in result.output
     main_controller_path = project / "app" / "controllers" / "main_controller.py"
     expected_contents = (
@@ -457,8 +457,7 @@ def test_make_controller_with_crud(project):
     runner = CliRunner()
     result = runner.invoke(make_controller, ["CommentController", "--crud"])
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
     # File comment_controller should exist
     comment_controller_file_path = project / "app" / "controllers" / "comment_controller.py"
     assert comment_controller_file_path.exists()
@@ -567,8 +566,7 @@ def test_make_controller_with_crud_nested_relationship(project):
     runner = CliRunner()
     result = runner.invoke(make_controller, ["PostCommentController", "--crud"])
 
-    assert result.exit_code == 0
-
+    assert result.exit_code == 0, result.output
      # File post_comment_controller should exist
     post_comment_controller_file_path = project / "app" / "controllers" / "post_comment_controller.py"
     assert post_comment_controller_file_path.exists()
@@ -710,7 +708,7 @@ def test_make_controller_warns_when_init_missing(project):
     runner = CliRunner()
     result = runner.invoke(make_controller, ["CommentController"])
 
-    assert result.exit_code == 0
+    assert result.exit_code == 0, result.output
     assert "Warning: One or more make controller steps produced a warning or failure." in result.output
 
 def test_make_controller_generate_model_flat_flag_skips_prompt_and_creates_flat_model(project):
@@ -720,7 +718,7 @@ def test_make_controller_generate_model_flat_flag_skips_prompt_and_creates_flat_
     assert result.exit_code == 0, result.output
     assert "Choose model structure" not in result.output
     assert "Detected nested models:" not in result.output
-    assert "💡 Info: Using --flat. Generated model(s): PostComment" in result.output
+    assert "Using --flat. Generated model(s): PostComment" in result.output
 
     # Controller file created
     controller_file_path = project / "app" / "controllers" / "post_comment_controller.py"
@@ -760,7 +758,7 @@ def test_make_controller_generate_model_nest_flag_skips_prompt_and_creates_neste
     assert result.exit_code == 0, result.output
     assert "Choose model structure" not in result.output
     assert "Detected nested models:" not in result.output
-    assert "💡 Info: Using --nest. Generated model(s): Comment" in result.output
+    assert "Using --nest. Generated model(s): Comment" in result.output
 
     # Controller file created
     controller_file_path = project / "app" / "controllers" / "post_comment_controller.py"

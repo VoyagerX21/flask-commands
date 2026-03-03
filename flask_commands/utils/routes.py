@@ -5,39 +5,19 @@ from dataclasses import dataclass
 from flask_commands.utils.models import (
     model_get_registered_models,
     model_model_names_to_snake_case_names)
+from flask_commands.utils.data_types import (
+    RouteSpec,
+    MissingModelPrompt,
+    RouteStructurePrompt,
+    PromptPlan
+)
+
 from .files import file_append_file, file_write_file
 from .naming import pluralize, singularize
 from .scaffold import (
     generate_restful_route,
     filter_falsy,
     split_dotted_path_with_action_into_relative_path_and_action)
-
-@dataclass(frozen=True)
-class RouteSpec:
-    dotted_path_with_action: str
-    relative_path: str
-    action: str
-    is_restful: bool
-    relative_path_segments: tuple[str]
-    relative_path_segment_models: tuple[str]
-    registered_models: tuple[str]
-    registered_snake_models: tuple[str]
-    generated_route_name: str
-
-@dataclass(frozen=True)
-class MissingModelPrompt:
-    segment: str
-    model_name: str
-
-@dataclass(frozen=True)
-class RouteStructurePrompt:
-    accepted_route: str
-    declined_route: str
-
-@dataclass(frozen=True)
-class PromptPlan:
-    missing_model: MissingModelPrompt | None = None
-    route_structure: RouteStructurePrompt | None = None
 
 def route_add_method(relative_path: str,  action: str, route_directory_path: str, route_name: str, controller_name: str | None) -> tuple[bool, str]:
     """
@@ -280,7 +260,7 @@ def route_generate_route_name_with_model_prompt(
 
     has_accepted = click.confirm(
         f"No registered model found for {click.style(segment, bold=True)}\n "
-        f"    - Accept: {click.style(accepted_route, bold=True)}\n"
+        f"   - Accept: {click.style(accepted_route, bold=True)}\n"
         f"    - Decline: {click.style(declined_route, bold=True)}\n"
         f"Generate the model {click.style(model_name, bold=True)}?\n",
         default=True
