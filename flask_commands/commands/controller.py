@@ -5,6 +5,7 @@ from flask_commands.utils.controllers import (
     controller_make_file,
     controller_generate_relative_path_from_controller_name
 )
+from flask_commands.utils.data_types import ScaffoldStatus
 from flask_commands.utils.files import file_is_project_root
 from flask_commands.utils.models import (
     model_generate_hierarchy_from_controller_name,
@@ -76,14 +77,16 @@ def make_controller(
     info_updates: list[str] = []
     message_updates: list[str] = []
 
-    is_successful, message = controller_make_file(
+    controller_result, message = controller_make_file(
         relative_path=None,
         action=None,
         controller_name=controller_name,
+        controller_file_path=controller_file_path,
         route_name=None,
         view_directory=None)
     message_updates.append(message)
-    all_successful = all_successful and is_successful
+    all_successful = all_successful and (
+        controller_result.status == ScaffoldStatus.ADDED)
 
     # Generate model name(s) if not provided
     model_names: list[str] = []

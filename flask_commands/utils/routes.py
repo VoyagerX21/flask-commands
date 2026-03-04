@@ -5,6 +5,8 @@ from flask_commands.utils.models import (
     model_get_registered_models,
     model_model_names_to_snake_case_names)
 from flask_commands.utils.data_types import (
+    ActionResult,
+    RouteResult,
     RouteSpec,
     MissingModelPrompt,
     RouteStructurePrompt,
@@ -18,7 +20,7 @@ from .scaffold import (
     filter_falsy,
     split_dotted_path_with_action_into_relative_path_and_action)
 
-def route_add_method(relative_path: str,  action: str, route_directory_path: str, route_name: str, controller_name: str | None) -> tuple[bool, str]:
+def route_add_method(relative_path: str,  action: str, route_directory_path: str, route_name: str, controller_name: str | None) -> tuple[RouteResult, ActionResult, str]:
     """
     Append a new route handler function to an existing `routes.py` file.
 
@@ -330,7 +332,7 @@ def route_write_directory_and_register_blueprint(
     action: str,
     route_directory_path: str,
     route_name: str,
-    controller_name: str | None) -> tuple[bool, str]:
+    controller_name: str | None) -> tuple[RouteResult, ActionResult, str]:
     """
     Create a new Flask route package, write its initial route file, then register its blueprint.
 

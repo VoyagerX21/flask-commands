@@ -1,9 +1,11 @@
 import click
 import random
 
+from flask_commands.utils.data_types import ScaffoldStatus
+
 from .files import file_write_file
 
-def view_make_file(destination_file_path: str) -> tuple[bool, str]:
+def view_make_file(destination_file_path: str) -> tuple[ScaffoldStatus, str]:
     """
     Create a new view file containing a simple HTML snippet with a randomly
     selected, Python-themed quote.

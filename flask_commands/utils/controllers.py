@@ -1,9 +1,11 @@
 import os
 import re
+from shutil import register_archive_format
 import click
 from enum import StrEnum
 from dataclasses import dataclass
 
+from flask_commands.utils.data_types import ControllerResult, ScaffoldStatus
 from flask_commands.utils.models import model_generate_hierarchy_from_controller_name
 from flask_commands.utils.scaffold import filter_falsy
 
@@ -22,8 +24,9 @@ def controller_add_method(
         relative_path: str,
         action: str,
         controller_name: str,
+        controller_file_path: str,
         route_name: str | None = None,
-        view_directory: str | None = None) -> tuple[bool, str]:
+        view_directory: str | None = None) -> tuple[ControllerResult, str]:
     """
     Add a static method to an existing controller class.
 
@@ -33,7 +36,7 @@ def controller_add_method(
 
     For GET-style actions, the generated method returns
     `render_template('<template_path>')`. The template path is built from
-    `view_directory` when it is provided; otherwise it falls back to
+    `view_directory` when it is provided; otherwise, it falls back to
     `relative_path`. In normal usage, `view_directory` is usually the same as
     `relative_path`, but inferred root wiring may pass `'mains'` so root view
     templates render from the default namespace.
@@ -58,14 +61,13 @@ def controller_add_method(
             be `'mains'` for inferred root view wiring.
 
     Returns:
-        tuple[bool, str]: Success flag and styled status message.
+        tuple[ControllerResult, str]: Structured result and styled status
+            message.
     """
     try:
-        controller_file_path = os.path.join(
-            "app", "controllers", f"{camel_to_snake(controller_name)}.py")
         # Read existing controller and check for method
-        with open(controller_file_path, "r", encoding="utf-8") as f:
-            source = f.read()
+        with open(controller_file_path, "r", encoding="utf-8") as file:
+            source = file.read()
 
         # If method already exists, do nothing and warn user
         method_pattern = rf"def\s+{re.escape(action)}\s*\([^)]*\)\s*(?:->\s*[^:]+)?\s*:"
@@ -75,7 +77,10 @@ def controller_add_method(
                 click.style(f"    - Controller {click.style(controller_name, bold=True)}", fg="yellow") +  click.style(f" already has a method named {click.style(action, bold=True)}.\n", fg="yellow") +
                 click.style("    - No changes were made to controller's method\n", fg="yellow")
             )
-            return False, message
+            return _generate_controller_result(
+                controller_name,
+                controller_file_path,
+                status=ScaffoldStatus.EXISTS), message
 
         # Try to find class definition to insert method into
         class_pattern = rf"^class\s+{re.escape(controller_name)}\b.*:\s*$"
@@ -123,7 +128,10 @@ def controller_add_method(
                 click.style(f"    - Could not locate class '{controller_name}' inside {controller_file_path}\n", fg="yellow") +
                 click.style("    - No method was added.", fg="cyan")
             )
-            return False, message
+            return _generate_controller_result(
+                controller_name,
+                controller_file_path,
+                status=ScaffoldStatus.WARNING), message
 
         # 3. Build the new static method block
         method_parameters = ""
@@ -171,13 +179,22 @@ def controller_add_method(
             f.write(new_source)
     except Exception as exception:
         message = click.style(f"💣 Error: Failed to add Controller Method\n {exception}", fg="red")
-        return False, message
+        return _generate_controller_result(
+            controller_name,
+            controller_file_path,
+            status=ScaffoldStatus.ERROR,
+        ), message
     message = (
         click.style("✅ Success: Method Added To Controller\n", fg="green", bold=True) +
         click.style(f"    - Added method {click.style(action, bold=True)}", fg="green") + click.style(f" to controller {click.style(controller_name, bold=True)}\n", fg="green") +
         click.style(f"    - Controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
     )
-    return True, message
+    return _generate_controller_result(
+        controller_name,
+        controller_file_path,
+        status=ScaffoldStatus.ADDED,
+        methods_added=[action]
+    ), message
 
 def controller_generate_controller_name_from_relative_path(relative_path: str) -> str:
     """
@@ -253,10 +270,11 @@ def controller_generate_relative_path_from_controller_name(controller_name: str)
 
 def controller_make_file(
         relative_path: str | None,
-        action: str | None, # method_name
+        action: str | None, # When you generate a controller calls and register it without any methods
         controller_name: str,
+        controller_file_path: str,
         route_name: str | None = None,
-        view_directory: str | None = None) -> tuple[bool, str]:
+        view_directory: str | None = None) -> tuple[ControllerResult, str]:
     """
     Create a new controller file and optionally scaffold one initial method.
 
@@ -296,19 +314,31 @@ def controller_make_file(
             be `'mains'` for inferred root view wiring.
 
     Returns:
-        tuple[bool, str]: `(is_successful, message)` where the message is a
-        styled success, warning, or error message. Returns `False` for
-        validation failures, existing controller file, controller registration
-        failures, or unexpected exceptions.
+        tuple[ControllerResult, str]: `(Structured result, message)` where
+        the message is a styled success, warning, or error message. Structured
+        result contains ERROR for valid failures or unexpected exceptions,
+        EXISTS for existing controller file, WARNING controller registration
+        failures.
 
     Note:
         If `__init__.py` is missing, the controller file may still be created even
-        though the function returns `False` with a warning.
+        though the function returns a Structured WARNING.
     """
     if action and relative_path is None:
-        return False, click.style("💣 Error: relative_path required when action present", fg="red")
+        message = click.style(
+            "💣 Error: relative_path required when action present", fg="red")
+        return _generate_controller_result(
+            controller_name,
+            controller_file_path,
+            status=ScaffoldStatus.ERROR), message
+
     if relative_path and action is None:
-        return False, click.style("💣 Error: action required when relative_path present", fg="red")
+        message = click.style(
+            "💣 Error: action required when relative_path present", fg="red")
+        return _generate_controller_result(
+            controller_name,
+            controller_file_path,
+            status=ScaffoldStatus.ERROR), message
 
     parameters_with_types_joined = ""
     parameters = []
@@ -347,8 +377,6 @@ def controller_make_file(
     else:
         contents.append("    pass")
     try:
-        controller_file_path = os.path.join(
-            "app", "controllers", f"{camel_to_snake(controller_name)}.py")
         file_write_file(controller_file_path, contents)
     except FileExistsError:
         message = (
@@ -356,15 +384,23 @@ def controller_make_file(
             click.style(f"    - Controller {click.style(controller_name, bold=True)}", fg="yellow") + click.style(" already exists.\n", fg="yellow" ) +
             click.style("    - No changes were made to existing controller\n", fg="yellow")
         )
-        return False, message
+        return _generate_controller_result(
+            controller_name,
+            controller_file_path,
+            status=ScaffoldStatus.EXISTS
+        ), message
     except Exception as exception:
-        return False, click.style(
+        message = click.style(
             f"💣 Error: Failed to create controller:\n{exception}", fg="red")
+        return _generate_controller_result(
+            controller_name,
+            controller_file_path,
+            status=ScaffoldStatus.ERROR
+        ), message
 
     try:
         controller_init_path = os.path.join("app", "controllers", "__init__.py")
         init_contents = [f"from .{camel_to_snake(controller_name)} import {controller_name}"]
-
         file_append_file(controller_init_path, init_contents)
     except FileNotFoundError:
         message = (
@@ -372,25 +408,59 @@ def controller_make_file(
             click.style(f"    - Controller {click.style(controller_name, bold=True)}", fg="yellow") + click.style(" was created, but __init__.py does not exist.\n", fg="yellow") +
             click.style("    - You may need to register the controller manually.", fg="yellow")
         )
-        return False, message
+        return _generate_controller_result(
+            controller_name,
+            controller_file_path,
+            status=ScaffoldStatus.WARNING,
+            registration_file_path=controller_init_path,
+            methods_added=[action] if action else []
+        ), message
     except Exception as exception:
-        return False, click.style(
+        message = click.style(
             f"💣 Error: Failed to update __init__.py:\n{exception}", fg="red")
+        return _generate_controller_result(
+            controller_name,
+            controller_file_path,
+            status=ScaffoldStatus.ERROR,
+            register_archive_format=controller_init_path,
+            methods_added=[action] if action else []
+        ), message
 
     if action:
         message = (
             click.style(f"✅ Success: Created Controller Class With Method\n", fg="green", bold=True) +
             click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
             click.style(f"    - Added method {click.style(action, bold=True)}", fg="green") + click.style(" to controller\n", fg="green") +
-            click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style('app/controllers/__init__.py', bold=True, fg='green')}\n", fg="green") +
+            click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style(controller_init_path, bold=True, fg='green')}\n", fg="green") +
             click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
         )
     else:
         message = (
             click.style(f"✅ Success: Created Controller Class\n", fg="green", bold=True) +
             click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
-            click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style('app/controllers/__init__.py', bold=True, fg='green')}\n", fg="green") +
+            click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style(controller_init_path, bold=True, fg='green')}\n", fg="green") +
             click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
         )
 
-    return True, message
+    return _generate_controller_result(
+        controller_name,
+        controller_file_path,
+        status=ScaffoldStatus.ADDED,
+        registration_file_path=controller_init_path,
+        methods_added=[action] if action else []
+    ), message
+
+def _generate_controller_result(
+        controller_name: str,
+        controller_file_path: str,
+        status: ScaffoldStatus,
+        registration_file_path: str | None = None,
+        methods_added: list[str] | None = None
+) -> ControllerResult:
+    return ControllerResult(
+        controller_name=controller_name,
+        registration_file_path=registration_file_path,
+        controller_file_path=controller_file_path,
+        status=status,
+        methods_added=[] if methods_added is None else methods_added,
+    )

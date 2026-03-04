@@ -1,7 +1,13 @@
 import os
 import click
 
-from flask_commands.utils.data_types import CrudActionReference, ScaffoldStatus
+from flask_commands.utils.data_types import (
+    ActionResult,
+    ControllerResult,
+    CrudResourceResult,
+    RouteResult,
+    ScaffoldStatus
+)
 from .controllers import controller_add_method, controller_make_file
 from .naming import camel_to_snake
 from .routes import (
@@ -18,7 +24,7 @@ def wire_controller_route_view(
     controller_name: str | None,
     route_name: str | None,
     is_view_directory_mains: bool = False,
-) -> tuple[bool, list[str]]:
+) -> tuple[ActionResult, ControllerResult | None, RouteResult | None, list[str]]:
     """
     Wire together the view, controller, and route for a single action.
 
@@ -85,21 +91,24 @@ def wire_controller_route_view(
 
         # if controller exist just add the method
         if os.path.exists(controller_file_path):
-            is_successful, message = controller_add_method(
+            controller_result, message = controller_add_method(
                 relative_path,
                 action,
                 controller_name,
+                controller_file_path,
                 route_name,
                 view_directory)
         # else create the controller and the method
         else:
-            is_successful, message = controller_make_file(
+            controller_result, message = controller_make_file(
                 relative_path,
                 action,
                 controller_name,
+                controller_file_path,
                 route_name,
                 view_directory)
-        all_successful = all_successful and is_successful
+        all_successful = all_successful and (
+            controller_result.status == ScaffoldStatus.ADDED)
         messages.append(message)
 
     # If a controller_name was provided or generated
@@ -130,3 +139,9 @@ def wire_controller_route_view(
             messages.append(click.style(f"💣 Error:\n {exception}", fg="red"))
 
     return all_successful, messages
+
+def wire_crud_resource(
+    relative_path: str,
+    controller_name: str,
+) -> tuple[CrudResourceResult, list[str]]:
+    pass

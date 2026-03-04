@@ -2,6 +2,12 @@ import os
 import ast
 import click
 
+from flask_commands.utils.data_types import (
+    CreatedModel,
+    ModelResult,
+    ScaffoldStatus
+)
+
 from .files import file_append_file, file_write_file
 from .naming import camel_to_snake, pluralize, singularize
 from .scaffold import (
@@ -407,7 +413,7 @@ def model_get_registered_models() -> list[str]:
                 models.add(alias.name)
     return sorted(models)
 
-def model_make_file(model_name: str) -> tuple[bool, str]:
+def model_make_file(model_name: str) -> tuple[ModelResult, str]:
     """
     Create and register a SQLAlchemy model file for `model_name`.
 
@@ -429,13 +435,19 @@ def model_make_file(model_name: str) -> tuple[bool, str]:
             `"UserProfile"`.
 
     Returns:
-        tuple[bool, str]:
-            - `True` with a success message when file creation and registration
-              both succeed.
-            - `False` with a warning if the model file already exists.
-            - `False` with a warning if `app/models/__init__.py` is missing
+        tuple[ModelResult, str]:
+            - ModelResult has a created_models where one CreatedModel will
+              have status ADDED with a success message when file creation and
+              registration both succeed.
+            - ModelResult has a created_models where one CreatedModel will
+              have status WARNING with a warning message if the model file already exists.
+            - ModelResult has a created_models where one CreatedModel will
+              have status WARNING with a warning message if `app/models/__init__.py`
+              is missing
               (model file may still be created).
-            - `False` with an error message for unexpected write/append failures.
+            - ModelResult has a created_models where one CreatedModel will
+              have status ERROR with an error message for unexpected
+              write/append failures.
 
     Examples:
         >>> model_make_file("Post")

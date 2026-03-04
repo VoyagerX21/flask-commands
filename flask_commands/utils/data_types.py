@@ -3,11 +3,11 @@ from enum import Enum
 
 
 class ScaffoldStatus(Enum):
-    ADDED = "added"
-    EXISTS = "exists"
+    ADDED = "added"         # New Object Added
+    EXISTS = "exists"       # Object already exists
     SKIPPED = "skipped"
     WARNING = "warning"
-    ERROR = "error"
+    ERROR = "error"         # Unexpected Failure
 
 @dataclass(frozen=True)
 class CreatedModel:
@@ -29,9 +29,9 @@ class ActionResult:
 @dataclass
 class ControllerResult:
     controller_name: str
-    registration_file_path: str
     controller_file_path: str
     status: ScaffoldStatus
+    registration_file_path: str | None = None
     methods_added: list[str] = field(default_factory=list)
 
 @dataclass
