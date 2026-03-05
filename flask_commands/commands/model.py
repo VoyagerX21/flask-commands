@@ -86,9 +86,10 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
 
     # 1) Generate model files (and register them) first
     for new_model_name in models_to_create:
-        is_successful, message = model_make_file(new_model_name)
+        # I DON'T THINK THIS IS CORRECT BECAUSE model_result IS JUST GOING TO HAVE THE LAST MODEL IN THE LOOP
+        model_result, message = model_make_file(new_model_name)
         click.echo(message)
-        all_successful = all_successful and is_successful
+        all_successful = all_successful and model_result.is_successful
 
     # 2) CRUD wiring (controller + routes + views)
     if crud:

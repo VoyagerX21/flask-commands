@@ -1,5 +1,6 @@
 import os
 import ast
+from venv import create
 import click
 
 from flask_commands.utils.data_types import (
@@ -459,8 +460,8 @@ def model_make_file(model_name: str) -> tuple[ModelResult, str]:
 
     model_init_path = os.path.join("app", "models", "__init__.py")
     model_file_path = os.path.join("app", "models", f"{camel_to_snake(model_name)}.py")
-    try:
 
+    try:
         file_contents = [
             "from app import db",
             "from datetime import datetime, timezone",
@@ -495,9 +496,31 @@ def model_make_file(model_name: str) -> tuple[ModelResult, str]:
             click.style(f"    - Model {click.style(model_name, bold=True)} ", fg="yellow") + click.style("already exists\n", fg="yellow" ) +
             click.style("    - No changes were made to the existing model\n", fg="yellow")
         )
-        return False, message
+        return ModelResult(
+            registration_file_path=model_init_path,
+            created_models=[
+                CreatedModel(
+                    model_name=model_name,
+                    model_file_path=model_file_path,
+                    status=ScaffoldStatus.EXISTS,
+                    is_successful=False
+                )
+            ],
+            is_successful=False
+        ), message
     except Exception as exception:
-        return False, click.style(
+        return ModelResult(
+            registration_file_path=model_init_path,
+            created_models=[
+                CreatedModel(
+                    model_name=model_name,
+                    model_file_path=model_file_path,
+                    status=ScaffoldStatus.ERROR,
+                    is_successful=False
+                )
+            ],
+            is_successful=False
+        ), click.style(
             f"💣 Error: Failed to create model:\n{exception}", fg="red")
 
     try:
@@ -513,18 +536,54 @@ def model_make_file(model_name: str) -> tuple[ModelResult, str]:
             ) +
             click.style("    - You may need to register it manually.", fg="yellow")
         )
-        return False, message
+        return ModelResult(
+            registration_file_path=model_init_path,
+            created_models=[
+                CreatedModel(
+                    model_name=model_name,
+                    model_file_path=model_file_path,
+                    status=ScaffoldStatus.WARNING,
+                    is_successful=False
+                )
+            ],
+            is_successful=False
+        ), message
     except Exception as exception:
-        return False, click.style(
+        message = click.style(
             f"💣 Error: Failed to update __init__.py:\n{exception}", fg="red")
+        return ModelResult(
+            registration_file_path=model_init_path,
+            created_models=[
+                CreatedModel(
+                    model_name=model_name,
+                    model_file_path=model_file_path,
+                    status=ScaffoldStatus.ERROR,
+                    is_successful=False
+                )
+            ],
+            is_successful=False
+        ), message
 
 
     message = (
         click.style("✅ Success: Created New Model\n", fg="green", bold=True) +
-        click.style(f"    - Created model {click.style(model_name, bold=True)}", fg="green") + click.style(f" at {click.style(model_file_path, bold=True)}\n", fg="green") +
-        click.style(f"    - Registered {click.style(model_name, bold=True)}", fg="green") + click.style(f" model at {click.style(model_init_path, bold=True)}\n", fg="green")
+        click.style(f"    - Created model {click.style(model_name, bold=True)}", fg="green") +
+        click.style(f" at {click.style(model_file_path, bold=True)}\n", fg="green") +
+        click.style(f"    - Registered {click.style(model_name, bold=True)}", fg="green") +
+        click.style(f" model at {click.style(model_init_path, bold=True)}\n", fg="green")
     )
-    return True, message
+    return ModelResult(
+            registration_file_path=model_init_path,
+            created_models=[
+                CreatedModel(
+                    model_name=model_name,
+                    model_file_path=model_file_path,
+                    status=ScaffoldStatus.ADDED,
+                    is_successful=True
+                )
+            ],
+            is_successful=True
+        ), message
 
 def model_model_names_to_snake_case_names(model_names:list[str]) -> list[str]:
     """

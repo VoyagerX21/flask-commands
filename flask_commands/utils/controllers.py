@@ -1,9 +1,6 @@
 import os
 import re
-from shutil import register_archive_format
 import click
-from enum import StrEnum
-from dataclasses import dataclass
 
 from flask_commands.utils.data_types import ControllerResult, ScaffoldStatus
 from flask_commands.utils.models import model_generate_hierarchy_from_controller_name
@@ -422,7 +419,7 @@ def controller_make_file(
             controller_name,
             controller_file_path,
             status=ScaffoldStatus.ERROR,
-            register_archive_format=controller_init_path,
+            registration_file_path=controller_init_path,
             methods_added=[action] if action else []
         ), message
 
@@ -459,8 +456,9 @@ def _generate_controller_result(
 ) -> ControllerResult:
     return ControllerResult(
         controller_name=controller_name,
-        registration_file_path=registration_file_path,
         controller_file_path=controller_file_path,
         status=status,
+        is_successful=status == ScaffoldStatus.ADDED,
+        registration_file_path=registration_file_path,
         methods_added=[] if methods_added is None else methods_added,
     )

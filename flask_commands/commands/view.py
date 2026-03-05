@@ -107,9 +107,9 @@ def make_view(
 
     # If a model_name was provided or generated
     if model_name:
-        is_successful, message = model_make_file(model_name)
+        model_result, message = model_make_file(model_name)
         message_updates.append(message)
-        all_successful = all_successful and is_successful
+        all_successful = all_successful and model_result.is_successful
 
     # Generate route name if not provided
     if generate_route and route_name is None:
@@ -118,9 +118,9 @@ def make_view(
                 dotted_path_with_action, allow_model_prompt)
         info_updates.append(f"Generated route {route_name}")
         if new_model_name:
-            is_successful, message = model_make_file(new_model_name)
+            model_result, message = model_make_file(new_model_name)
             message_updates.append(message)
-            all_successful = all_successful and is_successful
+            all_successful = all_successful and model_result.is_successful
 
     is_successful, messages = wire_controller_route_view(
         relative_path,

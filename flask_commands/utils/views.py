@@ -20,9 +20,11 @@ def view_make_file(destination_file_path: str) -> tuple[ScaffoldStatus, str]:
         destination_file_path (str) : The full path (including filename) where the view file should be created.
 
     Returns:
-        tuple[bool, str]: A tuple containing:
-            - bool: True indicating the route was successfully added.
-            - str: A formatted message with success notification and usage instructions.
+        tuple[ScaffoldStatus, str]: A tuple containing:
+            - ScaffoldStatus.ADDED when the view was created
+            - ScaffoldStatus.EXISTS when the file already exists
+            - ScaffoldStatus.ERROR on unexpected failure
+            - str: A formatted message with success/warning/error notification and usage instructions.
     Example:
         >>> is_successful, message = view_make_file(
         ...     route_name='users.index')
@@ -54,12 +56,12 @@ def view_make_file(destination_file_path: str) -> tuple[ScaffoldStatus, str]:
             click.style(f"    - View file already exists at {click.style(destination_file_path, bold=True)}\n", fg="yellow") +
             click.style("    - No changes were made to the existing view.\n", fg="yellow")
         )
-        return False, message
+        return ScaffoldStatus.EXISTS, message
     except Exception as exception:
-        return False, click.style(f"💣 Error: Failed to create view:\n{exception}", fg="red")
+        return ScaffoldStatus.ERROR, click.style(f"💣 Error: Failed to create view:\n{exception}", fg="red")
 
     message = (
         click.style(f"✅ Success: Created New View\n", fg="green", bold=True) +
         click.style(f"    - Added view file at {click.style(destination_file_path, bold=True)}\n", fg="green")
     )
-    return True, message
+    return ScaffoldStatus.ADDED, message

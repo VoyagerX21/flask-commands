@@ -85,8 +85,7 @@ def make_controller(
         route_name=None,
         view_directory=None)
     message_updates.append(message)
-    all_successful = all_successful and (
-        controller_result.status == ScaffoldStatus.ADDED)
+    all_successful = all_successful and controller_result.is_successful
 
     # Generate model name(s) if not provided
     model_names: list[str] = []
@@ -153,9 +152,9 @@ def make_controller(
     # If a model_name was provided or generated
     if model_names:
         for model_name in model_names:
-            is_successful, message = model_make_file(model_name)
+            model_result, message = model_make_file(model_name)
             message_updates.append(message)
-            all_successful = all_successful and is_successful
+            all_successful = all_successful and model_result.is_successful
 
     if crud:
         restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
@@ -177,9 +176,9 @@ def make_controller(
                 new_model_name = model_generate_model_name_from_dotted_path_with_action(
                     f"{relative_path.replace('/', '.')}.index"
                 )
-                is_successful, message = model_make_file(new_model_name)
+                model_result, message = model_make_file(new_model_name)
                 message_updates.append(message)
-                all_successful = all_successful and is_successful
+                all_successful = all_successful and model_result.is_successful
 
                 registered_models = model_get_registered_models()
                 registered_snake_models = model_model_names_to_snake_case_names(

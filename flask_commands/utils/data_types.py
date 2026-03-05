@@ -14,6 +14,7 @@ class CreatedModel:
     model_name: str
     model_file_path: str
     status: ScaffoldStatus
+    is_successful: bool
 
 # This was CrudActionReference
 @dataclass(frozen=True)
@@ -31,18 +32,20 @@ class ControllerResult:
     controller_name: str
     controller_file_path: str
     status: ScaffoldStatus
+    is_successful: bool
     registration_file_path: str | None = None
     methods_added: list[str] = field(default_factory=list)
 
 @dataclass
 class ModelResult:
-    generated_model_names: list[str] = field(default_factory=list)
+    is_successful: bool
     registration_file_path: str | None = None
     created_models: list[CreatedModel] = field(default_factory=list)
 
 @dataclass
 class RouteResult:
     directory_status: ScaffoldStatus
+    is_successful: bool
     route_init_path: str
     route_file_path: str
     blueprint_name: str

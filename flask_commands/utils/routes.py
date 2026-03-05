@@ -100,8 +100,8 @@ def route_add_method(relative_path: str,  action: str, route_directory_path: str
         return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
 
     updates.extend([
-        _generate_route_visit_example(route_name),
-        _generate_route_url_for_reference_call(relative_path, action, route_name)
+        route_generate_route_visit_example(route_name),
+        route_generate_route_url_for_reference_call(relative_path, action, route_name)
     ])
 
     update_messages = "".join(
@@ -136,6 +136,13 @@ def route_generate_parameter_reference(parameters: list[str]) -> str:
         return ""
     return ", " + ", ".join(
         f"{parameter}={parameter}" for parameter in parameters)
+
+def route_generate_parameter_reference_example(parameters: list[str]) -> str:
+    if not parameters:
+        return ""
+    return ", " + ", ".join(
+        f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
+    )
 
 def route_generate_route_name(
     relative_path: str,
@@ -269,6 +276,23 @@ def route_generate_route_name_with_model_prompt(
     if not has_accepted:
         return prompt_plan.route_structure.declined_route, None
     return prompt_plan.route_structure.accepted_route, model_name
+
+def route_generate_route_url_for_reference_call(relative_path: str, action: str, route_name: str) -> str:
+    _, parameters = route_parse_route_name_for_params_and_types(route_name)
+    parameter_reference = route_generate_parameter_reference_example(parameters)
+    return (
+        f"Reference route with url_for(" +
+        f"'{relative_path.replace('/', '.') if relative_path else 'mains'}"
+        f".{action}'{parameter_reference})"
+    )
+
+def route_generate_route_visit_example(route_name: str) -> str:
+    _, parameters = route_parse_route_name_for_params_and_types(route_name)
+    relative_url = route_name
+    for i, parameter in enumerate(parameters, start=1):
+        relative_url = \
+            re.sub(rf"<\w+:{parameter}>", str(i), relative_url, count=1)
+    return f"Visit the new route at {relative_url}"
 
 def route_http_method_for_action(action: str) -> str:
     """
@@ -433,8 +457,8 @@ def route_write_directory_and_register_blueprint(
         return False, click.style(f"💣 Error: Failed to create route:\n{exception}", fg="red")
 
     updates.extend([
-        _generate_route_visit_example(route_name),
-        _generate_route_url_for_reference_call(relative_path, action, route_name)
+        route_generate_route_visit_example(route_name),
+        route_generate_route_url_for_reference_call(relative_path, action, route_name)
     ])
 
     update_messages = "".join(
@@ -471,15 +495,11 @@ def _apply_step_result(
     )
     return False, message
 
+def _generate_action_result():
+    pass
+
 def _generate_minimal_route_routes(route_directory_path: str) -> list[str]:
     return [f"from {route_directory_path.replace('/', '.')} import bp"]
-
-def _generate_parameter_reference_example(parameters: list[str]) -> str:
-    if not parameters:
-        return ""
-    return ", " + ", ".join(
-        f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
-    )
 
 def _generate_prompt_plan(route_spec: RouteSpec) -> PromptPlan:
     """
@@ -542,23 +562,6 @@ def _generate_route_init(route_directory_path: str) -> list[str]:
             f"from {route_directory_path.replace('/', '.')} import routes"
         ]
 
-def _generate_route_url_for_reference_call(relative_path: str, action: str, route_name: str) -> str:
-    _, parameters = route_parse_route_name_for_params_and_types(route_name)
-    parameter_reference = _generate_parameter_reference_example(parameters)
-    return (
-        f"Reference route with url_for(" +
-        f"'{relative_path.replace('/', '.') if relative_path else 'mains'}"
-        f".{action}'{parameter_reference})"
-    )
-
-def _generate_route_visit_example(route_name: str) -> str:
-    _, parameters = route_parse_route_name_for_params_and_types(route_name)
-    relative_url = route_name
-    for i, parameter in enumerate(parameters, start=1):
-        relative_url = \
-            re.sub(rf"<\w+:{parameter}>", str(i), relative_url, count=1)
-    return f"Visit the new route at {relative_url}"
-
 def _generate_route_method(
         action: str,
         route_name: str,
@@ -573,6 +576,17 @@ def _generate_route_method(
         f"def {action}({', '.join(parameters_with_types)}):",
         f"    return {controller_name}.{action}({', '.join(parameters)})"
     ]
+
+def _generate_route_result():
+    return RouteResult(
+        directory_status=,
+        is_successful=,
+        route_init_path=,
+        route_file_path=,
+        blueprint_name=,
+        blueprint_registration_file_path=,
+        functions_added=
+    )
 
 def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
     """

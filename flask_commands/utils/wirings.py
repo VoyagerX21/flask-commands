@@ -24,7 +24,7 @@ def wire_controller_route_view(
     controller_name: str | None,
     route_name: str | None,
     is_view_directory_mains: bool = False,
-) -> tuple[ActionResult, ControllerResult | None, RouteResult | None, list[str]]:
+) -> tuple[bool, list[str]]:
     """
     Wire together the view, controller, and route for a single action.
 
@@ -77,8 +77,9 @@ def wire_controller_route_view(
         destination_file_path = \
             os.path.join("app", "templates", relative_view_file_path)
 
-        is_successful, message = view_make_file(destination_file_path)
-        all_successful = all_successful and is_successful
+        view_status, message = view_make_file(destination_file_path)
+        all_successful = all_successful and (
+            view_status == ScaffoldStatus.ADDED)
         messages.append(message)
 
     # If a controller_name was provided or generated
@@ -107,8 +108,7 @@ def wire_controller_route_view(
                 controller_file_path,
                 route_name,
                 view_directory)
-        all_successful = all_successful and (
-            controller_result.status == ScaffoldStatus.ADDED)
+        all_successful = all_successful and controller_result.is_successful
         messages.append(message)
 
     # If a controller_name was provided or generated
