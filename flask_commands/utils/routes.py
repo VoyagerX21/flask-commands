@@ -1,6 +1,8 @@
+from logging import WARNING
 import re
 import os
 import click
+
 from flask_commands.utils.models import (
     model_get_registered_models,
     model_model_names_to_snake_case_names)
@@ -10,7 +12,8 @@ from flask_commands.utils.data_types import (
     RouteSpec,
     MissingModelPrompt,
     RouteStructurePrompt,
-    PromptPlan
+    PromptPlan,
+    ScaffoldStatus
 )
 
 from .files import file_append_file, file_write_file
@@ -20,7 +23,12 @@ from .scaffold import (
     filter_falsy,
     split_dotted_path_with_action_into_relative_path_and_action)
 
-def route_add_method(relative_path: str,  action: str, route_directory_path: str, route_name: str, controller_name: str | None) -> tuple[RouteResult, ActionResult, str]:
+def route_add_method(
+        relative_path: str,
+        action: str,
+        route_directory_path: str,
+        route_name: str,
+        controller_name: str | None) -> tuple[ActionResult, str]:
     """
     Append a new route handler function to an existing `routes.py` file.
 
@@ -43,8 +51,11 @@ def route_add_method(relative_path: str,  action: str, route_directory_path: str
             return call. Defaults to "MainController" when None.
 
     Returns:
-        tuple[bool, str]: A tuple containing:
-            - bool: True if the method was appended; False if validation/write failed.
+        tuple[ActionResult, str]: A tuple containing:
+            - ActionResult: Structured action result
+                - WARNING and False when validation or append fails
+                - ERROR and False when an acception rises
+                - ADDED and True if the method was appended
             - str: Styled success/warning/error message describing what happened including and usage instructions.
 
     Examples:
@@ -74,7 +85,9 @@ def route_add_method(relative_path: str,  action: str, route_directory_path: str
     # The route folder is already there so we just need to add to routes.py
     # 1) _generate_route_method
     updates: list[str] = []
-    route_file_path = os.path.join(route_directory_path, "routes.py")
+    _, route_file_path, _, _ = \
+        _generate_route_and_blueprint_metadata(
+            relative_path, route_directory_path)
     try:
         route_content = _generate_route_method(action, route_name, controller_name)
 
@@ -85,7 +98,13 @@ def route_add_method(relative_path: str,  action: str, route_directory_path: str
             "Could not prepare route file"
         )
         if not is_successful:
-            return False, message
+            return _generate_action_result(
+                relative_path=relative_path,
+                action=action,
+                route_name=route_name,
+                route_status=ScaffoldStatus.WARNING,
+                is_successful=False
+                ), message
 
         # 3) _append_route_method
         is_successful, message = _apply_step_result(
@@ -94,10 +113,24 @@ def route_add_method(relative_path: str,  action: str, route_directory_path: str
             "Could not add route method"
         )
         if not is_successful:
-            return False, message
+            return _generate_action_result(
+                relative_path=relative_path,
+                action=action,
+                route_name=route_name,
+                route_status=ScaffoldStatus.WARNING,
+                is_successful=False
+            ), message
 
     except Exception as exception:
-        return False, click.style(f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
+        message = click.style(
+            f"💣 Error: Failed to add method to route:\n{exception}", fg="red")
+        return _generate_action_result(
+                relative_path=relative_path,
+                action=action,
+                route_name=route_name,
+                route_status=ScaffoldStatus.ERROR,
+                is_successful=False
+            ), message
 
     updates.extend([
         route_generate_route_visit_example(route_name),
@@ -111,7 +144,13 @@ def route_add_method(relative_path: str,  action: str, route_directory_path: str
         click.style("✅ Success: Added Route To Existing Directory \n", fg="green", bold=True) +
         click.style(update_messages, fg="green")
     )
-    return True, message
+    return _generate_action_result(
+        relative_path=relative_path,
+        action=action,
+        route_name=route_name,
+        route_status=ScaffoldStatus.ADDED,
+        is_successful=True
+    ), message
 
 def route_generate_parameter_reference(parameters: list[str]) -> str:
     """
@@ -281,7 +320,7 @@ def route_generate_route_url_for_reference_call(relative_path: str, action: str,
     _, parameters = route_parse_route_name_for_params_and_types(route_name)
     parameter_reference = route_generate_parameter_reference_example(parameters)
     return (
-        f"Reference route with url_for(" +
+        f"Reference this route with url_for(" +
         f"'{relative_path.replace('/', '.') if relative_path else 'mains'}"
         f".{action}'{parameter_reference})"
     )
@@ -381,8 +420,9 @@ def route_write_directory_and_register_blueprint(
             defaults to "MainController" when None.
 
     Returns:
-        tuple[bool, str]:
-            - bool: True when all required steps complete, otherwise False.
+        tuple[RouteResult, ActionResult, str]:
+            - RouteResult: route directory / blueprint result
+            - ActionResult: action-level route reference result
             - str: Styled summary of updates on success, or a warning/error reason on failure.
 
     Examples:
@@ -415,9 +455,23 @@ def route_write_directory_and_register_blueprint(
                     click.style(f"    - {update}\n", fg="yellow")
                     for update in updates
                 )
-                return False, (
+                return (
+                    _generate_route_result(
+                        relative_path=relative_path,
+                        route_directory_path=route_directory_path,
+                        directory_status=ScaffoldStatus.WARNING,
+                        is_successful=False
+                    ), _generate_action_result(
+                        relative_path=relative_path,
+                        action=action,
+                        route_name=route_name,
+                        route_status=ScaffoldStatus.WARNING,
+                        is_successful=False,
+                    )
+                    , (
                     click.style("⚠️  Warning: Could not prepare parent routes\n", fg="yellow", bold=True)
                     + messages)
+                )
 
         os.makedirs(route_directory_path)
 
@@ -427,7 +481,19 @@ def route_write_directory_and_register_blueprint(
             _write_init_file(route_directory_path),
             "Could not create route init file")
         if not is_successful:
-            return False, message
+            return (
+                _generate_route_result(
+                    relative_path=relative_path,
+                    route_directory_path=route_directory_path,
+                    directory_status=ScaffoldStatus.WARNING,
+                    is_successful=False
+                ), _generate_action_result(
+                    relative_path=relative_path,
+                    action=action,
+                    route_name=route_name,
+                    route_status=ScaffoldStatus.WARNING,
+                    is_successful=False,
+                ), message)
 
         #   3) Create the routes routes.py file
         is_successful, message = _apply_step_result(
@@ -439,7 +505,19 @@ def route_write_directory_and_register_blueprint(
                 controller_name=controller_name),
             "Could not create route file")
         if not is_successful:
-            return False, message
+            return  (
+                _generate_route_result(
+                    relative_path=relative_path,
+                    route_directory_path=route_directory_path,
+                    directory_status=ScaffoldStatus.WARNING,
+                    is_successful=False
+                ), _generate_action_result(
+                    relative_path=relative_path,
+                    action=action,
+                    route_name=route_name,
+                    route_status=ScaffoldStatus.WARNING,
+                    is_successful=False,
+                ), message)
 
         #   4) Register the blueprint in either the parent (nested path) or at the app level
         is_successful, message = _apply_step_result(
@@ -451,10 +529,36 @@ def route_write_directory_and_register_blueprint(
             "Could not register blueprint",
         )
         if not is_successful:
-            return False, message
+            return  (
+                _generate_route_result(
+                    relative_path=relative_path,
+                    route_directory_path=route_directory_path,
+                    directory_status=ScaffoldStatus.WARNING,
+                    is_successful=False
+                ), _generate_action_result(
+                    relative_path=relative_path,
+                    action=action,
+                    route_name=route_name,
+                    route_status=ScaffoldStatus.WARNING,
+                    is_successful=False,
+                ), message)
 
     except Exception as exception:
-        return False, click.style(f"💣 Error: Failed to create route:\n{exception}", fg="red")
+        message = click.style(
+            f"💣 Error: Failed to create route:\n{exception}", fg="red")
+        return (
+                _generate_route_result(
+                    relative_path=relative_path,
+                    route_directory_path=route_directory_path,
+                    directory_status=ScaffoldStatus.ERROR,
+                    is_successful=False
+                ), _generate_action_result(
+                    relative_path=relative_path,
+                    action=action,
+                    route_name=route_name,
+                    route_status=ScaffoldStatus.ERROR,
+                    is_successful=False,
+                ), message)
 
     updates.extend([
         route_generate_route_visit_example(route_name),
@@ -467,7 +571,19 @@ def route_write_directory_and_register_blueprint(
         click.style("✅ Success: Created New Route Directory\n", fg="green", bold=True) +
         click.style(update_messages, fg="green")
     )
-    return True, message
+    return (
+        _generate_route_result(
+            relative_path=relative_path,
+            route_directory_path=route_directory_path,
+            directory_status=ScaffoldStatus.ADDED,
+            is_successful=True
+        ), _generate_action_result(
+            relative_path=relative_path,
+            action=action,
+            route_name=route_name,
+            route_status=ScaffoldStatus.ADDED,
+            is_successful=True,
+        ), message)
 
 def _append_route_method(action: str, route_file_path: str, route_content: list[str]) -> tuple[bool, str]:
     try:
@@ -495,8 +611,22 @@ def _apply_step_result(
     )
     return False, message
 
-def _generate_action_result():
-    pass
+def _generate_action_result(
+        relative_path: str,
+        action: str,
+        route_name: str,
+        route_status: ScaffoldStatus,
+        is_successful: bool
+) -> ActionResult:
+    return ActionResult(
+        action=action,
+        http_method=route_http_method_for_action(action),
+        route_name=route_name,
+        url_for_example=route_generate_route_url_for_reference_call(
+            relative_path, action, route_name),
+        is_successful=is_successful,
+        route_status=route_status
+    )
 
 def _generate_minimal_route_routes(route_directory_path: str) -> list[str]:
     return [f"from {route_directory_path.replace('/', '.')} import bp"]
@@ -562,6 +692,24 @@ def _generate_route_init(route_directory_path: str) -> list[str]:
             f"from {route_directory_path.replace('/', '.')} import routes"
         ]
 
+def _generate_route_and_blueprint_metadata(
+        relative_path: str,
+        route_directory_path: str) -> tuple[str, str, str, str]:
+    route_init_path=os.path.join(route_directory_path, "__init__.py")
+    route_file_path=os.path.join(route_directory_path, "routes.py")
+    if "/" in relative_path:
+        blueprint_name = f"{relative_path.replace('/', "_")}_blueprint"
+        blueprint_registration_file_path = os.path.join(
+            "app", "routes", os.path.dirname(relative_path), "__init__.py")
+    else:
+        blueprint_name = f"{relative_path if relative_path else 'mains'}_blueprint"
+        blueprint_registration_file_path = os.path.join("app", "__init__.py")
+    return (
+        route_init_path,
+        route_file_path,
+        blueprint_name,
+        blueprint_registration_file_path)
+
 def _generate_route_method(
         action: str,
         route_name: str,
@@ -577,15 +725,22 @@ def _generate_route_method(
         f"    return {controller_name}.{action}({', '.join(parameters)})"
     ]
 
-def _generate_route_result():
+def _generate_route_result(
+        relative_path: str,
+        route_directory_path: str,
+        directory_status: ScaffoldStatus,
+        is_successful: bool
+) -> RouteResult:
+    route_init_path, route_file_path, blueprint_name, blueprint_registration_file_path = \
+        _generate_route_and_blueprint_metadata(
+            relative_path, route_directory_path)
     return RouteResult(
-        directory_status=,
-        is_successful=,
-        route_init_path=,
-        route_file_path=,
-        blueprint_name=,
-        blueprint_registration_file_path=,
-        functions_added=
+        directory_status=directory_status,
+        is_successful=is_successful,
+        route_init_path=route_init_path,
+        route_file_path=route_file_path,
+        blueprint_name=blueprint_name,
+        blueprint_registration_file_path=blueprint_registration_file_path
     )
 
 def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
@@ -680,24 +835,30 @@ def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
         generated_route_name=generated_route_name
     )
 
-def _register_blueprint_in_parent(relative_path: str, route_directory_path: str) -> tuple[bool, str]:
+def _register_blueprint_in_parent(
+        relative_path: str,
+        route_directory_path: str) -> tuple[bool, str, str | None, str | None]:
     parent_init_path = os.path.join(os.path.dirname(route_directory_path), "__init__.py")
     try:
         with open(parent_init_path, "r", encoding="utf-8") as f:
             parent_source = f.read()
     except FileNotFoundError:
-        return False, f"file __init__.py missing at {parent_init_path}"
+        return False, f"file __init__.py missing at {parent_init_path}", None, None
+
     import_line = f"from {route_directory_path.replace('/', '.')} import bp as {relative_path.replace('/', '_')}_blueprint"
-    register_line = f"bp.register_blueprint({relative_path.replace('/', '_')}_blueprint)"
+    _, _, blueprint_name, _ = _generate_route_and_blueprint_metadata(
+        relative_path, route_directory_path)
+    register_line = f"bp.register_blueprint({blueprint_name}_blueprint)"
+
     if import_line in parent_source and register_line in parent_source:
-        return True, f"{relative_path.replace('/', '_')}_blueprint already registered"
+        return True, f"{blueprint_name}_blueprint already registered", blueprint_name, parent_init_path
     new_blueprint_content = [
         "",
         import_line,
         register_line
     ]
     file_append_file(parent_init_path, new_blueprint_content)
-    return True, f"Registered the new route as {relative_path.replace('/', '_')}_blueprint in {parent_init_path}"
+    return True, f"Registered the new route as {blueprint_name}_blueprint in {parent_init_path}", blueprint_name, parent_init_path
 
 def _register_top_level_blueprint_in_app(route_directory_path) -> tuple[bool, str]:
     app_init_path = os.path.join("app", "__init__.py")
@@ -744,14 +905,14 @@ def _validate_route_method_can_be_added(action: str, route_file_path: str, ) -> 
 
     return True, ""
 
-def _write_init_file(route_directory_path: str) -> tuple[bool, str]:
+def _write_init_file(route_directory_path: str) -> tuple[bool, str, str | None]:
     route_init_path = os.path.join(route_directory_path, "__init__.py")
     try:
         init_content = _generate_route_init(route_directory_path)
         file_write_file(route_init_path, init_content)
     except Exception as exception:
-        return False, f"Failed to create __init__.py at {route_init_path}: {exception}"
-    return True, f"Created __init__.py at {route_init_path}"
+        return False, f"Failed to create __init__.py at {route_init_path}: {exception}", None
+    return True, f"Created __init__.py at {route_init_path}", route_init_path
 
 def _write_parent_route_directory(route_directory_path: str) -> list[str]:
     update_messages: list[str] = []
@@ -783,8 +944,7 @@ def _write_parent_routes(relative_path: str) -> tuple[bool, list[str]]:
 
     app_base_route = os.path.join("app", "routes")                              # app/routes
     parent_segments = relative_path_segments[:-1]
-                                # ['recipes', 'comments']
-    for index in range(len(parent_segments)):
+    for index in range(len(parent_segments)):                                   # ['recipes', 'comments']
         parent_relative_path = "/".join(parent_segments[:index + 1])            # recipes or recipes/comments
         parent_route_directory_path = \
             os.path.join(app_base_route, parent_relative_path)                  # app/routes/recipes or app/routes/recipes/comments
@@ -806,7 +966,11 @@ def _write_parent_routes(relative_path: str) -> tuple[bool, list[str]]:
 
     return all_successful, update_messages
 
-def _write_routes_file(route_directory_path: str, action: str, route_name: str, controller_name: str | None) -> tuple[bool, str]:
+def _write_routes_file(
+        route_directory_path: str,
+        action: str,
+        route_name: str,
+        controller_name: str | None) -> tuple[bool, str, str | None]:
     route_file_path = os.path.join(route_directory_path, "routes.py")
     using_controller_name = controller_name if controller_name else 'MainController'
     method = route_http_method_for_action(action)
@@ -822,8 +986,7 @@ def _write_routes_file(route_directory_path: str, action: str, route_name: str, 
     try:
         file_write_file(route_file_path, route_content)
     except Exception as exception:
-        return False, f"Failed to create routes.py at {route_file_path}: {exception}"
-
-    return True, f"Created routes.py at {route_file_path}"
+        return False, f"Failed to create routes.py at {route_file_path}: {exception}", None
+    return True, f"Created routes.py at {route_file_path}", route_file_path
 
 

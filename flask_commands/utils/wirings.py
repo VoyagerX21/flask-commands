@@ -117,22 +117,24 @@ def wire_controller_route_view(
             "app", "routes", relative_path if relative_path else 'mains')
         try:
             if os.path.exists(route_directory_path):
-                is_successful, message = \
+                action_result, message = \
                     route_add_method(
                         relative_path,      # this is everything before the last part of dotted_path_with_action replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_action
                         route_directory_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
                         controller_name)    # contoller_name is like PostController
+                all_successful = all_successful and action_result.is_successful
             else:
-                is_successful, message = \
+                route_result, action_result, message = \
                     route_write_directory_and_register_blueprint(
                         relative_path,      # this is everything before the last part of dotted_path_with_action replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_action
                         route_directory_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
                         controller_name)    # contoller_name is like PostController
-            all_successful = all_successful and is_successful
+                all_successful = all_successful and (
+                    route_result.is_successful and action_result.is_successful)
             messages.append(message)
         except Exception as exception:
             all_successful = False

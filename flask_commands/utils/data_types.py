@@ -21,10 +21,11 @@ class CreatedModel:
 class ActionResult:
     action: str
     http_method: str
-    route_path: str
+    route_name: str
     url_for_example: str
-    view_file_path: str | None = None
-    view_status: ScaffoldStatus | None = None
+    is_successful: bool
+    # view_file_path: str | None = None
+    # view_status: ScaffoldStatus | None = None
     route_status: ScaffoldStatus = ScaffoldStatus.ADDED
 
 @dataclass
@@ -46,11 +47,10 @@ class ModelResult:
 class RouteResult:
     directory_status: ScaffoldStatus
     is_successful: bool
-    route_init_path: str
-    route_file_path: str
-    blueprint_name: str
-    blueprint_registration_file_path: str
-    functions_added: list[str] = field(default_factory=list)
+    route_init_path: str | None = None
+    route_file_path: str | None = None
+    blueprint_name: str | None = None
+    blueprint_registration_file_path: str | None = None
 
 @dataclass
 class CrudResourceResult:
