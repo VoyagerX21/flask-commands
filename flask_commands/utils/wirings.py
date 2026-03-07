@@ -5,13 +5,21 @@ from flask_commands.utils.data_types import (
     ActionResult,
     ControllerResult,
     CrudResourceResult,
+    ModelResult,
     RouteResult,
     ScaffoldStatus
 )
+from flask_commands.utils.models import (
+    model_get_registered_models,
+    model_model_names_to_snake_case_names
+)
+
 from .controllers import controller_add_method, controller_make_file
 from .naming import camel_to_snake
 from .routes import (
     route_add_method,
+    route_generate_route_and_blueprint_metadata,
+    route_generate_route_name,
     route_http_method_for_action,
     route_write_directory_and_register_blueprint
 )
@@ -24,7 +32,7 @@ def wire_controller_route_view(
     controller_name: str | None,
     route_name: str | None,
     is_view_directory_mains: bool = False,
-) -> tuple[bool, list[str]]:
+) -> tuple[ActionResult, ControllerResult | None, RouteResult | None, list[str]]:
     """
     Wire together the view, controller, and route for a single action.
 
@@ -52,7 +60,11 @@ def wire_controller_route_view(
             template namespace for inferred root GET views.
 
     Returns:
-        tuple[bool, list[str]]: Overall success flag and collected step messages.
+        tuple[ActionResult, ControllerResult | None, RouteResult | None, list[str]]:
+            - ActionResult: structured result for the full action
+            - ControllerResult | None: controller result when controller wiring ran
+            - RouteResult | None: route directory result when route directory creation ran
+            - list[str]: collected human-readable messages
 
     Examples:
         >>> is_successful, messages = wire_controller_route_view(
@@ -65,30 +77,35 @@ def wire_controller_route_view(
         True
     """
 
-    messages = []
+    messages: list[str] = []
     all_successful = True
 
     view_directory = "mains" if is_view_directory_mains else relative_path
 
-    method = route_http_method_for_action(action)
-    if method == "GET":
+    view_file_path: str | None = None
+    view_status = ScaffoldStatus.SKIPPED
+    controller_result: ControllerResult | None = None
+    route_result: RouteResult | None = None
+
+    http_method = route_http_method_for_action(action)
+    if http_method == "GET":
         relative_view_file_path = \
             os.path.join(view_directory, f"{action}.html")
         destination_file_path = \
             os.path.join("app", "templates", relative_view_file_path)
 
         view_status, message = view_make_file(destination_file_path)
+        view_file_path = destination_file_path
         all_successful = all_successful and (
             view_status == ScaffoldStatus.ADDED)
         messages.append(message)
 
     # If a controller_name was provided or generated
     if controller_name:
-        controller_file_path = \
-            os.path.join(
-                "app",
-                "controllers",
-                f"{camel_to_snake(controller_name)}.py")
+        controller_file_path = os.path.join(
+            "app",
+            "controllers",
+            f"{camel_to_snake(controller_name)}.py")
 
         # if controller exist just add the method
         if os.path.exists(controller_file_path):
@@ -111,6 +128,9 @@ def wire_controller_route_view(
         all_successful = all_successful and controller_result.is_successful
         messages.append(message)
 
+    route_status = ScaffoldStatus.SKIPPED
+    url_for_example = ""
+
     # If a controller_name was provided or generated
     if route_name:
         route_directory_path = os.path.join(
@@ -124,7 +144,7 @@ def wire_controller_route_view(
                         route_directory_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
                         controller_name)    # contoller_name is like PostController
-                all_successful = all_successful and action_result.is_successful
+
             else:
                 route_result, action_result, message = \
                     route_write_directory_and_register_blueprint(
@@ -133,17 +153,29 @@ def wire_controller_route_view(
                         route_directory_path,  # this is app/routes/{relative_path} or app/routes/main if relative path is ''
                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
                         controller_name)    # contoller_name is like PostController
-                all_successful = all_successful and (
-                    route_result.is_successful and action_result.is_successful)
+                all_successful = all_successful and route_result.is_successful
+            all_successful = all_successful and action_result.is_successful
+            route_status = action_result.route_status
+            url_for_example = action_result.url_for_example
             messages.append(message)
         except Exception as exception:
             all_successful = False
             messages.append(click.style(f"💣 Error:\n {exception}", fg="red"))
 
-    return all_successful, messages
+    action_result = ActionResult(
+        action=action,
+        http_method=http_method,
+        route_name=route_name if route_name else "",
+        url_for_example=url_for_example,
+        is_successful=all_successful,
+        view_file_path=view_file_path,
+        view_status=view_status,
+        route_status=route_status
+    )
+    return action_result, controller_result, route_result, messages
 
-def wire_crud_resource(
-    relative_path: str,
-    controller_name: str,
+def wiring_generate_crud_resource_resource_result(
+        relative_path: str, controller_name: str
 ) -> tuple[CrudResourceResult, list[str]]:
-    pass
+    restful_actions = ["index", "show", "create", "store", "edit", "update", "destroy"]
+

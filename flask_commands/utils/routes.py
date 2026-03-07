@@ -1,4 +1,3 @@
-from logging import WARNING
 import re
 import os
 import click
@@ -86,7 +85,7 @@ def route_add_method(
     # 1) _generate_route_method
     updates: list[str] = []
     _, route_file_path, _, _ = \
-        _generate_route_and_blueprint_metadata(
+        route_generate_route_and_blueprint_metadata(
             relative_path, route_directory_path)
     try:
         route_content = _generate_route_method(action, route_name, controller_name)
@@ -182,6 +181,24 @@ def route_generate_parameter_reference_example(parameters: list[str]) -> str:
     return ", " + ", ".join(
         f"{parameter}={i}" for i, parameter in enumerate(parameters, start=1)
     )
+
+def route_generate_route_and_blueprint_metadata(
+        relative_path: str,
+        route_directory_path: str) -> tuple[str, str, str, str]:
+    route_init_path=os.path.join(route_directory_path, "__init__.py")
+    route_file_path=os.path.join(route_directory_path, "routes.py")
+    if "/" in relative_path:
+        blueprint_name = f"{relative_path.replace('/', "_")}_blueprint"
+        blueprint_registration_file_path = os.path.join(
+            os.path.dirname(route_directory_path), "__init__.py")
+    else:
+        blueprint_name = f"{relative_path if relative_path else 'mains'}_blueprint"
+        blueprint_registration_file_path = os.path.join("app", "__init__.py")
+    return (
+        route_init_path,
+        route_file_path,
+        blueprint_name,
+        blueprint_registration_file_path)
 
 def route_generate_route_name(
     relative_path: str,
@@ -442,7 +459,17 @@ def route_write_directory_and_register_blueprint(
         ... )
     """
     # The route folder is not there so we need to create everything:
-
+    route_result = RouteResult(
+        directory_status=ScaffoldStatus.WARNING,
+        is_successful=False,
+    )
+    warning_action_result = _generate_action_result(
+        relative_path=relative_path,
+        action=action,
+        route_name=route_name,
+        route_status=ScaffoldStatus.WARNING,
+        is_successful=False,
+    )
     try:
         updates: list[str] = []
 
@@ -456,109 +483,73 @@ def route_write_directory_and_register_blueprint(
                     for update in updates
                 )
                 return (
-                    _generate_route_result(
-                        relative_path=relative_path,
-                        route_directory_path=route_directory_path,
-                        directory_status=ScaffoldStatus.WARNING,
-                        is_successful=False
-                    ), _generate_action_result(
-                        relative_path=relative_path,
-                        action=action,
-                        route_name=route_name,
-                        route_status=ScaffoldStatus.WARNING,
-                        is_successful=False,
-                    )
-                    , (
-                    click.style("⚠️  Warning: Could not prepare parent routes\n", fg="yellow", bold=True)
-                    + messages)
+                    route_result,
+                    warning_action_result,
+                    click.style("⚠️  Warning: Could not prepare parent routes\n", fg="yellow", bold=True) + messages
                 )
 
         os.makedirs(route_directory_path)
 
         #   2) Create the routes __init__.py file
-        is_successful, message = _apply_step_result(
-            updates,
-            _write_init_file(route_directory_path),
-            "Could not create route init file")
+        is_successful, reason, route_init_path = \
+            _write_init_file(route_directory_path)
+        if reason:
+            updates.append(reason)
+        route_result.route_init_path = route_init_path
+
         if not is_successful:
-            return (
-                _generate_route_result(
-                    relative_path=relative_path,
-                    route_directory_path=route_directory_path,
-                    directory_status=ScaffoldStatus.WARNING,
-                    is_successful=False
-                ), _generate_action_result(
-                    relative_path=relative_path,
-                    action=action,
-                    route_name=route_name,
-                    route_status=ScaffoldStatus.WARNING,
-                    is_successful=False,
-                ), message)
+            message = (
+                click.style(f"⚠️  Warning: Could not create route init file\n", fg="yellow", bold=True) +
+                click.style(f"    - {reason}\n", fg="yellow")
+            )
+            return route_result, warning_action_result, message
 
         #   3) Create the routes routes.py file
-        is_successful, message = _apply_step_result(
-            updates,
-            _write_routes_file(
+        is_successful, reason, route_file_path = _write_routes_file(
                 route_directory_path=route_directory_path,
                 action=action,
                 route_name=route_name,
-                controller_name=controller_name),
-            "Could not create route file")
+                controller_name=controller_name)
+        if reason:
+            updates.append(reason)
+        route_result.route_file_path = route_file_path
         if not is_successful:
-            return  (
-                _generate_route_result(
-                    relative_path=relative_path,
-                    route_directory_path=route_directory_path,
-                    directory_status=ScaffoldStatus.WARNING,
-                    is_successful=False
-                ), _generate_action_result(
-                    relative_path=relative_path,
-                    action=action,
-                    route_name=route_name,
-                    route_status=ScaffoldStatus.WARNING,
-                    is_successful=False,
-                ), message)
+            message = (
+                click.style(f"⚠️  Warning: Could not create route file\n", fg="yellow", bold=True) +
+                click.style(f"    - {reason}\n", fg="yellow")
+            )
+            return route_result, warning_action_result, message
 
         #   4) Register the blueprint in either the parent (nested path) or at the app level
-        is_successful, message = _apply_step_result(
-            updates,
-            _register_route(
-                relative_path=relative_path,
-                route_directory_path=route_directory_path,
-            ),
-            "Could not register blueprint",
+        is_successful, reason, blueprint_name, blueprint_registration_file_path = _register_route(
+            relative_path=relative_path,
+            route_directory_path=route_directory_path,
         )
+        if reason:
+            updates.append(reason)
+        route_result.blueprint_name = blueprint_name
+        route_result.blueprint_registration_file_path = blueprint_registration_file_path
+
         if not is_successful:
-            return  (
-                _generate_route_result(
-                    relative_path=relative_path,
-                    route_directory_path=route_directory_path,
-                    directory_status=ScaffoldStatus.WARNING,
-                    is_successful=False
-                ), _generate_action_result(
-                    relative_path=relative_path,
-                    action=action,
-                    route_name=route_name,
-                    route_status=ScaffoldStatus.WARNING,
-                    is_successful=False,
-                ), message)
+            message = (
+                click.style("⚠️  Warning: Could not register blueprint\n", fg="yellow", bold=True) +
+                click.style(f"    - {reason}\n", fg="yellow")
+            )
+            return route_result, warning_action_result, message
 
     except Exception as exception:
         message = click.style(
             f"💣 Error: Failed to create route:\n{exception}", fg="red")
-        return (
-                _generate_route_result(
-                    relative_path=relative_path,
-                    route_directory_path=route_directory_path,
-                    directory_status=ScaffoldStatus.ERROR,
-                    is_successful=False
-                ), _generate_action_result(
-                    relative_path=relative_path,
-                    action=action,
-                    route_name=route_name,
-                    route_status=ScaffoldStatus.ERROR,
-                    is_successful=False,
-                ), message)
+        route_result.directory_status = ScaffoldStatus.ERROR
+        route_result.is_successful = False                                     # Not need but more readable
+        error_action_result = _generate_action_result(
+            relative_path=relative_path,
+            action=action,
+            route_name=route_name,
+            route_status=ScaffoldStatus.ERROR,
+            is_successful=False,
+        )
+        return route_result, error_action_result, message
 
     updates.extend([
         route_generate_route_visit_example(route_name),
@@ -571,19 +562,16 @@ def route_write_directory_and_register_blueprint(
         click.style("✅ Success: Created New Route Directory\n", fg="green", bold=True) +
         click.style(update_messages, fg="green")
     )
-    return (
-        _generate_route_result(
-            relative_path=relative_path,
-            route_directory_path=route_directory_path,
-            directory_status=ScaffoldStatus.ADDED,
-            is_successful=True
-        ), _generate_action_result(
-            relative_path=relative_path,
-            action=action,
-            route_name=route_name,
-            route_status=ScaffoldStatus.ADDED,
-            is_successful=True,
-        ), message)
+    route_result.directory_status = ScaffoldStatus.ADDED
+    route_result.is_successful = True
+    success_action_result = _generate_action_result(
+        relative_path=relative_path,
+        action=action,
+        route_name=route_name,
+        route_status=ScaffoldStatus.ADDED,
+        is_successful=True,
+    )
+    return route_result, success_action_result, message
 
 def _append_route_method(action: str, route_file_path: str, route_content: list[str]) -> tuple[bool, str]:
     try:
@@ -692,24 +680,6 @@ def _generate_route_init(route_directory_path: str) -> list[str]:
             f"from {route_directory_path.replace('/', '.')} import routes"
         ]
 
-def _generate_route_and_blueprint_metadata(
-        relative_path: str,
-        route_directory_path: str) -> tuple[str, str, str, str]:
-    route_init_path=os.path.join(route_directory_path, "__init__.py")
-    route_file_path=os.path.join(route_directory_path, "routes.py")
-    if "/" in relative_path:
-        blueprint_name = f"{relative_path.replace('/', "_")}_blueprint"
-        blueprint_registration_file_path = os.path.join(
-            "app", "routes", os.path.dirname(relative_path), "__init__.py")
-    else:
-        blueprint_name = f"{relative_path if relative_path else 'mains'}_blueprint"
-        blueprint_registration_file_path = os.path.join("app", "__init__.py")
-    return (
-        route_init_path,
-        route_file_path,
-        blueprint_name,
-        blueprint_registration_file_path)
-
 def _generate_route_method(
         action: str,
         route_name: str,
@@ -732,7 +702,7 @@ def _generate_route_result(
         is_successful: bool
 ) -> RouteResult:
     route_init_path, route_file_path, blueprint_name, blueprint_registration_file_path = \
-        _generate_route_and_blueprint_metadata(
+        route_generate_route_and_blueprint_metadata(
             relative_path, route_directory_path)
     return RouteResult(
         directory_status=directory_status,
@@ -838,43 +808,50 @@ def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
 def _register_blueprint_in_parent(
         relative_path: str,
         route_directory_path: str) -> tuple[bool, str, str | None, str | None]:
-    parent_init_path = os.path.join(os.path.dirname(route_directory_path), "__init__.py")
+    _, _, blueprint_name, parent_init_path = route_generate_route_and_blueprint_metadata(
+        relative_path, route_directory_path)
     try:
         with open(parent_init_path, "r", encoding="utf-8") as f:
             parent_source = f.read()
     except FileNotFoundError:
         return False, f"file __init__.py missing at {parent_init_path}", None, None
 
-    import_line = f"from {route_directory_path.replace('/', '.')} import bp as {relative_path.replace('/', '_')}_blueprint"
-    _, _, blueprint_name, _ = _generate_route_and_blueprint_metadata(
-        relative_path, route_directory_path)
-    register_line = f"bp.register_blueprint({blueprint_name}_blueprint)"
+    import_line = f"from {route_directory_path.replace('/', '.')} import bp as {blueprint_name}"
+    register_line = f"bp.register_blueprint({blueprint_name})"
 
     if import_line in parent_source and register_line in parent_source:
-        return True, f"{blueprint_name}_blueprint already registered", blueprint_name, parent_init_path
+        return True, f"{blueprint_name} already registered", blueprint_name, parent_init_path
     new_blueprint_content = [
         "",
         import_line,
         register_line
     ]
     file_append_file(parent_init_path, new_blueprint_content)
-    return True, f"Registered the new route as {blueprint_name}_blueprint in {parent_init_path}", blueprint_name, parent_init_path
+    return True, f"Registered the new route as {blueprint_name} in {parent_init_path}", blueprint_name, parent_init_path
 
-def _register_top_level_blueprint_in_app(route_directory_path) -> tuple[bool, str]:
-    app_init_path = os.path.join("app", "__init__.py")
+def _register_top_level_blueprint_in_app(
+        relative_path: str,
+        route_directory_path: str) -> tuple[bool, str, str | None, str | None]:
+    _, _, blueprint_name, app_init_path = \
+        route_generate_route_and_blueprint_metadata(
+            relative_path, route_directory_path)
+
     try:
-        with open(app_init_path, "r", encoding="utf-8") as f:
-            source = f.read()
+        with open(app_init_path, "r", encoding="utf-8") as file:
+            source = file.read()
     except FileNotFoundError:
-        return False, "Failed to locate file `app/__init__.py`"
-    blueprint_name = route_directory_path.split("/")[-1]
-    import_line = f"from {route_directory_path.replace('/', '.')} import bp as {blueprint_name}_blueprint"
-    register_line = f"app.register_blueprint({blueprint_name}_blueprint)"
+        return False, f"Failed to locate file `{app_init_path}`", None, None
+
+    import_line = f"from {route_directory_path.replace('/', '.')} import bp as {blueprint_name}"
+    register_line = f"app.register_blueprint({blueprint_name})"
+
     if import_line in source and register_line in source:
-        return True, 'Route blueprint already registered in app/__init__.py'
+        return True, f"Route blueprint already registered in {app_init_path}", blueprint_name, app_init_path
+
     match = re.search(r"^\s*return app\b", source, flags=re.MULTILINE)
     if match is None:
-        return False, "Failed to locate `return app` in app/__init__.py"
+        return False, f"Failed to locate `return app` in {app_init_path}", None, None
+
     insert_index = match.start()
     new_blueprint = (
         "\n"
@@ -882,15 +859,19 @@ def _register_top_level_blueprint_in_app(route_directory_path) -> tuple[bool, st
         f"    {register_line}\n"
     )
     new_content = source[:insert_index] + new_blueprint + source[insert_index:]
-    with open(app_init_path, "w") as f:
-        f.write(new_content)
-    return True, f"Registered the new route directory as {blueprint_name.replace('/', '_')}_blueprint at app/__init__.py"
 
-def _register_route(relative_path: str, route_directory_path: str) -> tuple[bool, str]:
+    with open(app_init_path, "w") as file:
+        file.write(new_content)
+
+    return True, f"Registered the new route directory as {blueprint_name} at {app_init_path}", blueprint_name, app_init_path
+
+def _register_route(
+        relative_path: str,
+        route_directory_path: str) -> tuple[bool, str, str | None, str | None]:
     is_nested_blueprint = "/" in relative_path
     if is_nested_blueprint:
         return _register_blueprint_in_parent(relative_path, route_directory_path)
-    return _register_top_level_blueprint_in_app(route_directory_path)
+    return _register_top_level_blueprint_in_app(relative_path, route_directory_path)
 
 def _validate_route_method_can_be_added(action: str, route_file_path: str, ) -> tuple[bool, str]:
     try:
@@ -953,10 +934,12 @@ def _write_parent_routes(relative_path: str) -> tuple[bool, list[str]]:
                 _write_parent_route_directory(parent_route_directory_path))
 
             if index == 0:
-                is_successful, message = _register_top_level_blueprint_in_app(
-                     parent_route_directory_path)
+                is_successful, message, _, _ = \
+                    _register_top_level_blueprint_in_app(
+                        parent_relative_path,
+                        parent_route_directory_path)
             else:
-                is_successful, message = \
+                is_successful, message, _, _ = \
                     _register_blueprint_in_parent(
                         parent_relative_path,
                         parent_route_directory_path)

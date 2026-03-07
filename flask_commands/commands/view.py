@@ -122,14 +122,14 @@ def make_view(
             message_updates.append(message)
             all_successful = all_successful and model_result.is_successful
 
-    is_successful, messages = wire_controller_route_view(
+    action_result, _controller_result, _route_result, messages = wire_controller_route_view(
         relative_path,
         action,
         controller_name,
         route_name,
         is_view_directory_mains)
     message_updates.extend(messages)
-    all_successful = all_successful and is_successful
+    all_successful = all_successful and action_result.is_successful
 
     if info_updates:
         info_messages = (

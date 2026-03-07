@@ -197,13 +197,12 @@ def make_controller(
                 relative_path_segment_models=relative_path_segment_models
             )
 
-            is_successful, messages = wire_controller_route_view(
+            action_result, _controller_result, _route_result, messages = wire_controller_route_view(
                 relative_path,
                 action,
                 controller_name,
                 route_name)
-            all_successful = all_successful and is_successful
-
+            all_successful = all_successful and action_result.is_successful
             message_updates.extend(messages)
 
     if info_updates:

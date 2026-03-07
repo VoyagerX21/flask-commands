@@ -24,9 +24,9 @@ class ActionResult:
     route_name: str
     url_for_example: str
     is_successful: bool
-    # view_file_path: str | None = None
-    # view_status: ScaffoldStatus | None = None
-    route_status: ScaffoldStatus = ScaffoldStatus.ADDED
+    view_file_path: str | None = None
+    view_status: ScaffoldStatus = ScaffoldStatus.SKIPPED
+    route_status: ScaffoldStatus = ScaffoldStatus.SKIPPED
 
 @dataclass
 class ControllerResult:
