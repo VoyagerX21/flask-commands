@@ -288,6 +288,7 @@ def controller_generate_relative_path_from_controller_name(controller_name: str)
     return '/'.join(pluralize(camel_to_snake(segment))
                     for segment in filter_falsy(segments))
 
+# EDIT MARKER YOU WHERE HERE ON THE DOC STRING REFACTOR
 def controller_make_file(
         relative_path: str | None,
         action: str | None, # When you generate a controller calls and register it without any methods
