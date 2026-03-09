@@ -4,21 +4,17 @@ import click
 from flask_commands.utils.data_types import (
     ActionResult,
     ControllerResult,
-    CrudResourceResult,
+    CrudResult,
     ModelResult,
     RouteResult,
-    ScaffoldStatus
-)
-from flask_commands.utils.models import (
-    model_get_registered_models,
-    model_model_names_to_snake_case_names
+    ScaffoldStatus,
+    WiringResult
 )
 
 from .controllers import controller_add_method, controller_make_file
-from .naming import camel_to_snake
+from .naming import camel_to_snake, singularize
 from .routes import (
     route_add_method,
-    route_generate_route_and_blueprint_metadata,
     route_generate_route_name,
     route_http_method_for_action,
     route_write_directory_and_register_blueprint
@@ -26,58 +22,74 @@ from .routes import (
 from .views import view_make_file
 
 
-def wire_controller_route_view(
+def wiring_generate_wiring_result(
     relative_path: str,
     action: str,
     controller_name: str | None,
     route_name: str | None,
     is_view_directory_mains: bool = False,
-) -> tuple[ActionResult, ControllerResult | None, RouteResult | None, list[str]]:
+) -> WiringResult:
     """
-    Wire together the view, controller, and route for a single action.
+    Wire one action's view, controller, and route artifacts and return a structured result.
 
-    For GET actions, this creates the view template first. The template is
-    normally written under `app/templates/<relative_path>/`. When
-    `is_view_directory_mains` is True, root view generation is grouped under
-    `app/templates/mains/`, and any generated controller method will render
-    that same template path.
+    This function orchestrates the scaffolding for a single action and separates
+    presentation concerns from execution concerns by returning a `WiringResult`
+    object.
 
-    If `controller_name` is provided, this function ensures the controller
-    method exists by adding it to an existing controller file or creating the
-    controller file first.
+    Workflow:
+    1. For GET actions, create the view template.
+    2. Create the controller file or add the controller method.
+    3. Add the route to an existing route package or create/register a new one.
+    4. Split generated output into success messages and warning/error messages.
 
-    If `route_name` is provided, this function appends the route to an existing
-    route package or creates and registers the route package when it does not
-    yet exist. Root routes use the `mains` route package.
+    View placement:
+    - Normally uses `app/templates/<relative_path>/<action>.html`
+    - When `is_view_directory_mains` is True, root GET views are created under
+      `app/templates/mains/`
+
+    Route behavior:
+    - Existing route package: delegates to `route_add_method`
+    - Missing route package: delegates to
+      `route_write_directory_and_register_blueprint`
 
     Args:
-        relative_path (str): Slash-delimited path before the action
-            (examples: "", "posts", "posts/comments").
-        action (str): Action name (examples: "index", "show", "store").
-        controller_name (str | None): Controller class name to use, if any.
-        route_name (str | None): URL rule to wire, if any.
+        relative_path (str): Slash-delimited path before the action, such as
+            `"posts"` or `"posts/comments"`.
+        action (str): Action name, such as `"index"`, `"show"`, or `"store"`.
+        controller_name (str | None): Controller class to wire, if any.
+        route_name (str | None): Route rule to wire, if any.
         is_view_directory_mains (bool): When True, use the default `mains`
             template namespace for inferred root GET views.
 
     Returns:
-        tuple[ActionResult, ControllerResult | None, RouteResult | None, list[str]]:
-            - ActionResult: structured result for the full action
-            - ControllerResult | None: controller result when controller wiring ran
-            - RouteResult | None: route directory result when route directory creation ran
-            - list[str]: collected human-readable messages
+        WiringResult:
+            - `action_result`: overall action-level result
+            - `controller_result`: controller-level result when controller wiring ran
+            - `route_result`: route-directory result when route directory creation ran
+            - `success_messages`: human-readable success messages for this action
+            - `warning_messages`: warning and error messages for this action
 
     Examples:
-        >>> is_successful, messages = wire_controller_route_view(
+        >>> result = wiring_generate_wiring_result(
         ...     relative_path="posts",
         ...     action="index",
         ...     controller_name="PostController",
         ...     route_name="/posts",
         ... )
-        >>> is_successful
-        True
+        >>> result.action_result.action
+        'index'
+        >>> result.action_result.http_method
+        'GET'
+
+    Notes:
+    - `route_result` is only populated when route package creation/registration
+      occurred during this action.
+    - Warning ownership lives here so callers do not have to infer message
+      ordering from internal step order.
     """
 
-    messages: list[str] = []
+    success_messages: list[str] = []
+    warning_messages: list[str] = []
     all_successful = True
 
     view_directory = "mains" if is_view_directory_mains else relative_path
@@ -88,6 +100,7 @@ def wire_controller_route_view(
     route_result: RouteResult | None = None
 
     http_method = route_http_method_for_action(action)
+
     if http_method == "GET":
         relative_view_file_path = \
             os.path.join(view_directory, f"{action}.html")
@@ -98,7 +111,10 @@ def wire_controller_route_view(
         view_file_path = destination_file_path
         all_successful = all_successful and (
             view_status == ScaffoldStatus.ADDED)
-        messages.append(message)
+        if view_status == ScaffoldStatus.ADDED:
+            success_messages.append(message)
+        else:
+            warning_messages.append(message)
 
     # If a controller_name was provided or generated
     if controller_name:
@@ -126,7 +142,10 @@ def wire_controller_route_view(
                 route_name,
                 view_directory)
         all_successful = all_successful and controller_result.is_successful
-        messages.append(message)
+        if controller_result.is_successful:
+            success_messages.append(message)
+        else:
+            warning_messages.append(message)
 
     route_status = ScaffoldStatus.SKIPPED
     url_for_example = ""
@@ -157,10 +176,15 @@ def wire_controller_route_view(
             all_successful = all_successful and action_result.is_successful
             route_status = action_result.route_status
             url_for_example = action_result.url_for_example
-            messages.append(message)
+            if action_result.is_successful and (
+                route_result is None or route_result.is_successful
+            ):
+                success_messages.append(message)
+            else:
+                warning_messages.append(message)
         except Exception as exception:
             all_successful = False
-            messages.append(click.style(f"💣 Error:\n {exception}", fg="red"))
+            warning_messages.append(click.style(f"💣 Error:\n {exception}", fg="red"))
 
     action_result = ActionResult(
         action=action,
@@ -172,10 +196,119 @@ def wire_controller_route_view(
         view_status=view_status,
         route_status=route_status
     )
-    return action_result, controller_result, route_result, messages
+    return WiringResult(
+        action_result=action_result,
+        controller_result=controller_result,
+        route_result=route_result,
+        success_messages=success_messages,
+        warning_messages=warning_messages)
 
-def wiring_generate_crud_resource_resource_result(
-        relative_path: str, controller_name: str
-) -> tuple[CrudResourceResult, list[str]]:
-    restful_actions = ["index", "show", "create", "store", "edit", "update", "destroy"]
+def wiring_generate_crud_result(
+        relative_path: str,
+        controller_name: str,
+        controller_result: ControllerResult,
+        model_result: ModelResult,
+        relative_path_segments: list[str],
+        relative_path_segment_models: list[str]
+) -> tuple[CrudResult, list[str]]:
+    """
+    Scaffold a full RESTful resource and aggregate the result into one `CrudResult`.
 
+    This function coordinates the canonical CRUD action set for a resource:
+
+    - `index`
+    - `show`
+    - `create`
+    - `store`
+    - `edit`
+    - `update`
+    - `destroy`
+
+    It uses `wiring_generate_wiring_result()` for each action, then aggregates:
+    - controller method additions
+    - action-level results
+    - route-directory creation result, when one occurred
+    - warning/error messages that should still be surfaced after the summary
+
+    Args:
+        relative_path (str): Slash-delimited resource path, such as `"posts"` or
+            `"posts/comments"`.
+        controller_name (str): Controller class name for the resource.
+        controller_result (ControllerResult): Existing controller result created
+            earlier in the command flow.
+        model_result (ModelResult): Aggregate model result assembled earlier in
+            the command flow.
+        relative_path_segments (list[str]): Split `relative_path` segments.
+        relative_path_segment_models (list[str]): Segments that map to known
+            registered models.
+
+    Returns:
+        tuple[CrudResult, list[str]]:
+            - `CrudResult`: aggregated structured CRUD result
+            - `list[str]`: warning/error messages collected during CRUD wiring
+
+    Examples:
+        >>> crud_result, warnings = wiring_generate_crud_result(
+        ...     relative_path="posts",
+        ...     controller_name="PostController",
+        ...     controller_result=controller_result,
+        ...     model_result=model_result,
+        ...     relative_path_segments=["posts"],
+        ...     relative_path_segment_models=["posts"],
+        ... )
+        >>> len(crud_result.action_results)
+        7
+
+    Notes:
+    - `route_result` remains `None` when CRUD wiring only added routes to an
+      already existing route package.
+    - Success-path per-action messages are intentionally not returned here;
+      callers render a consolidated CRUD summary instead.
+    """
+
+    restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
+
+    crud_result = CrudResult(
+        controller_result=controller_result,
+        model_result=model_result,
+        route_result=None,
+        action_results=[]
+    )
+    warning_updates: list[str] = []
+
+    for action in restful_actions:
+        route_name = route_generate_route_name(
+            relative_path=relative_path,
+            action=action,
+            is_restful=True,
+            relative_path_segments=relative_path_segments,
+            relative_path_segment_models=relative_path_segment_models
+        )
+
+        wiring_result = wiring_generate_wiring_result(
+            relative_path,
+            action,
+            controller_name,
+            route_name)
+
+        crud_result.action_results.append(wiring_result.action_result)
+
+        if wiring_result.controller_result is not None:
+            crud_result.controller_result.is_successful = (
+                crud_result.controller_result.is_successful and
+                wiring_result.controller_result.is_successful
+            )
+            if wiring_result.controller_result.methods_added:
+                crud_result.controller_result.methods_added.extend(
+                    wiring_result.controller_result.methods_added
+                )
+            if wiring_result.controller_result.status != ScaffoldStatus.ADDED:
+                crud_result.controller_result.status = \
+                    wiring_result.controller_result.status
+
+        if wiring_result.route_result is not None and crud_result.route_result is None:
+            crud_result.route_result = wiring_result.route_result
+
+        warning_updates.extend(wiring_result.warning_messages)
+
+    return crud_result, warning_updates

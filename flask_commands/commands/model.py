@@ -13,7 +13,7 @@ from flask_commands.utils.models import (
 )
 from flask_commands.utils.naming import camel_to_snake, pluralize, singularize
 from flask_commands.utils.routes import route_generate_route_name
-from flask_commands.utils.wirings import wire_controller_route_view
+from flask_commands.utils.wirings import wiring_generate_wiring_result
 
 
 @click.command(name="make:model")
@@ -124,15 +124,18 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
                 relative_path_segment_models=relative_path_segment_models
             )
 
-            is_successful, messages = wire_controller_route_view(
+            wiring_result = wiring_generate_wiring_result(
                 relative_path,
                 action,
                 controller_name,
                 route_name
             )
-            all_successful = all_successful and is_successful
+            all_successful = all_successful and wiring_result.is_successful
 
-            for message in messages:
+            for message in wiring_result.success_messages:
+                click.echo(message)
+
+            for message in wiring_result.warning_messages:
                 click.echo(message)
 
     if not all_successful:

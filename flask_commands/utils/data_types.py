@@ -9,12 +9,14 @@ class ScaffoldStatus(Enum):
     WARNING = "warning"
     ERROR = "error"         # Unexpected Failure
 
-@dataclass(frozen=True)
-class CreatedModel:
-    model_name: str
-    model_file_path: str
-    status: ScaffoldStatus
+@dataclass
+class RouteResult:
+    directory_status: ScaffoldStatus
     is_successful: bool
+    route_init_path: str | None = None
+    route_file_path: str | None = None
+    blueprint_name: str | None = None
+    blueprint_registration_file_path: str | None = None
 
 # This was CrudActionReference
 @dataclass(frozen=True)
@@ -37,27 +39,33 @@ class ControllerResult:
     registration_file_path: str | None = None
     methods_added: list[str] = field(default_factory=list)
 
+@dataclass(frozen=True)
+class CreatedModel:
+    model_name: str
+    model_file_path: str
+    status: ScaffoldStatus
+    is_successful: bool
+    registration_file_path: str | None = None
+
 @dataclass
 class ModelResult:
     is_successful: bool
-    registration_file_path: str | None = None
     created_models: list[CreatedModel] = field(default_factory=list)
 
 @dataclass
-class RouteResult:
-    directory_status: ScaffoldStatus
-    is_successful: bool
-    route_init_path: str | None = None
-    route_file_path: str | None = None
-    blueprint_name: str | None = None
-    blueprint_registration_file_path: str | None = None
+class CrudResult:
+    controller_result: ControllerResult
+    model_result: ModelResult
+    route_result: RouteResult | None = None
+    action_results: list[ActionResult] = field(default_factory=list)
 
 @dataclass
-class CrudResourceResult:
-    controller: ControllerResult
-    model: ModelResult
-    route: RouteResult
-    actions: list[ActionResult] = field(default_factory=list)
+class WiringResult:
+    action_result: ActionResult
+    controller_result: ControllerResult | None
+    route_result: RouteResult | None
+    success_messages: list[str] = field(default_factory=list)
+    warning_messages: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

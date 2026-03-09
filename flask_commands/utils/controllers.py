@@ -2,7 +2,7 @@ import os
 import re
 import click
 
-from flask_commands.utils.data_types import ControllerResult, ScaffoldStatus
+from flask_commands.utils.data_types import ActionResult, ControllerResult, RouteResult, ScaffoldStatus
 from flask_commands.utils.models import model_generate_hierarchy_from_controller_name
 from flask_commands.utils.scaffold import filter_falsy
 
@@ -27,30 +27,34 @@ def controller_add_method(
     """
     Add a static method to an existing controller class.
 
-    This function ensures the required Flask imports exist, locates the target
-    controller class, and inserts a new `@staticmethod` method for the given
-    action.
+    This function reads the target controller file, verifies that the requested
+    method does not already exist, ensures the required Flask imports are
+    present, locates the controller class, and inserts a new `@staticmethod`
+    action method.
 
-    For GET-style actions, the generated method returns
-    `render_template('<template_path>')`. The template path is built from
-    `view_directory` when it is provided; otherwise, it falls back to
-    `relative_path`. In normal usage, `view_directory` is usually the same as
-    `relative_path`, but inferred root wiring may pass `'mains'` so root view
-    templates render from the default namespace.
+    Method body generation:
+    - GET actions return `render_template(...)`
+    - POST actions return `redirect(url_for(...))` to the `.index` route for
+      the current relative path
 
-    For POST-style actions (`store`, `update`, `destroy`, `delete`), the
-    generated method returns a redirect to the `.index` route for the current
-    relative path using `url_for(...)`.
+    Template resolution:
+    - `view_directory` overrides the template namespace when provided
+    - otherwise `relative_path` is used
+    - In normal usage, `view_directory` is usually the same as
+      `relative_path`, but inferred root wiring may pass `'mains'` so root view
+      templates render from the default namespace.
 
-    If `route_name` is provided, typed route parameters are parsed and included
-    in the generated method signature. If the method already exists or the
-    controller class cannot be found, no file changes are made.
+    Route parameter handling:
+    - when `route_name` is provided, typed route parameters are parsed and
+      included in the generated method signature. If the method already exists
+      or the controller class cannot be found, no file changes are made.
 
     Args:
-        relative_path (str): Slash-delimited path used for route references
-            and as the default template directory.
+        relative_path (str): Slash-delimited path used for route references and
+            as the default template directory.
         action (str): Method name to add to the controller.
         controller_name (str): Target controller class name.
+        controller_file_path (str): Filesystem path to the controller file.
         route_name (str | None): Optional route rule used to derive typed
             method parameters.
         view_directory (str | None): Optional template directory override for
@@ -58,8 +62,27 @@ def controller_add_method(
             be `'mains'` for inferred root view wiring.
 
     Returns:
-        tuple[ControllerResult, str]: Structured result and styled status
-            message.
+        tuple[ControllerResult, str]:
+            - `ControllerResult`: structured controller result describing status
+              and any methods added
+            - `str`: styled success, warning, or error message
+
+    Examples:
+        >>> result, message = controller_add_method(
+        ...     relative_path="posts",
+        ...     action="index",
+        ...     controller_name="PostController",
+        ...     controller_file_path="app/controllers/post_controller.py",
+        ...     route_name="/posts",
+        ... )
+        >>> result.methods_added
+        ['index']
+
+    Notes:
+    - If the method already exists, no file changes are made and the result
+      status is `EXISTS`.
+    - If the controller class cannot be found in the file, no changes are made
+      and the result status is `WARNING`.
     """
     try:
         # Read existing controller and check for method
@@ -447,6 +470,110 @@ def controller_make_file(
         methods_added=[action] if action else []
     ), message
 
+def controller_present_controller_crud_summary(controller_result: ControllerResult) -> str:
+    message = (
+        click.style("✅ Success: Created Controller Class\n", fg="green", bold=True) +
+        click.style(
+            f"    - Created a new controller called {click.style(controller_result.controller_name, bold=True)}\n",
+            fg="green",
+        ) +
+        click.style(
+            f"    - Registered {click.style(controller_result.controller_name, bold=True)} at "
+            f"{click.style(controller_result.registration_file_path or 'app/controllers/__init__.py', bold=True)}\n",
+            fg="green",
+        ) +
+        click.style(
+            f"    - New controller located at {click.style(controller_result.controller_file_path, bold=True)}\n",
+            fg="green",
+        )
+    )
+
+    if controller_result.methods_added:
+        message += click.style(
+            f"    - Added controller methods: {', '.join(controller_result.methods_added)}\n",
+            fg="green",
+        )
+
+    return message
+
+def controller_present_crud_route_summary(
+    route_result: RouteResult,
+    action_results: list[ActionResult],
+) -> str:
+    added_route_functions = [
+        action_result.action
+        for action_result in action_results
+        if action_result.route_status == ScaffoldStatus.ADDED
+    ]
+
+    heading = (
+        "✅ Success: Created New Route Directory\n"
+        if route_result.directory_status == ScaffoldStatus.ADDED
+        else "✅ Success: Updated Existing Route Directory\n"
+    )
+
+    message = click.style(heading, fg="green", bold=True)
+
+    if route_result.directory_status == ScaffoldStatus.ADDED:
+        if route_result.route_init_path:
+            message += click.style(
+                f"    - Created __init__.py at {click.style(route_result.route_init_path, bold=True)}\n",
+                fg="green",
+            )
+        if route_result.route_file_path:
+            message += click.style(
+                f"    - Created routes.py at {click.style(route_result.route_file_path, bold=True)}\n",
+                fg="green",
+            )
+        if route_result.blueprint_name and route_result.blueprint_registration_file_path:
+            message += click.style(
+                f"    - Registered the new route directory as {click.style(route_result.blueprint_name, bold=True)} "
+                f"at {click.style(route_result.blueprint_registration_file_path, bold=True)}\n",
+                fg="green",
+            )
+
+    if added_route_functions:
+        message += click.style(
+            f"    - Added route functions: {', '.join(added_route_functions)}\n",
+            fg="green",
+        )
+
+    return message
+
+def controller_present_crud_wiring(action_results: list[ActionResult]) -> str:
+    message = click.style("✅ Success: Generated CRUD Wiring\n", fg="green", bold=True)
+
+    for action_result in action_results:
+        message += click.style(
+            f"    - {action_result.action} {action_result.http_method}\n",
+            fg="green",
+        )
+
+        if (
+            action_result.http_method == "GET"
+            and action_result.view_status == ScaffoldStatus.ADDED
+            and action_result.view_file_path
+        ):
+            message += click.style(
+                f"      Added view file at {click.style(action_result.view_file_path, bold=True)}\n",
+                fg="green",
+            )
+
+        if action_result.route_status == ScaffoldStatus.ADDED:
+            if action_result.http_method == "GET":
+                message += click.style(
+                    f"      {route_generate_route_visit_example(action_result.route_name)}\n",
+                    fg="green",
+                )
+
+            if action_result.url_for_example:
+                message += click.style(
+                    f"      {action_result.url_for_example}\n",
+                    fg="green",
+                )
+
+    return message
+
 def _generate_controller_result(
         controller_name: str,
         controller_file_path: str,
@@ -462,3 +589,5 @@ def _generate_controller_result(
         registration_file_path=registration_file_path,
         methods_added=[] if methods_added is None else methods_added,
     )
+
+

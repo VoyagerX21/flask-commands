@@ -13,7 +13,7 @@ from flask_commands.utils.scaffold import (
     normalize_dotted_path_with_action,
     split_dotted_path_with_action_into_relative_path_and_action
 )
-from flask_commands.utils.wirings import wire_controller_route_view
+from flask_commands.utils.wirings import wiring_generate_wiring_result
 
 @click.command(name="make:view", short_help="Create a view and optionally wire controller, route, and model.")
 @click.argument("dotted_path_with_action")
@@ -122,14 +122,16 @@ def make_view(
             message_updates.append(message)
             all_successful = all_successful and model_result.is_successful
 
-    action_result, _controller_result, _route_result, messages = wire_controller_route_view(
+    wiring_result = wiring_generate_wiring_result(
         relative_path,
         action,
         controller_name,
         route_name,
         is_view_directory_mains)
-    message_updates.extend(messages)
-    all_successful = all_successful and action_result.is_successful
+    message_updates.extend(wiring_result.success_messages)
+    message_updates.extend(wiring_result.warning_messages)
+    all_successful = all_successful \
+        and wiring_result.action_result.is_successful
 
     if info_updates:
         info_messages = (

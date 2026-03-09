@@ -188,7 +188,7 @@ def route_generate_route_and_blueprint_metadata(
     route_init_path=os.path.join(route_directory_path, "__init__.py")
     route_file_path=os.path.join(route_directory_path, "routes.py")
     if "/" in relative_path:
-        blueprint_name = f"{relative_path.replace('/', "_")}_blueprint"
+        blueprint_name = f"{relative_path.replace('/', '_')}_blueprint"
         blueprint_registration_file_path = os.path.join(
             os.path.dirname(route_directory_path), "__init__.py")
     else:
