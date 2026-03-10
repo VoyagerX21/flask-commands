@@ -31,64 +31,61 @@ def route_add_method(
     """
     Append a new route handler function to an existing `routes.py` file.
 
-    This function builds a route function body for the given action (determining
-    the HTTP method based on the action type where POST is used for store,
-    update, destroy, delete and GET for all others), validates
-    that the function name does not already exist in the target `routes.py`,
-    appends the new handler , and returns a styled status message.
-
+    This function is used when the route package already exists. It:
+    - generates a route function for the requested action
+    - validates that the route function does not already exist
+    - appends the handler to the existing `routes.py`
+    - returns an action-level result plus a styled message
 
     Args:
-        relative_path (str): Slash-delimited route path (examples: "posts", "posts/comments")
-            the used dotted replace of the slashes is used in the `url_for`.
-        action (str): Route action/function name (examples: "index", "show", "store").  Determines HTTP method of GET or POST.
-        route_directory_path (str): Directory containing the target `routes.py`
-            (example: "app/routes/posts").
-        route_name (str): Flask URL rule for the route decorator
-            (example: "/posts/<int:post_id>" or "/admin/posts/comments").
-        controller_name (str | None): Controller class name used in the generated
-            return call. Defaults to "MainController" when None.
+        relative_path (str): Slash-delimited route path before the action.
+        action (str): Route function/action name.
+        route_directory_path (str): Filesystem path to the route package.
+        route_name (str): Flask URL rule for the route.
+        controller_name (str | None): Controller class referenced by the route
+            handler. Defaults internally to `MainController` when omitted.
 
     Returns:
-        tuple[ActionResult, str]: A tuple containing:
-            - ActionResult: Structured action result
-                - WARNING and False when validation or append fails
-                - ERROR and False when an acception rises
-                - ADDED and True if the method was appended
-            - str: Styled success/warning/error message describing what happened including and usage instructions.
+        tuple[ActionResult, str]:
+            - `ActionResult`: structured action-level route result
+              - WARNING and False when validation or append fails
+              - ERROR and False when an acception rises
+              - ADDED and True if the method was appended
+            - `str`: styled success, warning, or error message
 
     Examples:
-        >>> is_successful, message = route_add_method(
-        ...     relative_path="users",
+        >>> action_result, message = route_add_method(
+        ...     relative_path="posts",
         ...     action="index",
-        ...     route_directory_path="app/routes/users",
-        ...     route_name="/users",
-        ...     controller_name="UserController"
+        ...     route_directory_path="app/routes/posts",
+        ...     route_name="/posts",
+        ...     controller_name="PostController",
         ... )
-        >>> is_successful, message = route_add_method(
-        ...     relative_path="recipes/comments",
+        >>> action_result.route_status
+        <ScaffoldStatus.ADDED: 'added'>
+        >>> action_result, message = route_add_method(
+        ...     relative_path="posts/comments",
         ...     action="show",
-        ...     route_directory_path="app/routes/recipes/comments",
-        ...     route_name="/recipes/<int:recipe_id>/comments/<int:comment_id>",
-        ...     controller_name="RecipeCommentController"
+        ...     route_directory_path="app/routes/posts/comments",
+        ...     route_name="/posts/<int:post_id>/comments/<int:comment_id>",
+        ...     controller_name="PostCommentController",
         ... )
-        >>> is_successful, message = route_add_method(
-        ...     relative_path="",
-        ...     action="about",
-        ...     route_directory_path="app/routes/mains",
-        ...     route_name="/about",
-        ...     controller_name=None
-        ... )
+        >>> action_result.route_status
+        <ScaffoldStatus.ADDED: 'added'>
+
+    Notes:
+    - This function does not create route directories or register blueprints.
+    - Existing route functions return status `WARNING` and do not modify files.
     """
 
     # The route folder is already there so we just need to add to routes.py
-    # 1) _generate_route_method
+    # 1) _generate_route_content
     updates: list[str] = []
     _, route_file_path, _, _ = \
         route_generate_route_and_blueprint_metadata(
             relative_path, route_directory_path)
     try:
-        route_content = _generate_route_method(action, route_name, controller_name)
+        route_content = _generate_route_content(action, route_name, controller_name)
 
         # 2) _validate_route_method_can_be_added
         is_successful, message = _apply_step_result(
@@ -176,6 +173,27 @@ def route_generate_parameter_reference(parameters: list[str]) -> str:
         f"{parameter}={parameter}" for parameter in parameters)
 
 def route_generate_parameter_reference_example(parameters: list[str]) -> str:
+    """
+    Build an example `url_for(...)` argument suffix from parameter names.
+
+    Unlike `route_generate_parameter_reference()`, this helper generates example
+    values for presentation output, using `1`, `2`, `3`, ... in positional order.
+
+    Args:
+        parameters (list[str]): Route parameter names in the order they should appear.
+
+    Returns:
+        str: Empty string when there are no parameters; otherwise a string
+        beginning with `", "` and containing example `name=value` pairs.
+
+    Examples:
+        >>> route_generate_parameter_reference_example([])
+        ''
+        >>> route_generate_parameter_reference_example(["post_id"])
+        ', post_id=1'
+        >>> route_generate_parameter_reference_example(["post_id", "comment_id"])
+        ', post_id=1, comment_id=2'
+    """
     if not parameters:
         return ""
     return ", " + ", ".join(
@@ -185,6 +203,38 @@ def route_generate_parameter_reference_example(parameters: list[str]) -> str:
 def route_generate_route_and_blueprint_metadata(
         relative_path: str,
         route_directory_path: str) -> tuple[str, str, str, str]:
+    """
+    Derive route package and blueprint metadata from a relative route path.
+
+    This helper centralizes the filesystem and registration metadata used by the
+    route layer so route scaffolding and presentation stay aligned.
+
+    It returns:
+    - route package `__init__.py` path
+    - route package `routes.py` path
+    - generated blueprint variable name
+    - blueprint registration target path
+
+    Registration target rules:
+    - nested route packages register in the parent route package `__init__.py`
+    - top-level route packages register in `app/__init__.py`
+
+    Args:
+        relative_path (str): Slash-delimited route path such as `"posts"` or
+            `"posts/comments"`.
+        route_directory_path (str): Filesystem path to the route package.
+
+    Returns:
+        tuple[str, str, str, str]:
+            - route_init_path
+            - route_file_path
+            - blueprint_name
+            - blueprint_registration_file_path
+
+    Examples:
+        >>> route_generate_route_and_blueprint_metadata("posts", "app/routes/posts")
+        ('app/routes/posts/__init__.py', 'app/routes/posts/routes.py', 'posts_blueprint', 'app/__init__.py')
+    """
     route_init_path=os.path.join(route_directory_path, "__init__.py")
     route_file_path=os.path.join(route_directory_path, "routes.py")
     if "/" in relative_path:
@@ -334,6 +384,25 @@ def route_generate_route_name_with_model_prompt(
     return prompt_plan.route_structure.accepted_route, model_name
 
 def route_generate_route_url_for_reference_call(relative_path: str, action: str, route_name: str) -> str:
+    """
+    Build the presentation string used to reference a generated route with `url_for(...)`.
+
+    This helper parses typed route parameters from `route_name`, then produces a
+    user-facing reference string using example values.
+
+    Args:
+        relative_path (str): Slash-delimited route path before the action.
+        action (str): Route action name.
+        route_name (str): Flask route rule.
+
+    Returns:
+        str: Presentation string in the form
+        `Reference this route with url_for('endpoint.action', ...)`.
+
+    Examples:
+        >>> route_generate_route_url_for_reference_call("posts", "show", "/posts/<int:post_id>")
+        "Reference this route with url_for('posts.show', post_id=1)"
+    """
     _, parameters = route_parse_route_name_for_params_and_types(route_name)
     parameter_reference = route_generate_parameter_reference_example(parameters)
     return (
@@ -343,6 +412,22 @@ def route_generate_route_url_for_reference_call(relative_path: str, action: str,
     )
 
 def route_generate_route_visit_example(route_name: str) -> str:
+    """
+    Build a browser-friendly visit example for a generated route.
+
+    Typed route parameters are replaced with example values (`1`, `2`, ...),
+    producing the visit string used in scaffold presentation output.
+
+    Args:
+        route_name (str): Flask route rule.
+
+    Returns:
+        str: Presentation string beginning with `Visit the new route at ...`.
+
+    Examples:
+        >>> route_generate_route_visit_example("/posts/<int:post_id>")
+        'Visit the new route at /posts/1'
+    """
     _, parameters = route_parse_route_name_for_params_and_types(route_name)
     relative_url = route_name
     for i, parameter in enumerate(parameters, start=1):
@@ -414,50 +499,56 @@ def route_write_directory_and_register_blueprint(
     route_name: str,
     controller_name: str | None) -> tuple[RouteResult, ActionResult, str]:
     """
-    Create a new Flask route package, write its initial route file, then register its blueprint.
+    Create a new route package, write its initial files, and register its blueprint.
 
-    Workflow:
-    1. Create any missing parent route directories for nested paths.
-    2. Create the target route directory and write its `__init__.py`.
-    3. Write `routes.py` with the initial action handler.
-    4. Register the blueprint:
+    This function is used when the route package does not yet exist. It:
+    1. creates any missing parent route packages for nested paths
+    2. creates the target route directory
+    3. writes `__init__.py`
+    4. writes `routes.py`
+    5. registers the blueprint
        - nested path: register in the parent route package
        - top-level path: register in `app/__init__.py`
+    6. returns both a route-directory result and an action-level route result
 
     Args:
-        relative_path (str): Route path without the action, slash-delimited
-            (examples: "", "posts", "posts/comments").
-        action (str): Route function/action name
-            (examples: "index", "show", "custom_action").
-        route_directory_path (str): Filesystem path for the new route package
-            (example: "app/routes/posts/comments").
-        route_name (str): Flask URL rule for the action
-            (example: "/posts/<int:post_id>/comments").
-        controller_name (str | None): Controller class used by the generated route;
-            defaults to "MainController" when None.
+        relative_path (str): Slash-delimited route path without the action.
+        action (str): Route function/action name.
+        route_directory_path (str): Filesystem path for the new route package.
+        route_name (str): Flask URL rule for the action.
+        controller_name (str | None): Controller class referenced by the route
+            handler. Defaults internally to `MainController` when omitted.
 
     Returns:
         tuple[RouteResult, ActionResult, str]:
-            - RouteResult: route directory / blueprint result
-            - ActionResult: action-level route reference result
-            - str: Styled summary of updates on success, or a warning/error reason on failure.
+            - `RouteResult`: route-directory/blueprint result
+            - `ActionResult`: action-level route result
+            - `str`: styled success, warning, or error message
 
     Examples:
-        >>> route_write_directory_and_register_blueprint(
-        ...     relative_path="users",
+        >>> route_result, action_result, message = route_write_directory_and_register_blueprint(
+        ...     relative_path="posts",
         ...     action="index",
-        ...     route_directory_path="app/routes/users",
-        ...     route_name="/users",
-        ...     controller_name="UserController",
+        ...     route_directory_path="app/routes/posts",
+        ...     route_name="/posts",
+        ...     controller_name="PostController",
         ... )
-        >>> route_write_directory_and_register_blueprint(
+        >>> route_result.directory_status
+        <ScaffoldStatus.ADDED: 'added'>
+        >>>  route_result, action_result, message = route_write_directory_and_register_blueprint(
         ...     relative_path="recipes/comments",
         ...     action="index",
         ...     route_directory_path="app/routes/recipes/comments",
         ...     route_name="/recipes/<int:recipe_id>/comments",
         ...     controller_name="RecipeCommentController",
         ... )
+
+    Notes:
+    - The route directory may be partially created before a later step fails.
+    - Blueprint registration metadata is populated from the actual registration
+      helper return values rather than reconstructed later.
     """
+
     # The route folder is not there so we need to create everything:
     route_result = RouteResult(
         directory_status=ScaffoldStatus.WARNING,
@@ -574,6 +665,45 @@ def route_write_directory_and_register_blueprint(
     return route_result, success_action_result, message
 
 def _append_route_method(action: str, route_file_path: str, route_content: list[str]) -> tuple[bool, str]:
+    """
+    Append a generated route handler block to an existing `routes.py` file.
+
+    This helper writes the already-generated `route_content` lines to the end of
+    the target route file using `file_append_file`. It is used only after route
+    validation has confirmed that the route function name does not already
+    exist.
+
+    Args:
+        action (str): Route function name being appended, such as `"index"`,
+            `"show"`, or `"store"`.
+        route_file_path (str): Filesystem path to the target `routes.py` file.
+        route_content (list[str]): Prebuilt route handler lines to append.
+
+    Returns:
+        tuple[bool, str]:
+            - `True` and a success description when the route content is
+              appended successfully.
+            - `False` and a failure reason when the append operation raises an
+              exception.
+
+    Examples:
+        >>> success, reason = _append_route_method(
+        ...     action="index",
+        ...     route_file_path="app/routes/posts/routes.py",
+        ...     route_content=[
+        ...         "",
+        ...         "@bp.route('/posts', methods=['GET'])",
+        ...         "def index():",
+        ...         "    return PostController.index()",
+        ...     ],
+        ... )
+        >>> success
+        True
+
+    Notes:
+        This helper does not validate route uniqueness. It assumes validation
+        has already been performed by `_validate_route_method_can_be_added()`.
+    """
     try:
         file_append_file(route_file_path, route_content)
     except Exception as exception:
@@ -585,6 +715,53 @@ def _apply_step_result(
     result: tuple[bool, str],
     failure_title: str,
 ) -> tuple[bool, str | None]:
+    """
+    Normalize a low-level step result into accumulated updates and an optional warning message.
+
+    This helper is used by route scaffolding steps that return a simple
+    `(is_successful, reason)` tuple. It appends any non-empty reason to the
+    running `updates` list and, when the step fails, formats a styled warning
+    message using the provided `failure_title`.
+
+    Args:
+        updates (list[str]): Mutable list collecting human-readable step updates.
+        result (tuple[bool, str]): Step result in the form
+            `(is_successful, reason)`.
+        failure_title (str): Short title used when formatting a warning message
+            for a failed step.
+
+    Returns:
+        tuple[bool, str | None]:
+            - `True, None` when the step succeeded.
+            - `False, <styled warning message>` when the step failed.
+
+    Examples:
+        >>> updates = []
+        >>> _apply_step_result(
+        ...     updates,
+        ...     (True, "Created routes.py at app/routes/posts/routes.py"),
+        ...     "Could not create route file",
+        ... )
+        (True, None)
+        >>> updates
+        ['Created routes.py at app/routes/posts/routes.py']
+
+        >>> updates = []
+        >>> success, message = _apply_step_result(
+        ...     updates,
+        ...     (False, "Could not find file at app/routes/posts/routes.py"),
+        ...     "Could not prepare route file",
+        ... )
+        >>> success
+        False
+        >>> "Could not prepare route file" in message
+        True
+
+    Notes:
+        This helper does not raise exceptions. It only translates a step result
+        into the presentation format expected by higher-level route scaffolding
+        functions.
+    """
     is_successful, reason = result
 
     if reason:
@@ -606,17 +783,66 @@ def _generate_action_result(
         route_status: ScaffoldStatus,
         is_successful: bool
 ) -> ActionResult:
+    """
+    Build a normalized `ActionResult` for route scaffolding.
+
+    This helper centralizes route action metadata so callers do not reconstruct:
+    - HTTP method
+    - reference `url_for(...)` example
+    - visit example `posts/1`
+    - route status
+    - overall action success state
+
+    Args:
+        relative_path (str): Slash-delimited route path before the action.
+        action (str): Route action name.
+        route_name (str): Flask route rule.
+        route_status (ScaffoldStatus): Route-layer scaffold outcome.
+        is_successful (bool): Overall success flag for the action.
+
+    Returns:
+        ActionResult: Structured action result.
+    """
+    http_method = route_http_method_for_action(action)
+    visit_example = None
+    if http_method == "GET":
+        visit_example = route_generate_route_visit_example(route_name)
+
     return ActionResult(
         action=action,
-        http_method=route_http_method_for_action(action),
+        http_method=http_method,
         route_name=route_name,
         url_for_example=route_generate_route_url_for_reference_call(
             relative_path, action, route_name),
         is_successful=is_successful,
+        visit_example=visit_example,
         route_status=route_status
     )
 
 def _generate_minimal_route_routes(route_directory_path: str) -> list[str]:
+    """
+    Generate the minimal `routes.py` contents for an intermediate parent route package.
+
+    This helper is used when creating missing parent route packages for nested
+    resources. Parent route packages need a valid `routes.py`, but they do not
+    yet receive a concrete route handler. Instead, they only import the package
+    blueprint so the package can exist and later register nested blueprints.
+
+    Args:
+        route_directory_path (str): Filesystem path to the route package, such
+            as `"app/routes/posts"`.
+
+    Returns:
+        list[str]: Minimal file contents for `routes.py`.
+
+    Examples:
+        >>> _generate_minimal_route_routes("app/routes/posts")
+        ['from app.routes.posts import bp']
+
+    Notes:
+        This helper is only used for parent route package bootstrapping inside
+        nested route creation flows.
+    """
     return [f"from {route_directory_path.replace('/', '.')} import bp"]
 
 def _generate_prompt_plan(route_spec: RouteSpec) -> PromptPlan:
@@ -671,6 +897,37 @@ def _generate_prompt_plan(route_spec: RouteSpec) -> PromptPlan:
     )
 
 def _generate_route_init(route_directory_path: str) -> list[str]:
+    """
+    Generate the `__init__.py` contents for a route package.
+
+    The generated file:
+    - imports `Blueprint`
+    - creates a `bp` blueprint whose name is the last segment of the route
+      directory path
+    - imports the package `routes` module so route handlers are registered
+
+    Args:
+        route_directory_path (str): Filesystem path to the route package, such
+            as `"app/routes/posts"` or `"app/routes/posts/comments"`.
+
+    Returns:
+        list[str]: File contents for the route package `__init__.py`.
+
+    Examples:
+        >>> _generate_route_init("app/routes/posts")
+        [
+            'from flask import Blueprint',
+            '',
+            "bp = Blueprint('posts', __name__)",
+            '',
+            'from app.routes.posts import routes'
+        ]
+
+    Notes:
+        The blueprint variable name in generated route packages is always `bp`.
+        Blueprint aliasing for registration happens later in registration
+        helpers, not in this file.
+    """
     blueprint_name = route_directory_path.split("/")[-1]
     return [
             "from flask import Blueprint",
@@ -680,10 +937,60 @@ def _generate_route_init(route_directory_path: str) -> list[str]:
             f"from {route_directory_path.replace('/', '.')} import routes"
         ]
 
-def _generate_route_method(
+def _generate_route_content(
         action: str,
         route_name: str,
         controller_name: str | None) -> list[str]:
+    """
+    Generate a route handler function block for insertion into `routes.py`.
+
+    This helper builds the route decorator and function body for a single route
+    action. It derives the HTTP method from the action name and parses typed
+    route parameters so both the route function signature and controller call
+    receive the correct parameter names.
+
+    Args:
+        action (str): Route action/function name, such as `"index"`, `"show"`,
+            or `"store"`.
+        route_name (str): Flask URL rule for the route.
+        controller_name (str | None): Controller class used by the generated
+            route handler. Defaults internally to `"MainController"` when not
+            provided.
+
+    Returns:
+        list[str]: Generated route handler lines ready to be written or appended
+        to `routes.py`.
+
+    Examples:
+        >>> _generate_route_content(
+        ...     action="show",
+        ...     route_name="/posts/<int:post_id>",
+        ...     controller_name="PostController",
+        ... )
+        [
+            '',
+            "@bp.route('/posts/<int:post_id>', methods=['GET'])",
+            'def show(post_id: int):',
+            '    return PostController.show(post_id)'
+        ]
+
+        >>> _generate_route_content(
+        ...     action="store",
+        ...     route_name="/posts",
+        ...     controller_name="PostController",
+        ... )
+        [
+            '',
+            "@bp.route('/posts', methods=['POST'])",
+            'def store():',
+            '    return PostController.store()'
+        ]
+
+    Notes:
+        The returned value is only the method block. Import statements for
+        controller and blueprint setup are handled elsewhere when creating a new
+        route package.
+    """
     controller_name = controller_name if controller_name else 'MainController'
     method = route_http_method_for_action(action)
     parameters_with_types, parameters = \
@@ -694,24 +1001,6 @@ def _generate_route_method(
         f"def {action}({', '.join(parameters_with_types)}):",
         f"    return {controller_name}.{action}({', '.join(parameters)})"
     ]
-
-def _generate_route_result(
-        relative_path: str,
-        route_directory_path: str,
-        directory_status: ScaffoldStatus,
-        is_successful: bool
-) -> RouteResult:
-    route_init_path, route_file_path, blueprint_name, blueprint_registration_file_path = \
-        route_generate_route_and_blueprint_metadata(
-            relative_path, route_directory_path)
-    return RouteResult(
-        directory_status=directory_status,
-        is_successful=is_successful,
-        route_init_path=route_init_path,
-        route_file_path=route_file_path,
-        blueprint_name=blueprint_name,
-        blueprint_registration_file_path=blueprint_registration_file_path
-    )
 
 def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
     """
@@ -808,6 +1097,25 @@ def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
 def _register_blueprint_in_parent(
         relative_path: str,
         route_directory_path: str) -> tuple[bool, str, str | None, str | None]:
+    """
+    Register a nested route package blueprint in its parent route package.
+
+    Args:
+        relative_path (str): Slash-delimited nested route path.
+        route_directory_path (str): Filesystem path to the nested route package.
+
+    Returns:
+        tuple[bool, str, str | None, str | None]:
+            - success flag
+            - status reason/message
+            - blueprint name when known
+            - parent registration file path when known
+
+    Notes:
+    - This function is only used for nested route package registration.
+    - If registration lines already exist, the operation succeeds without
+      modifying the file again.
+    """
     _, _, blueprint_name, parent_init_path = route_generate_route_and_blueprint_metadata(
         relative_path, route_directory_path)
     try:
@@ -832,6 +1140,25 @@ def _register_blueprint_in_parent(
 def _register_top_level_blueprint_in_app(
         relative_path: str,
         route_directory_path: str) -> tuple[bool, str, str | None, str | None]:
+    """
+    Register a top-level route package blueprint in `app/__init__.py`.
+
+    Args:
+        relative_path (str): Slash-delimited top-level route path.
+        route_directory_path (str): Filesystem path to the route package.
+
+    Returns:
+        tuple[bool, str, str | None, str | None]:
+            - success flag
+            - status reason/message
+            - blueprint name when known
+            - registration file path when known
+
+    Notes:
+    - The blueprint registration lines are inserted just before `return app`.
+    - If the registration lines already exist, the operation succeeds without
+      writing the file again.
+    """
     _, _, blueprint_name, app_init_path = \
         route_generate_route_and_blueprint_metadata(
             relative_path, route_directory_path)
@@ -868,12 +1195,58 @@ def _register_top_level_blueprint_in_app(
 def _register_route(
         relative_path: str,
         route_directory_path: str) -> tuple[bool, str, str | None, str | None]:
+    """
+    Register a route package blueprint in the appropriate target file.
+
+    This helper delegates registration based on route depth:
+    - nested route packages register in the parent route package
+    - top-level route packages register in `app/__init__.py`
+
+    Args:
+        relative_path (str): Slash-delimited route path.
+        route_directory_path (str): Filesystem path to the route package.
+
+    Returns:
+        tuple[bool, str, str | None, str | None]:
+            - success flag
+            - status reason/message
+            - blueprint name when known
+            - registration file path when known
+    """
     is_nested_blueprint = "/" in relative_path
     if is_nested_blueprint:
         return _register_blueprint_in_parent(relative_path, route_directory_path)
     return _register_top_level_blueprint_in_app(relative_path, route_directory_path)
 
 def _validate_route_method_can_be_added(action: str, route_file_path: str, ) -> tuple[bool, str]:
+    """
+    Verify that a route function can be safely added to an existing `routes.py` file.
+
+    This helper loads the target route file and checks whether a function with
+    the requested `action` name already exists. It is used as a guard before
+    appending a new route handler to an existing route package.
+
+    Args:
+        action (str): Route function name to validate.
+        route_file_path (str): Filesystem path to the target `routes.py` file.
+
+    Returns:
+        tuple[bool, str]:
+            - `True, ""` when the route function does not already exist.
+            - `False, <reason>` when the file is missing or the route function
+              already exists.
+
+    Examples:
+        >>> _validate_route_method_can_be_added("index", "app/routes/posts/routes.py")
+        (True, '')
+
+        >>> _validate_route_method_can_be_added("show", "missing/routes.py")
+        (False, 'Could not find file at missing/routes.py')
+
+    Notes:
+        This helper only validates existence and naming conflicts. It does not
+        inspect route decorator collisions or compare route URL rules.
+    """
     try:
         with open(route_file_path, "r", encoding="utf-8") as file:
             existing_file_content = file.read()
@@ -887,6 +1260,18 @@ def _validate_route_method_can_be_added(action: str, route_file_path: str, ) -> 
     return True, ""
 
 def _write_init_file(route_directory_path: str) -> tuple[bool, str, str | None]:
+    """
+    Write the `__init__.py` file for a route package.
+
+    Args:
+        route_directory_path (str): Filesystem path to the route package.
+
+    Returns:
+        tuple[bool, str, str | None]:
+            - success flag
+            - status reason/message
+            - written `__init__.py` path when successful
+    """
     route_init_path = os.path.join(route_directory_path, "__init__.py")
     try:
         init_content = _generate_route_init(route_directory_path)
@@ -896,6 +1281,37 @@ def _write_init_file(route_directory_path: str) -> tuple[bool, str, str | None]:
     return True, f"Created __init__.py at {route_init_path}", route_init_path
 
 def _write_parent_route_directory(route_directory_path: str) -> list[str]:
+    """
+    Create a missing parent route package for a nested resource path.
+
+    This helper creates:
+    - the parent route directory
+    - `__init__.py` with a blueprint
+    - a minimal `routes.py` containing only the blueprint import
+
+    It is used during nested route scaffolding when intermediate parent route
+    packages do not yet exist.
+
+    Args:
+        route_directory_path (str): Filesystem path to the parent route package,
+            such as `"app/routes/posts"`.
+
+    Returns:
+        list[str]: Human-readable update messages describing the files and
+        directories created. Returns an empty list when the directory already
+        exists.
+
+    Examples:
+        >>> updates = _write_parent_route_directory("app/routes/posts")
+        >>> isinstance(updates, list)
+        True
+        >>> any("Created routes directory" in update for update in updates)
+        True
+
+    Notes:
+        This helper assumes the caller will handle blueprint registration for
+        the newly created parent route package after these files are written.
+    """
     update_messages: list[str] = []
     if os.path.isdir(route_directory_path):
         return update_messages
@@ -916,6 +1332,52 @@ def _write_parent_route_directory(route_directory_path: str) -> list[str]:
     return update_messages
 
 def _write_parent_routes(relative_path: str) -> tuple[bool, list[str]]:
+    """
+    Ensure all missing parent route packages exist for a nested route path.
+
+    For a nested resource path such as `"posts/comments/images"`, this helper
+    walks the parent segments and creates any missing intermediate route
+    packages. After creating each missing parent route package, it also
+    registers that package's blueprint in the appropriate parent registration
+    target.
+
+    Workflow:
+    1. Split `relative_path` into path segments.
+    2. Ignore the final segment, which belongs to the child route package being
+       scaffolded elsewhere.
+    3. For each missing parent package:
+       - create the directory and minimal route files
+       - register the blueprint either in `app/__init__.py` or the parent route
+         package `__init__.py`
+       - collect update messages
+
+    Args:
+        relative_path (str): Nested slash-delimited route path, such as
+            `"posts/comments/images"`.
+
+    Returns:
+        tuple[bool, list[str]]:
+            - `True` when all required parent packages were created/registered
+              successfully, otherwise `False`
+            - a list of human-readable update messages produced along the way
+
+    Examples:
+        >>> success, updates = _write_parent_routes("posts/comments/images")
+        >>> isinstance(success, bool)
+        True
+        >>> isinstance(updates, list)
+        True
+
+        >>> _write_parent_routes("posts")
+        (True, [])
+
+    Notes:
+        - When `relative_path` has zero or one segment, there are no parent
+          route packages to create, so the function returns `(True, [])`.
+        - Existing parent route packages are left unchanged.
+        - This helper may partially succeed if one parent package is created but
+          a later registration step fails.
+    """
     update_messages: list[str] = []
     all_successful = True
 
@@ -954,6 +1416,27 @@ def _write_routes_file(
         action: str,
         route_name: str,
         controller_name: str | None) -> tuple[bool, str, str | None]:
+    """
+    Write the initial `routes.py` file for a new route package.
+
+    The generated file includes:
+    - controller import
+    - blueprint import
+    - a single route handler for the requested action
+
+    Args:
+        route_directory_path (str): Filesystem path to the route package.
+        action (str): Initial route action name.
+        route_name (str): Flask URL rule for the route.
+        controller_name (str | None): Controller class referenced by the route
+            handler. Defaults internally to `MainController` when omitted.
+
+    Returns:
+        tuple[bool, str, str | None]:
+            - success flag
+            - status reason/message
+            - written `routes.py` path when successful
+    """
     route_file_path = os.path.join(route_directory_path, "routes.py")
     using_controller_name = controller_name if controller_name else 'MainController'
     method = route_http_method_for_action(action)

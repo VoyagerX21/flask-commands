@@ -419,40 +419,45 @@ def model_make_file(model_name: str) -> tuple[CreatedModel, str]:
     Create and register a SQLAlchemy model file for `model_name`.
 
     The function derives a snake_case slug from `model_name` using
-    `camel_to_snake` and writes the model file to:
+    `camel_to_snake` and writes the model file to `app/models/<model_slug>.py`.
+    In addtion the function generates a basic model class, and attempts to
+    register it in `app/models/__init__.py` as
+    `from .{model_slug} import {model_name}`
 
-    - `app/models/{model_slug}.py`
-
-    It generates a model class named `model_name` and sets:
-
-    - `__tablename__ = pluralize(model_slug)`
-
-    It also appends a relative import to `app/models/__init__.py`:
-
-    - `from .{model_slug} import {model_name}`
+    The generated model:
+    - imports `db`
+    - defines `__tablename__ = pluralize(model_slug)`
+    - includes `id`, `created_at`, and `updated_at`
+    - includes `store_in_database()` and `delete_from_database()`
 
     Args:
-        model_name (str): Model class name (PascalCase), e.g. `"Post"` or
+        model_name (str): PascalCase model class name, such as `"Post"` or
             `"UserProfile"`.
 
     Returns:
         tuple[CreatedModel, str]:
-            - CreatedModel will have status ADDED with a success message
-              when file creation and registration both succeed.
-            - CreatedModel will have status WARNING with a warning message
-              if the model file already exists.
-            - CreatedModel will have status WARNING with a warning message
-              if `app/models/__init__.py` is missing
-              (model file may still be created).
-            - CreatedModel will have status ERROR with an error message
-              for unexpected write/append failures.
+            - `CreatedModel`: structured result for the created or attempted model
+              - CreatedModel will have status ADDED with a success message
+                when file creation and registration both succeed.
+              - CreatedModel will have status WARNING with a warning message
+                if the model file already exists.
+              - CreatedModel will have status WARNING with a warning message
+                if `app/models/__init__.py` is missing
+                (model file may still be created).
+              - CreatedModel will have status ERROR with an error message
+                for unexpected write/append failures.
+            - `str`: styled success, warning, or error message
 
     Examples:
-        >>> model_make_file("Post")
-        (True, "...")
+        >>> created_model, message = model_make_file("Post")
+        >>> created_model.model_name
+        'Post'
 
-        >>> model_make_file("UserProfile")
-        # Creates app/models/user_profile.py and table name 'user_profiles'
+    Notes:
+    - Existing model files return status `EXISTS`.
+    - If the model file is created but `app/models/__init__.py` is missing, the
+      result status is `WARNING`.
+    - Registration path is stored on `CreatedModel.registration_file_path`.
     """
 
     model_init_path = os.path.join("app", "models", "__init__.py")

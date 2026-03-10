@@ -229,7 +229,7 @@ def test_route_add_method_unexpected_exception_path(monkeypatch):
         raise RuntimeError("kaboom")
 
     monkeypatch.setattr(
-        "flask_commands.utils.routes._generate_route_method",
+        "flask_commands.utils.routes._generate_route_content",
         boom
     )
 

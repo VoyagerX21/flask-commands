@@ -16,6 +16,7 @@ from .naming import camel_to_snake, singularize
 from .routes import (
     route_add_method,
     route_generate_route_name,
+    route_generate_route_visit_example,
     route_http_method_for_action,
     route_write_directory_and_register_blueprint
 )
@@ -156,7 +157,7 @@ def wiring_generate_wiring_result(
             "app", "routes", relative_path if relative_path else 'mains')
         try:
             if os.path.exists(route_directory_path):
-                action_result, message = \
+                route_action_result, message = \
                     route_add_method(
                         relative_path,      # this is everything before the last part of dotted_path_with_action replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_action
@@ -165,7 +166,7 @@ def wiring_generate_wiring_result(
                         controller_name)    # contoller_name is like PostController
 
             else:
-                route_result, action_result, message = \
+                route_result, route_action_result, message = \
                     route_write_directory_and_register_blueprint(
                         relative_path,      # this is everything before the last part of dotted_path_with_action replacing . with /
                         action,             # in CRUD this is index, create, update, show... else this is just the last part of dotted_path_with_action
@@ -173,10 +174,10 @@ def wiring_generate_wiring_result(
                         route_name,         # this is the url path like /posts/<int:post_id> or /admin/posts/comments
                         controller_name)    # contoller_name is like PostController
                 all_successful = all_successful and route_result.is_successful
-            all_successful = all_successful and action_result.is_successful
-            route_status = action_result.route_status
-            url_for_example = action_result.url_for_example
-            if action_result.is_successful and (
+            all_successful = all_successful and route_action_result.is_successful
+            route_status = route_action_result.route_status
+            url_for_example = route_action_result.url_for_example
+            if route_action_result.is_successful and (
                 route_result is None or route_result.is_successful
             ):
                 success_messages.append(message)
@@ -192,10 +193,15 @@ def wiring_generate_wiring_result(
         route_name=route_name if route_name else "",
         url_for_example=url_for_example,
         is_successful=all_successful,
+        visit_example=(
+            route_generate_route_visit_example(route_name)
+            if route_name and http_method == "GET" else None
+        ),
         view_file_path=view_file_path,
         view_status=view_status,
         route_status=route_status
     )
+
     return WiringResult(
         action_result=action_result,
         controller_result=controller_result,

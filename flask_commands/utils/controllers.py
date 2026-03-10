@@ -12,6 +12,7 @@ from .files import (
     file_insert_import_into_lines )
 from .naming import camel_to_snake, pluralize, singularize
 from .routes import(
+    route_generate_route_visit_example,
     route_parse_route_name_for_params_and_types,
     route_http_method_for_action,
     route_generate_parameter_reference
@@ -288,7 +289,6 @@ def controller_generate_relative_path_from_controller_name(controller_name: str)
     return '/'.join(pluralize(camel_to_snake(segment))
                     for segment in filter_falsy(segments))
 
-# EDIT MARKER YOU WHERE HERE ON THE DOC STRING REFACTOR
 def controller_make_file(
         relative_path: str | None,
         action: str | None, # When you generate a controller calls and register it without any methods
@@ -297,53 +297,74 @@ def controller_make_file(
         route_name: str | None = None,
         view_directory: str | None = None) -> tuple[ControllerResult, str]:
     """
-    Create a new controller file and optionally scaffold one initial method.
+    Create a new controller file and optionally scaffold one initial action method.
+
+    This function writes `app/controllers/<controller>.py` and attempts to
+    register the controller in `app/controllers/__init__.py`.
 
     When `action` is provided, `relative_path` must also be provided (and vice
     versa). With no `action`, the generated class body is `pass`.
 
-    When an `action` is provided, this function adds a `@staticmethod` method
-    and the required Flask imports:
-    - `render_template` for GET-style actions
-    - `redirect, url_for` for POST-style actions (`store`, `update`,
-      `destroy`, `delete`)
+    When `action` is provided, the generated controller includes:
+    - a static action method
+    - the required Flask imports
+      - `render_template` for GET actions
+      - `redirect, url_for` for POST actions
 
-    For GET-style actions, the generated method returns
-    `render_template('<template_path>')`. The template path is built from
-    `view_directory` when it is provided; otherwise it falls back to
-    `relative_path`. In normal usage, `view_directory` is usually the same as
-    `relative_path`, but inferred root wiring may pass `'mains'` so root view
-    templates render from the default namespace.
+    - the static method returns `render_template(...)` for GET actions or
+      `redirect(url_for(...))` for POST actions
 
-    If `route_name` is provided, typed route parameters are parsed and included
-    in the generated method signature.
+    Validation:
+    - `action` requires `relative_path`
+    - `relative_path` requires `action`
 
-    After creating `app/controllers/<controller_file>.py`, the function
-    attempts to append the controller import to `app/controllers/__init__.py`.
+    Route parameter handling:
+    - when `route_name` is provided, typed route parameters are parsed and
+      included in the generated method signature
 
     Args:
         relative_path (str | None): Slash-delimited path used for route
-            references and as the default template directory when `action` is
-            provided.
-        action (str | None): Optional method name to scaffold in the new
-            controller.
+            references and as the default template directory when `action`
+            is present.
+        action (str | None): Optional action method to scaffold.
         controller_name (str): Controller class name to create.
+        controller_file_path (str): Filesystem path for the new controller file.
         route_name (str | None): Optional route rule used to derive typed
             method parameters.
         view_directory (str | None): Optional template directory override for
-            generated GET methods. This is typically `relative_path`, but may
-            be `'mains'` for inferred root view wiring.
+            generated GET methods.
 
     Returns:
-        tuple[ControllerResult, str]: `(Structured result, message)` where
-        the message is a styled success, warning, or error message. Structured
-        result contains ERROR for valid failures or unexpected exceptions,
-        EXISTS for existing controller file, WARNING controller registration
-        failures.
+        tuple[ControllerResult, str]:
+            - `ControllerResult`: structured controller result describing status,
+              registration path, and any methods added
+            - `str`: styled success, warning, or error message
 
-    Note:
-        If `__init__.py` is missing, the controller file may still be created even
-        though the function returns a Structured WARNING.
+    Examples:
+        >>> result, message = controller_make_file(
+        ...     relative_path=None,
+        ...     action=None,
+        ...     controller_name='PostController',
+        ...     controller_file_path='app/controllers/post_controller.py',
+        ... )
+        >>> result.controller_name
+        'PostController'
+
+        >>> result, message = controller_make_file(
+        ...     relative_path="posts",
+        ...     action="index",
+        ...     controller_name="PostController",
+        ...     controller_file_path="app/controllers/post_controller.py",
+        ...     route_name="/posts",
+        ... )
+        >>> result.methods_added
+        ['index']
+
+    Notes:
+    - The controller file may be created even when registration in
+      `app/controllers/__init__.py` fails, in which case the result status is
+      `WARNING`.
+    - Existing controller files return status `EXISTS` and are not overwritten.
     """
     if action and relative_path is None:
         message = click.style(
@@ -472,6 +493,28 @@ def controller_make_file(
     ), message
 
 def controller_present_controller_crud_summary(controller_result: ControllerResult) -> str:
+    """
+    Build the consolidated CRUD controller presentation block.
+
+    This formatter renders the controller section used by `make:controller --crud`.
+    It summarizes:
+    - controller creation
+    - controller file location
+    - controller registration path
+    - any controller methods added during CRUD wiring
+
+    Args:
+        controller_result (ControllerResult): Aggregate controller result for
+            the current CRUD scaffold.
+
+    Returns:
+        str: Styled multi-line success summary for the controller section.
+
+    Examples:
+        >>> summary = controller_present_controller_crud_summary(controller_result)
+        >>> "Created Controller Class" in summary
+        True
+    """
     message = (
         click.style("✅ Success: Created Controller Class\n", fg="green", bold=True) +
         click.style(
@@ -479,15 +522,17 @@ def controller_present_controller_crud_summary(controller_result: ControllerResu
             fg="green",
         ) +
         click.style(
-            f"    - Registered {click.style(controller_result.controller_name, bold=True)} at "
-            f"{click.style(controller_result.registration_file_path or 'app/controllers/__init__.py', bold=True)}\n",
-            fg="green",
-        ) +
-        click.style(
             f"    - New controller located at {click.style(controller_result.controller_file_path, bold=True)}\n",
             fg="green",
         )
     )
+
+    if controller_result.registration_file_path:
+        message += click.style(
+            f"    - Registered {click.style(controller_result.controller_name, bold=True)} at "
+            f"{click.style(controller_result.registration_file_path, bold=True)}\n",
+            fg="green",
+        )
 
     if controller_result.methods_added:
         message += click.style(
@@ -501,6 +546,35 @@ def controller_present_crud_route_summary(
     route_result: RouteResult,
     action_results: list[ActionResult],
 ) -> str:
+    """
+    Build the consolidated CRUD route-directory presentation block.
+
+    This formatter renders either:
+    - `Created New Route Directory`
+    - `Updated Existing Route Directory`
+
+    It also summarizes:
+    - route package files created during this scaffold
+    - blueprint registration target
+    - route functions added across the CRUD action set
+
+    Args:
+        route_result (RouteResult): Route-directory level result for the CRUD scaffold.
+        action_results (list[ActionResult]): All action-level results generated
+            for the CRUD scaffold.
+
+    Returns:
+        str: Styled multi-line success summary for the route section.
+
+    Examples:
+        >>> summary = controller_present_crud_route_summary(route_result, action_results)
+        >>> "Added route functions" in summary
+        True
+
+    Notes:
+    - File creation and blueprint registration lines are only rendered when the
+      route directory was created during the current scaffold run.
+    """
     added_route_functions = [
         action_result.action
         for action_result in action_results
@@ -542,11 +616,37 @@ def controller_present_crud_route_summary(
     return message
 
 def controller_present_crud_wiring(action_results: list[ActionResult]) -> str:
+    """
+    Build the consolidated CRUD action wiring presentation block.
+
+    This formatter renders the per-action summary rows for the RESTful action set.
+    For each action it may include:
+    - action name and HTTP method
+    - generated view file path for GET actions
+    - route visit example for GET actions
+    - `url_for(...)` reference example for successfully added routes
+
+    Args:
+        action_results (list[ActionResult]): Action-level results for the CRUD scaffold.
+
+    Returns:
+        str: Styled multi-line success summary for the CRUD wiring section.
+
+    Examples:
+        >>> summary = controller_present_crud_wiring(action_results)
+        >>> "Generated CRUD Wiring" in summary
+        True
+
+    Notes:
+    - POST actions do not render a “Visit the new route at ...” line.
+    - View file lines are only rendered for GET actions whose view status is
+      `ADDED`.
+    """
     message = click.style("✅ Success: Generated CRUD Wiring\n", fg="green", bold=True)
 
     for action_result in action_results:
         message += click.style(
-            f"    - {action_result.action} {action_result.http_method}\n",
+            f"    - {action_result.action} ({action_result.http_method})\n",
             fg="green",
         )
 
@@ -563,7 +663,7 @@ def controller_present_crud_wiring(action_results: list[ActionResult]) -> str:
         if action_result.route_status == ScaffoldStatus.ADDED:
             if action_result.http_method == "GET":
                 message += click.style(
-                    f"      {route_generate_route_visit_example(action_result.route_name)}\n",
+                    f"      {action_result.visit_example}\n",
                     fg="green",
                 )
 
@@ -582,6 +682,35 @@ def _generate_controller_result(
         registration_file_path: str | None = None,
         methods_added: list[str] | None = None
 ) -> ControllerResult:
+    """
+    Build a normalized `ControllerResult` from controller scaffold metadata.
+
+    This helper centralizes how controller scaffold outcomes are translated into
+    structured results so callers do not manually reconstruct:
+    - success state
+    - registration path
+    - methods added
+
+    Args:
+        controller_name (str): Controller class name.
+        controller_file_path (str): Filesystem path to the controller file.
+        status (ScaffoldStatus): Scaffold outcome status.
+        registration_file_path (str | None): Registration target path when known.
+        methods_added (list[str] | None): Methods added during the operation.
+
+    Returns:
+        ControllerResult: Structured controller result.
+
+    Examples:
+        >>> result = _generate_controller_result(
+        ...     controller_name="PostController",
+        ...     controller_file_path="app/controllers/post_controller.py",
+        ...     status=ScaffoldStatus.ADDED,
+        ...     methods_added=["index"],
+        ... )
+        >>> result.is_successful
+        True
+    """
     return ControllerResult(
         controller_name=controller_name,
         controller_file_path=controller_file_path,

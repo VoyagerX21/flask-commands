@@ -16,7 +16,7 @@ def view_make_file(destination_file_path: str) -> tuple[ScaffoldStatus, str]:
     the file. Any other unexpected exceptions are also caught and returned as a
     styled error message.
 
-    Parameters:
+    Args:
         destination_file_path (str) : The full path (including filename) where the view file should be created.
 
     Returns:
@@ -25,9 +25,14 @@ def view_make_file(destination_file_path: str) -> tuple[ScaffoldStatus, str]:
             - ScaffoldStatus.EXISTS when the file already exists
             - ScaffoldStatus.ERROR on unexpected failure
             - str: A formatted message with success/warning/error notification and usage instructions.
-    Example:
-        >>> is_successful, message = view_make_file(
-        ...     route_name='users.index')
+
+    Examples:
+        >>> status, message = view_make_file("app/templates/posts/index.html")
+        >>> status in [ScaffoldStatus.ADDED, ScaffoldStatus.EXISTS, ScaffoldStatus.ERROR]
+        True
+
+    Notes:
+        Existing view files are never overwritten by this function.
 
     """
 
