@@ -151,6 +151,41 @@ class ActionResult:
 
 @dataclass
 class ControllerResult:
+    """
+    Store scaffold outcomes for controller file creation or method updates.
+
+    This dataclass captures controller-level metadata returned by controller
+    scaffold helpers and normalization utilities, including whether any methods
+    were added during the operation.
+
+    Attributes:
+        controller_name (str): Controller class name, such as
+            `"PostController"`.
+        controller_file_path (str): Path to the controller file under
+            `app/controllers/`.
+        status (ScaffoldStatus): Outcome of the controller scaffold step.
+        is_successful (bool): Whether the controller operation completed
+            successfully.
+        registration_file_path (str | None): File path where registration/import
+            updates were applied when relevant.
+        methods_added (list[str]): Controller methods added during this run.
+
+    Examples:
+        >>> controller_result = ControllerResult(
+        ...     controller_name="PostController",
+        ...     controller_file_path="app/controllers/post_controller.py",
+        ...     status=ScaffoldStatus.ADDED,
+        ...     is_successful=True,
+        ...     registration_file_path="app/controllers/__init__.py",
+        ...     methods_added=["index", "show"],
+        ... )
+        >>> controller_result.methods_added
+        ['index', 'show']
+
+    Notes:
+        `is_successful` commonly reflects whether `status` is `ADDED` in
+        normalized helper output.
+    """
     controller_name: str
     controller_file_path: str
     status: ScaffoldStatus
@@ -160,6 +195,36 @@ class ControllerResult:
 
 @dataclass(frozen=True)
 class CreatedModel:
+    """
+    Store the scaffold result for one model generation attempt.
+
+    This dataclass represents the per-model result returned from model creation
+    flows, including both filesystem output and registration context.
+
+    Attributes:
+        model_name (str): PascalCase model class name, such as `"Post"`.
+        model_file_path (str): Path to the model file under `app/models/`.
+        status (ScaffoldStatus): Outcome of the model scaffold step.
+        is_successful (bool): Whether model creation and registration completed
+            successfully.
+        registration_file_path (str | None): Path to registration target file,
+            typically `app/models/__init__.py`.
+
+    Examples:
+        >>> created_model = CreatedModel(
+        ...     model_name="Post",
+        ...     model_file_path="app/models/post.py",
+        ...     status=ScaffoldStatus.ADDED,
+        ...     is_successful=True,
+        ...     registration_file_path="app/models/__init__.py",
+        ... )
+        >>> created_model.status.value
+        'added'
+
+    Notes:
+        `status` may be `EXISTS`, `WARNING`, or `ERROR` when file creation or
+        registration is partial/unsuccessful.
+    """
     model_name: str
     model_file_path: str
     status: ScaffoldStatus
@@ -168,11 +233,71 @@ class CreatedModel:
 
 @dataclass
 class ModelResult:
+    """
+    Aggregate model scaffold outcomes for a command flow.
+
+    This dataclass tracks overall model-stage success and the individual
+    `CreatedModel` entries collected during execution.
+
+    Attributes:
+        is_successful (bool): Whether the aggregate model stage succeeded.
+        created_models (list[CreatedModel]): Per-model scaffold results.
+
+    Examples:
+        >>> model_result = ModelResult(
+        ...     is_successful=True,
+        ...     created_models=[
+        ...         CreatedModel(
+        ...             model_name="Post",
+        ...             model_file_path="app/models/post.py",
+        ...             status=ScaffoldStatus.ADDED,
+        ...             is_successful=True,
+        ...             registration_file_path="app/models/__init__.py",
+        ...         )
+        ...     ],
+        ... )
+        >>> len(model_result.created_models)
+        1
+
+    Notes:
+        This result is often embedded in `CrudResult` to keep model outcomes
+        alongside controller/route/action outcomes.
+    """
     is_successful: bool
     created_models: list[CreatedModel] = field(default_factory=list)
 
 @dataclass
 class CrudResult:
+    """
+    Store aggregate structured results for a full CRUD scaffold operation.
+
+    This dataclass combines controller/model state with route-directory and
+    action-level outcomes so presentation helpers can render one consolidated
+    CRUD summary.
+
+    Attributes:
+        controller_result (ControllerResult): Aggregate controller scaffold result.
+        model_result (ModelResult): Aggregate model scaffold result.
+        route_result (RouteResult | None): Route-directory result when a route
+            package was created/registered; `None` when only existing route files
+            were updated.
+        action_results (list[ActionResult]): Action-level results for generated
+            CRUD actions.
+
+    Examples:
+        >>> crud_result = CrudResult(
+        ...     controller_result=controller_result,
+        ...     model_result=model_result,
+        ...     route_result=route_result,
+        ...     action_results=[action_result],
+        ... )
+        >>> bool(crud_result.action_results)
+        True
+
+    Notes:
+        `action_results` is the primary source for per-action output in CRUD
+        summaries.
+    """
     controller_result: ControllerResult
     model_result: ModelResult
     route_result: RouteResult | None = None
@@ -180,6 +305,36 @@ class CrudResult:
 
 @dataclass
 class WiringResult:
+    """
+    Store one action's wiring outcome across view, controller, and route steps.
+
+    This dataclass is returned by action-level wiring orchestration and separates
+    execution data from presentation strings.
+
+    Attributes:
+        action_result (ActionResult): Aggregate action-level result.
+        controller_result (ControllerResult | None): Controller result when
+            controller wiring ran.
+        route_result (RouteResult | None): Route-directory result when route
+            package creation/registration occurred.
+        success_messages (list[str]): Success updates for this action.
+        warning_messages (list[str]): Warning/error updates for this action.
+
+    Examples:
+        >>> wiring_result = WiringResult(
+        ...     action_result=action_result,
+        ...     controller_result=controller_result,
+        ...     route_result=None,
+        ...     success_messages=["Created route"],
+        ...     warning_messages=[],
+        ... )
+        >>> wiring_result.action_result.is_successful
+        True
+
+    Notes:
+        `route_result` is intentionally optional because many actions append to
+        existing route packages rather than creating new ones.
+    """
     action_result: ActionResult
     controller_result: ControllerResult | None
     route_result: RouteResult | None
@@ -189,6 +344,47 @@ class WiringResult:
 
 @dataclass(frozen=True)
 class RouteSpec:
+    """
+    Capture immutable route analysis derived from dotted CLI input.
+
+    This dataclass is generated before prompt decisions and route writes. It
+    stores both parsed path/action details and model-matching metadata used for
+    route-name generation and optional prompt planning.
+
+    Attributes:
+        dotted_path_with_action (str): Original dotted input, e.g.
+            `"posts.show"` or `"admin.posts.index"`.
+        relative_path (str): Slash-delimited path extracted before action.
+        action (str): Action extracted from input.
+        is_restful (bool): Whether action is one of the recognized RESTful
+            actions.
+        relative_path_segments (tuple[str]): Split path segments from
+            `relative_path`.
+        relative_path_segment_models (tuple[str]): Segments recognized as model
+            segments.
+        registered_models (tuple[str]): Registered model names (PascalCase).
+        registered_snake_models (tuple[str]): Registered model names converted to
+            snake_case.
+        generated_route_name (str): Route rule generated from this analysis.
+
+    Examples:
+        >>> route_spec = RouteSpec(
+        ...     dotted_path_with_action="posts.show",
+        ...     relative_path="posts",
+        ...     action="show",
+        ...     is_restful=True,
+        ...     relative_path_segments=("posts",),
+        ...     relative_path_segment_models=("posts",),
+        ...     registered_models=("Post",),
+        ...     registered_snake_models=("post",),
+        ...     generated_route_name="/posts/<int:post_id>",
+        ... )
+        >>> route_spec.is_restful
+        True
+
+    Notes:
+        This object is analysis-only; it does not imply any filesystem writes.
+    """
     dotted_path_with_action: str
     relative_path: str
     action: str
@@ -201,15 +397,86 @@ class RouteSpec:
 
 @dataclass(frozen=True)
 class MissingModelPrompt:
+    """
+    Store a prompt payload suggesting a missing model segment.
+
+    This dataclass is used when RESTful route analysis detects a last path
+    segment that does not map to a known model.
+
+    Attributes:
+        segment (str): Route segment that appears to be missing model treatment.
+        model_name (str): Suggested PascalCase model name derived from segment.
+
+    Examples:
+        >>> missing_prompt = MissingModelPrompt(
+        ...     segment="comments",
+        ...     model_name="Comment",
+        ... )
+        >>> missing_prompt.model_name
+        'Comment'
+
+    Notes:
+        This payload is optional and appears only when prompt planning detects a
+        likely missing model case.
+    """
     segment: str
     model_name: str
 
 @dataclass(frozen=True)
 class RouteStructurePrompt:
+    """
+    Store accepted vs declined route alternatives for interactive prompts.
+
+    Attributes:
+        accepted_route (str): Route rule suggested when inferred structure is
+            accepted.
+        declined_route (str): Route rule used when inferred structure is
+            declined.
+
+    Examples:
+        >>> structure_prompt = RouteStructurePrompt(
+        ...     accepted_route="/posts/<int:post_id>/comments/<int:comment_id>",
+        ...     declined_route="/posts/<int:post_id>/comments",
+        ... )
+        >>> structure_prompt.declined_route
+        '/posts/<int:post_id>/comments'
+
+    Notes:
+        This dataclass is presentation-oriented and paired with
+        `MissingModelPrompt` in `PromptPlan`.
+    """
     accepted_route: str
     declined_route: str
 
 @dataclass(frozen=True)
 class PromptPlan:
+    """
+    Bundle optional prompt payloads used during route planning.
+
+    This dataclass allows route analysis to return a single structured plan
+    indicating whether missing-model and/or route-structure prompts should be
+    shown.
+
+    Attributes:
+        missing_model (MissingModelPrompt | None): Missing-model prompt payload
+            when applicable.
+        route_structure (RouteStructurePrompt | None): Route-structure prompt
+            payload when applicable.
+
+    Examples:
+        >>> prompt_plan = PromptPlan(
+        ...     missing_model=MissingModelPrompt(segment="comments", model_name="Comment"),
+        ...     route_structure=RouteStructurePrompt(
+        ...         accepted_route="/posts/<int:post_id>/comments/<int:comment_id>",
+        ...         declined_route="/posts/<int:post_id>/comments",
+        ...     ),
+        ... )
+        >>> prompt_plan.missing_model is not None
+        True
+
+    Notes:
+        An empty `PromptPlan()` means no prompts are needed for the analyzed
+        route input.
+    """
     missing_model: MissingModelPrompt | None = None
     route_structure: RouteStructurePrompt | None = None
