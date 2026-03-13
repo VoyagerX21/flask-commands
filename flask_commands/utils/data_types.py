@@ -83,7 +83,6 @@ class RouteResult:
     blueprint_name: str | None = None
     blueprint_registration_file_path: str | None = None
 
-# This was CrudActionReference
 @dataclass(frozen=True)
 class ActionResult:
     """
