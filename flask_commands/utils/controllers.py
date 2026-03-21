@@ -207,8 +207,8 @@ def controller_add_method(
         ), message
     message = (
         click.style("✅ Success: Method Added To Controller\n", fg="green", bold=True) +
-        click.style(f"    - Added method {click.style(action, bold=True)}", fg="green") + click.style(f" to controller {click.style(controller_name, bold=True)}\n", fg="green") +
-        click.style(f"    - Controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
+        click.style(f"    - Added method {action} to controller {controller_name}\n", fg="green") +
+        click.style(f"    - Controller located at {controller_file_path}\n", fg="green")
     )
     return _generate_controller_result(
         controller_name,

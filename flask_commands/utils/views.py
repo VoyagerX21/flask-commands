@@ -67,6 +67,6 @@ def view_make_file(destination_file_path: str) -> tuple[ScaffoldStatus, str]:
 
     message = (
         click.style(f"✅ Success: Created New View\n", fg="green", bold=True) +
-        click.style(f"    - Added view file at {click.style(destination_file_path, bold=True)}\n", fg="green")
+        click.style(f"    - Added view file at {destination_file_path}\n", fg="green")
     )
     return ScaffoldStatus.ADDED, message
