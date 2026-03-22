@@ -380,7 +380,6 @@ def test_generate_wiring_result_get_with_existing_controller_and_route(project):
     assert "app/templates/posts/show.html" in observed_messages
     assert "url_for('posts.show', post_id=1)" in observed_messages
 
-
 def test_generate_wiring_result_post_skips_view(project):
     post_controller_file = project / "app" / "controllers" / "post_controller.py"
     post_routes_file = project / "app" / "routes" / "posts" / "routes.py"
@@ -445,7 +444,6 @@ def test_generate_wiring_result_post_skips_view(project):
     assert not (project / "app" / "templates" / "posts" / "store.html").exists()
     assert "app/templates/posts/store.html" not in observed_messages
     assert "url_for('posts.store')" in observed_messages
-
 
 def test_generate_wiring_result_uses_make_file_when_controller_missing(project):
     comments_routes_file = project / "app" / "routes" / "comments" / "routes.py"
@@ -559,41 +557,125 @@ def test_generate_wiring_result_route_exception_sets_failure(project, monkeypatc
     assert "Error:" in observed_messages
     assert "kaboom" in observed_messages
 
+def test_generate_wiring_result_creates_route_directory_when_missing(project):
+    app_init_file = project / "app" / "__init__.py"
+    controllers_init_file = project / "app" / "controllers" / "__init__.py"
+    tag_controller_file = project / "app" / "controllers" / "tag_controller.py"
+    tags_routes_dir = project / "app" / "routes" / "tags"
+    tags_routes_init_file = tags_routes_dir / "__init__.py"
+    tags_routes_file = tags_routes_dir / "routes.py"
 
-# def test_wire_creates_route_directory_when_missing(monkeypatch):
-#     monkeypatch.setattr(wirings_module, "route_http_method_for_action", lambda *_: "GET")
+    controllers_init_file.write_text(
+        "from .main_controller import MainController\n"
+        "from .post_controller import PostController\n"
+        "from .tag_controller import TagController\n",
+        encoding="utf-8",
+    )
 
-#     def fake_exists(path):
-#         if path.endswith("app/controllers/post_controller.py"):
-#             return True  # so controller_add_method is used
-#         if path.endswith("app/routes/posts"):
-#             return False  # triggers route_write_directory_and_register_blueprint
-#         return False
+    tag_controller_file.write_text(
+        "from flask import render_template\n"
+        "\n"
+        "class TagController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('tags/index.html')\n",
+        encoding="utf-8",
+    )
 
-#     monkeypatch.setattr(wirings_module.os.path, "exists", fake_exists)
+    assert not tags_routes_dir.exists()
 
-#     monkeypatch.setattr(
-#         wirings_module,
-#         "view_make_file",
-#         lambda *_: (True, "view successful"),
-#     )
-#     monkeypatch.setattr(
-#         wirings_module,
-#         "controller_add_method",
-#         lambda *args: (True, "controller successful"),
-#     )
-#     monkeypatch.setattr(
-#         wirings_module,
-#         "route_write_directory_and_register_blueprint",
-#         lambda *args: (True, "route made"),
-#     )
+    wiring_result = wiring_generate_wiring_result(
+        relative_path="tags",
+        action="show",
+        controller_name="TagController",
+        route_name="/tags/<int:tag_id>",
+    )
 
-#     is_successful, messages = wire_controller_route_view(
-#         relative_path="posts",
-#         action="index",
-#         controller_name="PostController",
-#         route_name="/posts",
-#     )
+    observed_messages = "\n".join(wiring_result.success_messages + wiring_result.warning_messages)
 
-#     assert is_successful is True
-#     assert messages == ["view successful", "controller successful", "route made"]
+    observed_controller_content = tag_controller_file.read_text(encoding="utf-8")
+    expected_controller_content = (
+        "from flask import render_template\n"
+        "\n"
+        "class TagController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('tags/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def show(tag_id: int) -> str:\n"
+        "        return render_template('tags/show.html')"
+    )
+
+    observed_routes_init_content = tags_routes_init_file.read_text(encoding="utf-8")
+    expected_routes_init_content = (
+        "from flask import Blueprint\n"
+        "\n"
+        "bp = Blueprint('tags', __name__)\n"
+        "\n"
+        "from app.routes.tags import routes\n"
+    )
+
+    observed_routes_content = tags_routes_file.read_text(encoding="utf-8")
+    expected_routes_content = (
+        "from app.controllers import TagController\n"
+        "from app.routes.tags import bp\n"
+        "\n"
+        "@bp.route('/tags/<int:tag_id>', methods=['GET'])\n"
+        "def show(tag_id: int):\n"
+        "    return TagController.show(tag_id)\n"
+    )
+
+    observed_app_init_content = app_init_file.read_text(encoding="utf-8")
+    expected_app_init_content = (
+        "from flask import Flask\n"
+        "from config import config\n"
+        "\n"
+        "def create_app(config_name) -> Flask:\n"
+        "    app = Flask(__name__)\n"
+        "    app.config.from_object(config[config_name])\n"
+        "\n"
+        "    from app.routes.mains import bp as mains_blueprint\n"
+        "    app.register_blueprint(mains_blueprint)\n"
+        "\n"
+        "    from app.routes.posts import bp as posts_blueprint\n"
+        "    app.register_blueprint(posts_blueprint)\n"
+        "\n"
+        "    from app.routes.comments import bp as comments_blueprint\n"
+        "    app.register_blueprint(comments_blueprint)\n"
+        "\n"
+        "    from app.routes.tags import bp as tags_blueprint\n"
+        "    app.register_blueprint(tags_blueprint)\n"
+        "\n"
+        "    return app\n"
+    )
+    observed_controllers_init_content = controllers_init_file.read_text(encoding="utf-8")
+    expected_controllers_init_content = (
+        "from .main_controller import MainController\n"
+        "from .post_controller import PostController\n"
+        "from .tag_controller import TagController\n"
+    )
+
+    assert wiring_result.action_result.is_successful is True
+    assert wiring_result.action_result.view_status == ScaffoldStatus.ADDED
+    assert wiring_result.action_result.route_status == ScaffoldStatus.ADDED
+    assert wiring_result.action_result.view_file_path == "app/templates/tags/show.html"
+    assert wiring_result.controller_result is not None
+    assert wiring_result.controller_result.is_successful is True
+    assert wiring_result.controller_result.methods_added == ["show"]
+    assert wiring_result.route_result is not None
+    assert wiring_result.route_result.directory_status == ScaffoldStatus.ADDED
+    assert wiring_result.route_result.is_successful is True
+    assert wiring_result.route_result.route_init_path == "app/routes/tags/__init__.py"
+    assert wiring_result.route_result.route_file_path == "app/routes/tags/routes.py"
+    assert wiring_result.route_result.blueprint_name == "tags_blueprint"
+    assert wiring_result.route_result.blueprint_registration_file_path == "app/__init__.py"
+
+    assert observed_controller_content == expected_controller_content
+    assert observed_routes_init_content == expected_routes_init_content
+    assert observed_routes_content == expected_routes_content
+    assert observed_app_init_content == expected_app_init_content
+    assert observed_controllers_init_content == expected_controllers_init_content
+    assert (project / "app" / "templates" / "tags" / "show.html").exists()
+    assert "app/templates/tags/show.html" in observed_messages
+    assert "url_for('tags.show', tag_id=1)" in observed_messages

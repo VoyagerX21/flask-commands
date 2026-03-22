@@ -91,7 +91,7 @@ def route_add_method(
         is_successful, message = _apply_step_result(
             updates,
             _validate_route_method_can_be_added(action, route_file_path),
-            "Could not prepare route file"
+            "Could not update route file"
         )
         if not is_successful:
             return _generate_action_result(
@@ -750,11 +750,11 @@ def _apply_step_result(
         >>> success, message = _apply_step_result(
         ...     updates,
         ...     (False, "Could not find file at app/routes/posts/routes.py"),
-        ...     "Could not prepare route file",
+        ...     "Could not update route file",
         ... )
         >>> success
         False
-        >>> "Could not prepare route file" in message
+        >>> "Could not update route file" in message
         True
 
     Notes:

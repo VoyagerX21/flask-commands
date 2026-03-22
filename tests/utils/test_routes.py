@@ -1,5 +1,6 @@
 import os
 import pytest
+from flask_commands.utils.data_types import ScaffoldStatus
 import flask_commands.utils.routes as routes_module
 from flask_commands.utils.routes import (
     route_add_method,
@@ -40,11 +41,12 @@ def project(tmp_path, monkeypatch):
 
     app_dir = project_root / "app"
     controllers_dir = app_dir / "controllers"
-    routes_dir = app_dir / "routes" / "mains"
+    routes_dir = app_dir / "routes"
+    mains_routes_dir = routes_dir / "mains"
     templates_dir = app_dir / "templates" / "mains"
 
     controllers_dir.mkdir(parents=True)
-    routes_dir.mkdir(parents=True)
+    mains_routes_dir.mkdir(parents=True)
     templates_dir.mkdir(parents=True)
 
     (app_dir / "__init__.py").write_text(
@@ -52,13 +54,16 @@ def project(tmp_path, monkeypatch):
         "from config import config\n"
         "\n"
         "def create_app(config_name) -> Flask:\n"
+        '    """Creates a Flask application Instance."""\n'
         "    app = Flask(__name__)\n"
+        "\n"
+        "    # apply configuration\n"
         "    app.config.from_object(config[config_name])\n"
         "\n"
         "    from app.routes.mains import bp as mains_blueprint\n"
         "    app.register_blueprint(mains_blueprint)\n"
         "\n"
-        "    return app\n",
+        "    return app",
         encoding="utf-8",
     )
 
@@ -77,7 +82,7 @@ def project(tmp_path, monkeypatch):
         encoding="utf-8",
     )
 
-    (routes_dir / "__init__.py").write_text(
+    (mains_routes_dir / "__init__.py").write_text(
         "from flask import Blueprint\n"
         "\n"
         "bp = Blueprint('mains', __name__)\n"
@@ -86,7 +91,7 @@ def project(tmp_path, monkeypatch):
         encoding="utf-8",
     )
 
-    (routes_dir / "routes.py").write_text(
+    (mains_routes_dir / "routes.py").write_text(
         "from app.controllers import MainController\n"
         "from app.routes.mains import bp\n"
         "\n"
@@ -110,27 +115,54 @@ def test_route_add_method_success(tmp_path, monkeypatch):
     route_dir.mkdir(parents=True)
 
     route_file = route_dir / "routes.py"
-    monkeypatch.chdir(project_root)
-
+    
     route_file.write_text(
         "from app.controllers import UserController\n"
         "from app.routes.users import bp\n"
         "\n"
-        "@bp.route('/', methods=['GET'])\n"
-        "def show():\n"
-        "    return UserController.show()"
+        "@bp.route('/users/<int:user_id>', methods=['GET'])\n"
+        "def show(user_id: int):\n"
+        "    return UserController.show(user_id)\n"
         , encoding="utf-8")
 
-    is_successful, message = route_add_method(
+    monkeypatch.chdir(project_root)
+
+    action_result, message = route_add_method(
         relative_path='users',
         action='index',
         route_directory_path='app/routes/users',
         route_name='/users',
         controller_name='UserController')
+    
+    observed_content = route_file.read_text(encoding="utf-8")
+    expected_content = (
+        "from app.controllers import UserController\n"
+        "from app.routes.users import bp\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>', methods=['GET'])\n"
+        "def show(user_id: int):\n"
+        "    return UserController.show(user_id)\n"
+        "\n"
+        "@bp.route('/users', methods=['GET'])\n"
+        "def index():\n"
+        "    return UserController.index()\n"
+    )
 
-    assert is_successful is True
+    assert action_result.is_successful is True
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/users"
+    assert action_result.route_status == ScaffoldStatus.ADDED
+    assert "url_for('users.index')" in action_result.url_for_example
+    assert "/users" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+   
+    assert observed_content == expected_content
     assert "Added Route To Existing Directory" in message
-    assert "Reference route with" in message
+    assert "index" in message
+    assert "app/routes/users/routes.py" in message
+    assert "/users" in message
     assert "url_for('users.index')" in message
 
 def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
@@ -139,101 +171,21 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
     route_dir.mkdir(parents=True)
 
     route_file = route_dir / "routes.py"
-    monkeypatch.chdir(project_root)
-
     route_file.write_text(
         "from app.controllers import UserController\n"
         "from app.routes.users import bp\n"
         "\n"
-        "@bp.route('/', methods=['GET'])\n"
+        "@bp.route('/users', methods=['GET'])\n"
         "def index():\n"
-        "    return UserController.index()"
-        , encoding="utf-8")
-
-    before_content = route_file.read_text(encoding='utf-8')
-
-    is_successful, message = route_add_method(
-        relative_path='users',
-        action='index',
-        route_directory_path='app/routes/users',
-        route_name='/users',
-        controller_name='UserController')
-
-    after_content = route_file.read_text(encoding='utf-8')
-
-    assert is_successful is False
-    assert before_content == after_content
-    assert f"Route function index already exist" in message
-
-def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
-    project_root = tmp_path
-    route_dir = project_root / "app" / "routes" / "users"
-    route_dir.mkdir(parents=True)
-    monkeypatch.chdir(project_root)
-
-    is_successful, message = route_add_method(
-        relative_path='users',
-        action='index',
-        route_directory_path='app/routes/users',
-        route_name='/users',
-        controller_name='UserController')
-
-    assert (route_dir / "routes.py").exists() is False
-    assert is_successful is False
-    assert f"Could not find file at app/routes/users/routes.py" in message
-
-def test_route_add_method_exception(tmp_path, monkeypatch):
-    def boom(*args, **kwargs):
-        raise Exception("internal server error")
-
-    monkeypatch.setattr(
-        "flask_commands.utils.routes.file_append_file",
-        boom
+        "    return UserController.index()\n",
+        encoding="utf-8",
     )
 
-    project_root = tmp_path
-    route_dir = project_root / "app" / "routes" / "users"
-    route_dir.mkdir(parents=True)
-
-    route_file = route_dir / "routes.py"
     monkeypatch.chdir(project_root)
 
-    route_file.write_text(
-        "from app.controllers import UserController\n"
-        "from app.routes.users import bp\n"
-        "\n"
-        "@bp.route('/', methods=['GET'])\n"
-        "def show():\n"
-        "    return UserController.show()"
-        , encoding="utf-8")
+    observed_content_before = route_file.read_text(encoding="utf-8")
 
-    before_content = route_file.read_text(encoding='utf-8')
-
-
-    is_successful, message = route_add_method(
-        relative_path='users',
-        action='index',
-        route_directory_path='app/routes/users',
-        route_name='/users',
-        controller_name='UserController')
-
-    after_content = route_file.read_text(encoding='utf-8')
-
-
-    assert is_successful is False
-    assert before_content == after_content
-    assert "Failed to append index to app/routes/users/routes.py" in message
-
-def test_route_add_method_unexpected_exception_path(monkeypatch):
-    def boom(*args, **kwargs):
-        raise RuntimeError("kaboom")
-
-    monkeypatch.setattr(
-        "flask_commands.utils.routes._generate_route_content",
-        boom
-    )
-
-    is_successful, message = route_add_method(
+    action_result, message = route_add_method(
         relative_path="users",
         action="index",
         route_directory_path="app/routes/users",
@@ -241,14 +193,164 @@ def test_route_add_method_unexpected_exception_path(monkeypatch):
         controller_name="UserController",
     )
 
-    assert is_successful is False
+    observed_content_after = route_file.read_text(encoding="utf-8")
+    expected_content = (
+        "from app.controllers import UserController\n"
+        "from app.routes.users import bp\n"
+        "\n"
+        "@bp.route('/users', methods=['GET'])\n"
+        "def index():\n"
+        "    return UserController.index()\n"
+    )
+
+    assert action_result.is_successful is False
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/users"
+    assert action_result.route_status == ScaffoldStatus.WARNING
+    assert "url_for('users.index')" in action_result.url_for_example
+    assert "/users" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+
+    assert observed_content_before == expected_content
+    assert observed_content_after == expected_content
+
+    assert "Could not update route file" in message
+    assert "index" in message
+    assert "already exists" in message
+    assert "app/routes/users/routes.py" in message
+
+def test_route_add_method_route_file_missing(tmp_path, monkeypatch):
+    project_root = tmp_path
+    route_dir = project_root / "app" / "routes" / "users"
+    route_dir.mkdir(parents=True)
+
+    route_file = route_dir / "routes.py"
+    monkeypatch.chdir(project_root)
+
+    action_result, message = route_add_method(
+        relative_path="users",
+        action="index",
+        route_directory_path="app/routes/users",
+        route_name="/users",
+        controller_name="UserController",
+    )
+
+    assert route_file.exists() is False
+
+    assert action_result.is_successful is False
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/users"
+    assert action_result.route_status == ScaffoldStatus.WARNING
+    assert "url_for('users.index')" in action_result.url_for_example
+    assert "/users" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+
+    assert "Could not update route file" in message
+    assert "Could not find file" in message
+    assert "app/routes/users/routes.py" in message
+
+def test_route_add_method_exception(tmp_path, monkeypatch):
+    def boom(*args, **kwargs):
+        raise Exception("internal server error")
+
+    monkeypatch.setattr(
+        "flask_commands.utils.routes.file_append_file",
+        boom,
+    )
+
+    project_root = tmp_path
+    route_dir = project_root / "app" / "routes" / "users"
+    route_dir.mkdir(parents=True)
+
+    route_file = route_dir / "routes.py"
+    route_file.write_text(
+        "from app.controllers import UserController\n"
+        "from app.routes.users import bp\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>', methods=['GET'])\n"
+        "def show(user_id: int):\n"
+        "    return UserController.show(user_id)\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(project_root)
+
+    observed_content_before = route_file.read_text(encoding="utf-8")
+
+    action_result, message = route_add_method(
+        relative_path="users",
+        action="index",
+        route_directory_path="app/routes/users",
+        route_name="/users",
+        controller_name="UserController",
+    )
+
+    observed_content_after = route_file.read_text(encoding="utf-8")
+    expected_content = (
+        "from app.controllers import UserController\n"
+        "from app.routes.users import bp\n"
+        "\n"
+        "@bp.route('/users/<int:user_id>', methods=['GET'])\n"
+        "def show(user_id: int):\n"
+        "    return UserController.show(user_id)\n"
+    )
+
+    assert action_result.is_successful is False
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/users"
+    assert action_result.route_status == ScaffoldStatus.WARNING
+    assert "url_for('users.index')" in action_result.url_for_example
+    assert "/users" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+
+    assert observed_content_before == expected_content
+    assert observed_content_after == expected_content
+
+    assert "Could not add route method" in message
+    assert "index" in message
+    assert "app/routes/users/routes.py" in message
+    assert "internal server error" in message
+
+def test_route_add_method_unexpected_exception_path(monkeypatch):
+    def boom(*args, **kwargs):
+        raise RuntimeError("kaboom")
+
+    monkeypatch.setattr(
+        "flask_commands.utils.routes._generate_route_content",
+        boom,
+    )
+
+    action_result, message = route_add_method(
+        relative_path="users",
+        action="index",
+        route_directory_path="app/routes/users",
+        route_name="/users",
+        controller_name="UserController",
+    )
+
+    assert action_result.is_successful is False
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/users"
+    assert action_result.route_status == ScaffoldStatus.ERROR
+    assert "url_for('users.index')" in action_result.url_for_example
+    assert "/users" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+
     assert "Failed to add method to route" in message
     assert "kaboom" in message
 
 def test_route_add_method_root_relative_path_updates_mains_routes_file(project):
     route_file = project / "app" / "routes" / "mains" / "routes.py"
 
-    is_successful, message = route_add_method(
+    action_result, message = route_add_method(
         relative_path="",
         action="landing",
         route_directory_path="app/routes/mains",
@@ -270,9 +372,21 @@ def test_route_add_method_root_relative_path_updates_mains_routes_file(project):
         "    return MainController.landing()\n"
     )
 
-    assert is_successful is True
+    assert action_result.is_successful is True
+    assert action_result.action == "landing"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/landing"
+    assert action_result.route_status == ScaffoldStatus.ADDED
+    assert "url_for('mains.landing')" in action_result.url_for_example
+    assert "/landing" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+
     assert observed_content == expected_content
-    assert "Visit the new route at /landing" in message
+    assert "Added Route To Existing Directory" in message
+    assert "landing" in message
+    assert "app/routes/mains/routes.py" in message
+    assert "/landing" in message
     assert "url_for('mains.landing')" in message
 
 def test_route_write_directory_returns_when_write_routes_step_fails(tmp_path, monkeypatch):
@@ -292,15 +406,13 @@ def test_route_write_directory_returns_when_write_routes_step_fails(tmp_path, mo
 
     route_file = route_dir / "routes.py"
     route_file.write_text("# pre-existing route file\n", encoding="utf-8")
-    before = route_file.read_text(encoding="utf-8")
+    observed_content_before = route_file.read_text(encoding="utf-8")
 
     monkeypatch.chdir(project_root)
 
-    # Keep route_write_directory_and_register_blueprint running even though route_dir already exists.
-    # _write_routes_file itself is NOT patched.
     monkeypatch.setattr(routes_module.os, "makedirs", lambda *args, **kwargs: None)
 
-    is_successful, message = route_write_directory_and_register_blueprint(
+    route_result, action_result, message = route_write_directory_and_register_blueprint(
         relative_path="users",
         action="index",
         route_directory_path="app/routes/users",
@@ -308,13 +420,31 @@ def test_route_write_directory_returns_when_write_routes_step_fails(tmp_path, mo
         controller_name="UserController",
     )
 
-    after = route_file.read_text(encoding="utf-8")
+    observed_content_after = route_file.read_text(encoding="utf-8")
 
-    assert is_successful is False
+    assert route_result.is_successful is False
+    assert route_result.directory_status == ScaffoldStatus.WARNING
+    assert route_result.route_init_path == "app/routes/users/__init__.py"
+    assert route_result.route_file_path is None
+    assert route_result.blueprint_name is None
+    assert route_result.blueprint_registration_file_path is None
+
+    assert action_result.is_successful is False
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/users"
+    assert action_result.route_status == ScaffoldStatus.WARNING
+    assert "url_for('users.index')" in action_result.url_for_example
+    assert "/users" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+
+    assert observed_content_before == "# pre-existing route file\n"
+    assert observed_content_after == "# pre-existing route file\n"
+
     assert "Could not create route file" in message
-    assert "Failed to create routes.py at app/routes/users/routes.py" in message
+    assert "app/routes/users/routes.py" in message
     assert "already exists" in message
-    assert after == before
 
 def test_route_generate_parameter_reference_empty():
     assert route_generate_parameter_reference([]) == ""
@@ -419,88 +549,201 @@ def test_route_http_method_for_action_post_delete():
 def test_route_http_method_for_action_post_delete():
     assert route_http_method_for_action("custom_action") == "GET"
 
-def test_route_write_directory_and_register_blueprint_success(tmp_path, monkeypatch):
-    project_root = tmp_path
-    app_dir = project_root / "app"
-    app_dir.mkdir(parents=True)
-    app_init_file = app_dir / "__init__.py"
-    app_init_file.write_text(
-        'from flask import Flask\n'
-        'from config import config\n'
-        '\n'
-        'def create_app(config_name) -> Flask:\n'
+def test_route_write_directory_and_register_blueprint_success(project):
+    app_init_file = project / "app" / "__init__.py"
+
+    route_result, action_result, message = route_write_directory_and_register_blueprint(
+        relative_path="users",
+        action="index",
+        route_directory_path="app/routes/users",
+        route_name="/users",
+        controller_name="UserController",
+    )
+
+    users_init_file = project / "app" / "routes" / "users" / "__init__.py"
+    users_routes_file = project / "app" / "routes" / "users" / "routes.py"
+
+    observed_users_init_content = users_init_file.read_text(encoding="utf-8")
+    expected_users_init_content = (
+        "from flask import Blueprint\n"
+        "\n"
+        "bp = Blueprint('users', __name__)\n"
+        "\n"
+        "from app.routes.users import routes\n"
+    )
+
+    observed_users_routes_content = users_routes_file.read_text(encoding="utf-8")
+    expected_users_routes_content = (
+        "from app.controllers import UserController\n"
+        "from app.routes.users import bp\n"
+        "\n"
+        "@bp.route('/users', methods=['GET'])\n"
+        "def index():\n"
+        "    return UserController.index()\n"
+    )
+
+    observed_app_init_content = app_init_file.read_text(encoding="utf-8")
+    expected_app_init_content = (
+        "from flask import Flask\n"
+        "from config import config\n"
+        "\n"
+        "def create_app(config_name) -> Flask:\n"
         '    """Creates a Flask application Instance."""\n'
-        '    app = Flask(__name__)\n'
-        '\n'
-        '    # apply configuration\n'
-        '    app.config.from_object(config[config_name])\n'
-        '\n'
-        '    from app.routes.mains import bp as mains_blueprint\n'
-        '    app.register_blueprint(mains_blueprint)\n'
-        '\n'
-        '    return app'
-        , encoding="utf-8")
+        "    app = Flask(__name__)\n"
+        "\n"
+        "    # apply configuration\n"
+        "    app.config.from_object(config[config_name])\n"
+        "\n"
+        "    from app.routes.mains import bp as mains_blueprint\n"
+        "    app.register_blueprint(mains_blueprint)\n"
+        "\n"
+        "    from app.routes.users import bp as users_blueprint\n"
+        "    app.register_blueprint(users_blueprint)\n"
+        "\n"
+        "    return app"
+    )
 
-    route_dir = project_root / "app" / "routes"
-    route_dir.mkdir(parents=True)
+    assert route_result.is_successful is True
+    assert route_result.directory_status == ScaffoldStatus.ADDED
+    assert route_result.route_init_path == "app/routes/users/__init__.py"
+    assert route_result.route_file_path == "app/routes/users/routes.py"
+    assert route_result.blueprint_name == "users_blueprint"
+    assert route_result.blueprint_registration_file_path == "app/__init__.py"
 
-    monkeypatch.chdir(project_root)
-    # dotted_path_with_action = users.index
-    is_successful, message = route_write_directory_and_register_blueprint(
-        relative_path='users',
-        action='index',
-        route_directory_path='app/routes/users',
-        route_name='/users',
-        controller_name='UserController')
+    assert action_result.is_successful is True
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/users"
+    assert action_result.route_status == ScaffoldStatus.ADDED
+    assert "url_for('users.index')" in action_result.url_for_example
+    assert "/users" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
 
-    assert is_successful is True
+    assert observed_users_init_content == expected_users_init_content
+    assert observed_users_routes_content == expected_users_routes_content
+    assert observed_app_init_content == expected_app_init_content
+
     assert "Created New Route Directory" in message
+    assert "app/routes/users/__init__.py" in message
+    assert "app/routes/users/routes.py" in message
+    assert "users_blueprint" in message
+    assert "url_for('users.index')" in message
 
-def test_route_write_directory_and_register_blueprint_success_nested_routes(tmp_path, monkeypatch):
-    project_root = tmp_path
-    app_dir = project_root / "app"
-    app_dir.mkdir(parents=True)
-    app_init_file = app_dir / "__init__.py"
-    app_init_file.write_text(
-        'from flask import Flask\n'
-        'from config import config\n'
-        '\n'
-        'def create_app(config_name) -> Flask:\n'
-        '    """Creates a Flask application Instance."""\n'
-        '    app = Flask(__name__)\n'
-        '\n'
-        '    # apply configuration\n'
-        '    app.config.from_object(config[config_name])\n'
-        '\n'
-        '    from app.routes.mains import bp as mains_blueprint\n'
-        '    app.register_blueprint(mains_blueprint)\n'
-        '\n'
-        '    return app'
-        , encoding="utf-8")
-
-    recipes_dir = project_root / "app" / "routes" / "recipes"
+def test_route_write_directory_and_register_blueprint_success_nested_routes(project):
+    app_init_file = project / "app" / "__init__.py"
+    recipes_dir = project / "app" / "routes" / "recipes"
     recipes_dir.mkdir(parents=True)
 
     recipes_init_file = recipes_dir / "__init__.py"
     recipes_init_file.write_text(
         "from flask import Blueprint\n"
         "\n"
-        "bp = Blueprint('recipe', __name__)\n"
+        "bp = Blueprint('recipes', __name__)\n"
         "\n"
-        "from app.routes.recipe import routes\n"
+        "from app.routes.recipes import routes\n",
+        encoding="utf-8",
     )
 
-    monkeypatch.chdir(project_root)
-    # dotted_path_with_action = recipes.comments.index
-    is_successful, message = route_write_directory_and_register_blueprint(
-        relative_path='recipes/comments',
-        action='index',
-        route_directory_path='app/routes/recipes/comments',
-        route_name='/recipes/<int:recipe_id>/comments',
-        controller_name='RecipeCommentController')
+    recipes_routes_file = recipes_dir / "routes.py"
+    recipes_routes_file.write_text(
+        "from app.routes.recipes import bp\n",
+        encoding="utf-8",
+    )
 
-    assert is_successful is True
+    route_result, action_result, message = route_write_directory_and_register_blueprint(
+        relative_path="recipes/comments",
+        action="index",
+        route_directory_path="app/routes/recipes/comments",
+        route_name="/recipes/<int:recipe_id>/comments",
+        controller_name="RecipeCommentController",
+    )
+
+    comments_init_file = project / "app" / "routes" / "recipes" / "comments" / "__init__.py"
+    comments_routes_file = project / "app" / "routes" / "recipes" / "comments" / "routes.py"
+
+    observed_comments_init_content = comments_init_file.read_text(encoding="utf-8")
+    expected_comments_init_content = (
+        "from flask import Blueprint\n"
+        "\n"
+        "bp = Blueprint('comments', __name__)\n"
+        "\n"
+        "from app.routes.recipes.comments import routes\n"
+    )
+
+    observed_comments_routes_content = comments_routes_file.read_text(encoding="utf-8")
+    expected_comments_routes_content = (
+        "from app.controllers import RecipeCommentController\n"
+        "from app.routes.recipes.comments import bp\n"
+        "\n"
+        "@bp.route('/recipes/<int:recipe_id>/comments', methods=['GET'])\n"
+        "def index(recipe_id: int):\n"
+        "    return RecipeCommentController.index(recipe_id)\n"
+    )
+
+    observed_recipes_init_content = recipes_init_file.read_text(encoding="utf-8")
+    expected_recipes_init_content = (
+        "from flask import Blueprint\n"
+        "\n"
+        "bp = Blueprint('recipes', __name__)\n"
+        "\n"
+        "from app.routes.recipes import routes\n"
+        "\n"
+        "from app.routes.recipes.comments import bp as recipes_comments_blueprint\n"
+        "bp.register_blueprint(recipes_comments_blueprint)\n"
+    )
+
+    observed_recipes_routes_content = recipes_routes_file.read_text(encoding="utf-8")
+    expected_recipes_routes_content = (
+        "from app.routes.recipes import bp\n"
+    )
+
+    observed_app_init_content = app_init_file.read_text(encoding="utf-8")
+    expected_app_init_content = (
+        "from flask import Flask\n"
+        "from config import config\n"
+        "\n"
+        "def create_app(config_name) -> Flask:\n"
+        '    """Creates a Flask application Instance."""\n'
+        "    app = Flask(__name__)\n"
+        "\n"
+        "    # apply configuration\n"
+        "    app.config.from_object(config[config_name])\n"
+        "\n"
+        "    from app.routes.mains import bp as mains_blueprint\n"
+        "    app.register_blueprint(mains_blueprint)\n"
+        "\n"
+        "    return app"
+    )
+
+    assert route_result.is_successful is True
+    assert route_result.directory_status == ScaffoldStatus.ADDED
+    assert route_result.route_init_path == "app/routes/recipes/comments/__init__.py"
+    assert route_result.route_file_path == "app/routes/recipes/comments/routes.py"
+    assert route_result.blueprint_name == "recipes_comments_blueprint"
+    assert route_result.blueprint_registration_file_path == "app/routes/recipes/__init__.py"
+
+    assert action_result.is_successful is True
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/recipes/<int:recipe_id>/comments"
+    assert action_result.route_status == ScaffoldStatus.ADDED
+    assert "url_for('recipes.comments.index', recipe_id=1)" in action_result.url_for_example
+    assert "/recipes/1/comments" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+
+    assert observed_comments_init_content == expected_comments_init_content
+    assert observed_comments_routes_content == expected_comments_routes_content
+    assert observed_recipes_init_content == expected_recipes_init_content
+    assert observed_recipes_routes_content == expected_recipes_routes_content
+    assert observed_app_init_content == expected_app_init_content
+
     assert "Created New Route Directory" in message
+    assert "app/routes/recipes/comments/__init__.py" in message
+    assert "app/routes/recipes/comments/routes.py" in message
+    assert "recipes_comments_blueprint" in message
+    assert "url_for('recipes.comments.index', recipe_id=1)" in message
 
 def test_route_write_directory_and_register_blueprint_app_init_missing_return(tmp_path, monkeypatch):
     project_root = tmp_path
@@ -508,51 +751,133 @@ def test_route_write_directory_and_register_blueprint_app_init_missing_return(tm
     app_dir.mkdir(parents=True)
     app_init_file = app_dir / "__init__.py"
     app_init_file.write_text(
-        'from flask import Flask\n'
-        'from config import config\n'
-        '\n'
-        'def create_app(config_name) -> Flask:\n'
+        "from flask import Flask\n"
+        "from config import config\n"
+        "\n"
+        "def create_app(config_name) -> Flask:\n"
         '    """Creates a Flask application Instance."""\n'
-        '    app = Flask(__name__)\n'
-        '\n'
-        '    # apply configuration\n'
-        '    app.config.from_object(config[config_name])\n'
-        '\n'
-        '    from app.routes.mains import bp as mains_blueprint\n'
-        '    app.register_blueprint(mains_blueprint)\n'
-        , encoding="utf-8")
+        "    app = Flask(__name__)\n"
+        "\n"
+        "    # apply configuration\n"
+        "    app.config.from_object(config[config_name])\n"
+        "\n"
+        "    from app.routes.mains import bp as mains_blueprint\n"
+        "    app.register_blueprint(mains_blueprint)\n",
+        encoding="utf-8",
+    )
 
     route_dir = project_root / "app" / "routes"
     route_dir.mkdir(parents=True)
 
     monkeypatch.chdir(project_root)
-    # dotted_path_with_action = users.index
-    is_successful, message = route_write_directory_and_register_blueprint(
-        relative_path='users',
-        action='index',
-        route_directory_path='app/routes/users',
-        route_name='/users',
-        controller_name='UserController')
 
-    assert is_successful is False
+    route_result, action_result, message = route_write_directory_and_register_blueprint(
+        relative_path="users",
+        action="index",
+        route_directory_path="app/routes/users",
+        route_name="/users",
+        controller_name="UserController",
+    )
+
+    users_init_file = project_root / "app" / "routes" / "users" / "__init__.py"
+    users_routes_file = project_root / "app" / "routes" / "users" / "routes.py"
+
+    observed_users_init_content = users_init_file.read_text(encoding="utf-8")
+    expected_users_init_content = (
+        "from flask import Blueprint\n"
+        "\n"
+        "bp = Blueprint('users', __name__)\n"
+        "\n"
+        "from app.routes.users import routes\n"
+    )
+
+    observed_users_routes_content = users_routes_file.read_text(encoding="utf-8")
+    expected_users_routes_content = (
+        "from app.controllers import UserController\n"
+        "from app.routes.users import bp\n"
+        "\n"
+        "@bp.route('/users', methods=['GET'])\n"
+        "def index():\n"
+        "    return UserController.index()\n"
+    )
+
+    observed_app_init_content = app_init_file.read_text(encoding="utf-8")
+    expected_app_init_content = (
+        "from flask import Flask\n"
+        "from config import config\n"
+        "\n"
+        "def create_app(config_name) -> Flask:\n"
+        '    """Creates a Flask application Instance."""\n'
+        "    app = Flask(__name__)\n"
+        "\n"
+        "    # apply configuration\n"
+        "    app.config.from_object(config[config_name])\n"
+        "\n"
+        "    from app.routes.mains import bp as mains_blueprint\n"
+        "    app.register_blueprint(mains_blueprint)\n"
+    )
+
+    assert route_result.is_successful is False
+    assert route_result.directory_status == ScaffoldStatus.WARNING
+    assert route_result.route_init_path == "app/routes/users/__init__.py"
+    assert route_result.route_file_path == "app/routes/users/routes.py"
+    assert route_result.blueprint_name is None
+    assert route_result.blueprint_registration_file_path is None
+
+    assert action_result.is_successful is False
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/users"
+    assert action_result.route_status == ScaffoldStatus.WARNING
+    assert "url_for('users.index')" in action_result.url_for_example
+    assert "/users" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+
+    assert observed_users_init_content == expected_users_init_content
+    assert observed_users_routes_content == expected_users_routes_content
+    assert observed_app_init_content == expected_app_init_content
+
     assert "Could not register blueprint" in message
+    assert "return app" in message
+    assert "app/__init__.py" in message
+
 
 def test_route_write_directory_and_register_blueprint_route_already_exists(tmp_path, monkeypatch):
     project_root = tmp_path
     route_dir = project_root / "app" / "routes" / "users"
     route_dir.mkdir(parents=True)
+
     monkeypatch.chdir(project_root)
 
-    # dotted_path_with_action = users.index
-    is_successful, message = route_write_directory_and_register_blueprint(
-        relative_path='users',
-        action='index',
-        route_directory_path='app/routes/users',
-        route_name='/users',
-        controller_name='UserController')
+    route_result, action_result, message = route_write_directory_and_register_blueprint(
+        relative_path="users",
+        action="index",
+        route_directory_path="app/routes/users",
+        route_name="/users",
+        controller_name="UserController",
+    )
 
-    assert is_successful is False
+    assert route_result.is_successful is False
+    assert route_result.directory_status == ScaffoldStatus.ERROR
+    assert route_result.route_init_path is None
+    assert route_result.route_file_path is None
+    assert route_result.blueprint_name is None
+    assert route_result.blueprint_registration_file_path is None
+
+    assert action_result.is_successful is False
+    assert action_result.action == "index"
+    assert action_result.http_method == "GET"
+    assert action_result.route_name == "/users"
+    assert action_result.route_status == ScaffoldStatus.ERROR
+    assert "url_for('users.index')" in action_result.url_for_example
+    assert "/users" in action_result.visit_example
+    assert action_result.view_file_path is None
+    assert action_result.view_status == ScaffoldStatus.SKIPPED
+
+    assert "Failed to create route" in message
     assert "File exists" in message
+
 
 def test_route_write_directory_and_register_blueprint_exception(tmp_path, monkeypatch):
     def boom(*args, **kwargs):
