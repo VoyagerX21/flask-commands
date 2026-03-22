@@ -9,6 +9,7 @@ from flask_commands.utils.controllers import (
     controller_generate_relative_path_from_controller_name,
     controller_make_file
 )
+from flask_commands.utils.data_types import ScaffoldStatus
 
 @pytest.fixture
 def controller_project(tmp_path, monkeypatch):
@@ -47,42 +48,55 @@ def test_controller_add_method_already_exists(controller_project):
 
     original_source = controller_file.read_text(encoding="utf-8")
 
-    # Act
-    is_successful, message = controller_add_method(
+    controller_result, message = controller_add_method(
         relative_path="posts",
         action="index",
-        controller_name="PostController"
+        controller_name="PostController",
+        controller_file_path="app/controllers/post_controller.py",
     )
 
     updated_source = controller_file.read_text(encoding="utf-8")
-    expected_source = original_source
 
-    # Assert
-    assert is_successful is False
+    assert controller_result.is_successful is False
+    assert controller_result.status == ScaffoldStatus.EXISTS
+    assert controller_result.controller_name == "PostController"
+    assert controller_result.controller_file_path == "app/controllers/post_controller.py"
+    assert controller_result.methods_added == []
+
     assert "Method Already Exists" in message
-    assert updated_source == expected_source   # File should be unchanged
+    assert "PostController" in message
+    assert "index" in message
+    assert updated_source == original_source
 
 def test_controller_add_method_no_controller_class(controller_project):
     controller_file = controller_project(
         "post_controller.py",
         "class CommentController:\n"
-        "    pass"
+        "    pass\n"
     )
 
     original_source = controller_file.read_text(encoding="utf-8")
 
-    is_successful, message = controller_add_method(
+    controller_result, message = controller_add_method(
         relative_path="posts",
         action="index",
-        controller_name="PostController"
+        controller_name="PostController",
+        controller_file_path="app/controllers/post_controller.py",
     )
 
     updated_source = controller_file.read_text(encoding="utf-8")
-    expected_source = original_source
 
-    assert is_successful is False
+    assert controller_result.is_successful is False
+    assert controller_result.status == ScaffoldStatus.WARNING
+    assert controller_result.controller_name == "PostController"
+    assert controller_result.controller_file_path == "app/controllers/post_controller.py"
+    assert controller_result.methods_added == []
+
     assert "Controller Class Not Found" in message
-    assert updated_source == expected_source
+    assert "PostController" in message
+    assert "app/controllers/post_controller.py" in message
+    assert updated_source == original_source
+
 
 def test_controller_add_method_success(controller_project):
     controller_file = controller_project(
@@ -97,12 +111,12 @@ def test_controller_add_method_success(controller_project):
         "    pass"
     )
 
-    # Act
-    is_successful, message = controller_add_method(
+    controller_result, message = controller_add_method(
         relative_path="posts",
         action="index",
         controller_name="PostController",
-        route_name="/posts"
+        controller_file_path="app/controllers/post_controller.py",
+        route_name="/posts",
     )
 
     updated_source = controller_file.read_text(encoding="utf-8")
@@ -124,13 +138,20 @@ def test_controller_add_method_success(controller_project):
         "    pass"
     )
 
-    # Assert
-    assert is_successful is True
-    assert "Method Added" in message
+    assert controller_result.is_successful is True
+    assert controller_result.status == ScaffoldStatus.ADDED
+    assert controller_result.controller_name == "PostController"
+    assert controller_result.controller_file_path == "app/controllers/post_controller.py"
+    assert controller_result.methods_added == ["index"]
+
+    assert "Method Added To Controller" in message
+    assert "index" in message
+    assert "PostController" in message
+    assert "app/controllers/post_controller.py" in message
     assert updated_source == expected_source
 
+
 def test_controller_add_method_success_with_relation(controller_project):
-    """The fixture runs and controller_project is the return from fixture"""
     controller_file = controller_project(
         "user_post_controller.py",
         "from flask import render_template\n"
@@ -141,12 +162,12 @@ def test_controller_add_method_success_with_relation(controller_project):
         "        return render_template('users/posts/index.html')\n"
     )
 
-    # Act
-    is_successful, message = controller_add_method(
+    controller_result, message = controller_add_method(
         relative_path="users/posts",
         action="show",
         controller_name="UserPostController",
-        route_name="/users/<int:user_id>/posts/<int:post_id>"
+        controller_file_path="app/controllers/user_post_controller.py",
+        route_name="/users/<int:user_id>/posts/<int:post_id>",
     )
 
     updated_source = controller_file.read_text(encoding="utf-8")
@@ -164,11 +185,18 @@ def test_controller_add_method_success_with_relation(controller_project):
         "        return render_template('users/posts/show.html')"
     )
 
-    # Assert
-    assert is_successful is True
-    assert is_successful is True
-    assert "Method Added" in message
+    assert controller_result.is_successful is True
+    assert controller_result.status == ScaffoldStatus.ADDED
+    assert controller_result.controller_name == "UserPostController"
+    assert controller_result.controller_file_path == "app/controllers/user_post_controller.py"
+    assert controller_result.methods_added == ["show"]
+
+    assert "Method Added To Controller" in message
+    assert "show" in message
+    assert "UserPostController" in message
+    assert "app/controllers/user_post_controller.py" in message
     assert updated_source == expected_source
+
 
 def test_controller_add_method_exception(controller_project, monkeypatch):
     controller_file = controller_project(
@@ -187,7 +215,6 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
 
     real_open = builtins.open
 
-    # Patch open() so that ONLY write mode fails
     def boom_open(*args, **kwargs):
         if len(args) >= 2 and "w" in args[1]:
             raise RuntimeError("kaboom")
@@ -195,19 +222,25 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
 
     monkeypatch.setattr(builtins, "open", boom_open)
 
-    # Act
-    is_successful, message = controller_add_method(
+    controller_result, message = controller_add_method(
         relative_path="posts",
         action="index",
-        controller_name="PostController"
+        controller_name="PostController",
+        controller_file_path="app/controllers/post_controller.py",
     )
 
     updated_source = controller_file.read_text(encoding="utf-8")
-    expected_source = original_source
 
-    assert is_successful is False
+    assert controller_result.is_successful is False
+    assert controller_result.status == ScaffoldStatus.ERROR
+    assert controller_result.controller_name == "PostController"
+    assert controller_result.controller_file_path == "app/controllers/post_controller.py"
+    assert controller_result.methods_added == []
+
     assert "Failed to add Controller Method" in message
-    assert updated_source == expected_source
+    assert "kaboom" in message
+    assert updated_source == original_source
+
 
 def test_controller_add_method_inserts_redirect_imports(controller_project):
     controller_file = controller_project(
