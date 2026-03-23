@@ -423,8 +423,8 @@ def controller_make_file(
     except FileExistsError:
         message = (
             click.style("⚠️ Warning: Controller Already Exists\n", fg="yellow", bold=True) +
-            click.style(f"    - Controller {click.style(controller_name, bold=True)}", fg="yellow") + click.style(" already exists.\n", fg="yellow" ) +
-            click.style("    - No changes were made to existing controller\n", fg="yellow")
+            click.style(f"    - Controller {controller_name} already exists.\n", fg="yellow") +
+            click.style(f"    - No changes were made to existing controller\n", fg="yellow")
         )
         return _generate_controller_result(
             controller_name,
@@ -447,8 +447,8 @@ def controller_make_file(
     except FileNotFoundError:
         message = (
             click.style("⚠️  Warning: Controller __init__.py Missing\n", fg="yellow", bold=True) +
-            click.style(f"    - Controller {click.style(controller_name, bold=True)}", fg="yellow") + click.style(" was created, but __init__.py does not exist.\n", fg="yellow") +
-            click.style("    - You may need to register the controller manually.", fg="yellow")
+            click.style(f"    - Controller {controller_name} was created, but __init__.py does not exist.\n", fg="yellow") +
+            click.style(f"    - You may need to register the controller manually.", fg="yellow")
         )
         return _generate_controller_result(
             controller_name,
@@ -471,17 +471,17 @@ def controller_make_file(
     if action:
         message = (
             click.style(f"✅ Success: Created Controller Class With Method\n", fg="green", bold=True) +
-            click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
-            click.style(f"    - Added method {click.style(action, bold=True)}", fg="green") + click.style(" to controller\n", fg="green") +
-            click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style(controller_init_path, bold=True, fg='green')}\n", fg="green") +
-            click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
+            click.style(f"    - Created a new controller called {controller_name}\n", fg="green") +
+            click.style(f"    - Added method {action} to controller\n", fg="green") +
+            click.style(f"    - Registered {controller_name} at {controller_init_path}\n", fg="green") +
+            click.style(f"    - New controller located at {controller_file_path}\n", fg="green")
         )
     else:
         message = (
             click.style(f"✅ Success: Created Controller Class\n", fg="green", bold=True) +
-            click.style(f"    - Created a new controller called {click.style(controller_name, bold=True)}\n", fg="green") +
-            click.style(f"    - Registered {click.style(controller_name, bold=True)}", fg="green") + click.style(f" at {click.style(controller_init_path, bold=True, fg='green')}\n", fg="green") +
-            click.style(f"    - New controller located at {click.style(controller_file_path, bold=True)}\n", fg="green")
+            click.style(f"    - Created a new controller called {controller_name}\n", fg="green") +
+            click.style(f"    - Registered {controller_name} at {controller_init_path}\n", fg="green") +
+            click.style(f"    - New controller located at {controller_file_path}\n", fg="green")
         )
 
     return _generate_controller_result(

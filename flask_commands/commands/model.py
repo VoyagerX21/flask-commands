@@ -1,3 +1,4 @@
+import os
 import click
 
 from flask_commands.utils.controllers import (
@@ -40,7 +41,13 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
     if (force_flat or force_nest) and not crud:
         raise click.UsageError("--flat and --nest can only be used with --crud.")
 
-    all_successful = True
+    all_successful: bool = True
+    info_updates: list[str] = []
+    message_updates: list[str] = []
+    crud_result: CrudResult | None = None
+    crud_warning_updates: list[str] = []
+    model_result = ModelResult(is_successful=True)
+
 
     non_nested_model_name, nested_model_names = \
         model_generate_model_name_from_model_name(model_name)
@@ -86,10 +93,13 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
 
     # 1) Generate model files (and register them) first
     for new_model_name in models_to_create:
-        # I DON'T THINK THIS IS CORRECT BECAUSE model_result IS JUST GOING TO HAVE THE LAST MODEL IN THE LOOP
-        model_result, message = model_make_file(new_model_name)
-        click.echo(message)
-        all_successful = all_successful and model_result.is_successful
+        created_model, message = model_make_file(new_model_name)
+        message_updates.append(message) 
+        all_successful = all_successful and created_model.is_successful
+        model_result.created_models.append(created_model)
+        model_result.is_successful = (
+            model_result.is_successful and created_model.is_successful
+        )
 
     # 2) CRUD wiring (controller + routes + views)
     if crud:

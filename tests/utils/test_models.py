@@ -1,6 +1,7 @@
 import os
 import pytest
 from pathlib import Path
+from flask_commands.utils.data_types import ScaffoldStatus
 from flask_commands.utils.models import (
     model_generate_hierarchy_from_controller_name,
     model_generate_hierarchy_from_model_name,
@@ -601,56 +602,80 @@ def test_model_generate_model_name_from_model_name_remaining_segments_become_chi
     assert nested_model_names == ["ProfileAvatar"]
 
 def test_model_make_file_success(model_project):
-    is_successful, message = model_make_file(model_name="Post")
+    created_model, message = model_make_file(model_name="Post")
 
-    # --- Return value assertions ---
-    assert is_successful is True
-    assert "Created New Model" in message
-
-    # --- File creation assertions ---
     model_file = model_project / "app" / "models" / "post.py"
     init_file = model_project / "app" / "models" / "__init__.py"
 
     assert model_file.exists()
     assert init_file.exists()
 
+    observed_model_content = model_file.read_text(encoding="utf-8")
+    observed_init_content = init_file.read_text(encoding="utf-8")
+    expected_init_content = (
+        "\n"
+        "from .post import Post\n"
+    )
 
-    model_contents = model_file.read_text(encoding="utf-8")
-    init_contents = init_file.read_text(encoding="utf-8")
+    assert created_model.is_successful is True
+    assert created_model.status == ScaffoldStatus.ADDED
+    assert created_model.model_name == "Post"
+    assert created_model.model_file_path == "app/models/post.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
 
-    assert "class Post(db.Model):" in model_contents
-    assert "__tablename__ = 'posts'" in model_contents
-    assert "def store_in_database" in model_contents
-    assert "def delete_from_database" in model_contents
-    assert "from .post import Post" in init_contents
+    assert "from app import db" in observed_model_content
+    assert "class Post(db.Model):" in observed_model_content
+    assert "__tablename__ = 'posts'" in observed_model_content
+    assert "id = db.Column(db.Integer, primary_key=True)" in observed_model_content
+    assert "def store_in_database(self):" in observed_model_content
+    assert "def delete_from_database(self):" in observed_model_content
+    assert "return f'<Post id:{self.id}>'" in observed_model_content
+    assert observed_init_content == expected_init_content
 
-    # --- Content assertions (__init__.py) ---
-    init_contents = init_file.read_text(encoding="utf-8")
-    assert "from .post import Post" in init_contents
+    assert "Created New Model" in message
+    assert "Post" in message
+    assert "app/models/post.py" in message
+    assert "app/models/__init__.py" in message
 
 def test_model_make_file_file_already_exists(model_project):
     model_file = model_project / "app" / "models" / "post.py"
     model_file.write_text("\n", encoding="utf-8")
 
-    is_successful, message = model_make_file(model_name="Post")
+    created_model, message = model_make_file(model_name="Post")
 
-    assert is_successful is False
+    init_file = model_project / "app" / "models" / "__init__.py"
+
+    assert created_model.is_successful is False
+    assert created_model.status == ScaffoldStatus.EXISTS
+    assert created_model.model_name == "Post"
+    assert created_model.model_file_path == "app/models/post.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
+
+    assert model_file.read_text(encoding="utf-8") == "\n"
+    assert init_file.read_text(encoding="utf-8") == "\n"
+
     assert "Model Already Exists" in message
+    assert "Post" in message
 
-def test_model_make_file_file_write_file_exception(model_project, monkeypatch):
-    def boom(*args, **kwargs):
-        raise Exception("screen failure")
+def test_model_make_file_file_already_exists(model_project):
+    model_file = model_project / "app" / "models" / "post.py"
+    model_file.write_text("\n", encoding="utf-8")
 
-    # Patch file_write_file to fail
-    monkeypatch.setattr(
-        "flask_commands.utils.models.file_write_file",
-        boom
-    )
+    created_model, message = model_make_file(model_name="Post")
 
-    is_successful, message = model_make_file(model_name="Post")
+    init_file = model_project / "app" / "models" / "__init__.py"
 
-    assert is_successful is False
-    assert "Failed to create model" in message
+    assert created_model.is_successful is False
+    assert created_model.status == ScaffoldStatus.EXISTS
+    assert created_model.model_name == "Post"
+    assert created_model.model_file_path == "app/models/post.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
+
+    assert model_file.read_text(encoding="utf-8") == "\n"
+    assert init_file.read_text(encoding="utf-8") == "\n"
+
+    assert "Model Already Exists" in message
+    assert "Post" in message
 
 def test_model_make_file_init_missing(tmp_path, monkeypatch):
     project_root = tmp_path
@@ -659,71 +684,147 @@ def test_model_make_file_init_missing(tmp_path, monkeypatch):
 
     monkeypatch.chdir(project_root)
 
-    is_successful, message = model_make_file(model_name="Post")
+    created_model, message = model_make_file(model_name="Post")
 
-    assert is_successful is False
-    assert " Model __init__.py Missing" in message
+    model_file = project_root / "app" / "models" / "post.py"
+    observed_model_content = model_file.read_text(encoding="utf-8")
+
+    assert created_model.is_successful is False
+    assert created_model.status == ScaffoldStatus.WARNING
+    assert created_model.model_name == "Post"
+    assert created_model.model_file_path == "app/models/post.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
+
+    assert "from app import db" in observed_model_content
+    assert "class Post(db.Model):" in observed_model_content
+    assert "__tablename__ = 'posts'" in observed_model_content
+    assert "id = db.Column(db.Integer, primary_key=True)" in observed_model_content
+    assert "def store_in_database(self):" in observed_model_content
+    assert "def delete_from_database(self):" in observed_model_content
+    assert "return f'<Post id:{self.id}>'" in observed_model_content
+
+    assert "Model __init__.py Missing" in message
+    assert "Post" in message
+    assert "register it manually" in message
 
 def test_model_make_file_file_append_file_exception(model_project, monkeypatch):
     def boom(*args, **kwargs):
         raise Exception("screen failure")
 
-    # Patch file_write_file to fail
     monkeypatch.setattr(
         "flask_commands.utils.models.file_append_file",
-        boom
+        boom,
     )
 
-    is_successful, message = model_make_file(model_name="Post")
+    created_model, message = model_make_file(model_name="Post")
 
-    assert is_successful is False
+    model_file = model_project / "app" / "models" / "post.py"
+    init_file = model_project / "app" / "models" / "__init__.py"
+    observed_model_content = model_file.read_text(encoding="utf-8")
+
+    assert created_model.is_successful is False
+    assert created_model.status == ScaffoldStatus.ERROR
+    assert created_model.model_name == "Post"
+    assert created_model.model_file_path == "app/models/post.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
+
+    assert "from app import db" in observed_model_content
+    assert "class Post(db.Model):" in observed_model_content
+    assert "__tablename__ = 'posts'" in observed_model_content
+    assert "id = db.Column(db.Integer, primary_key=True)" in observed_model_content
+    assert "def store_in_database(self):" in observed_model_content
+    assert "def delete_from_database(self):" in observed_model_content
+    assert "return f'<Post id:{self.id}>'" in observed_model_content
+    assert init_file.read_text(encoding="utf-8") == "\n"
+
     assert "Failed to update __init__.py" in message
+    assert "screen failure" in message
 
 def test_model_make_file_compound_name_uses_snake_case_file_import_and_table(model_project):
-    is_successful, message = model_make_file(model_name="UserProfile")
-
-    assert is_successful is True
-    assert "Created New Model" in message
+    created_model, message = model_make_file(model_name="UserProfile")
 
     model_file = model_project / "app" / "models" / "user_profile.py"
     init_file = model_project / "app" / "models" / "__init__.py"
 
-    assert model_file.exists()
-    assert init_file.exists()
+    observed_model_content = model_file.read_text(encoding="utf-8")
+    observed_init_content = init_file.read_text(encoding="utf-8")
+    expected_init_content = (
+        "\n"
+        "from .user_profile import UserProfile\n"
+    )
 
-    model_contents = model_file.read_text(encoding="utf-8")
-    init_contents = init_file.read_text(encoding="utf-8")
+    assert created_model.is_successful is True
+    assert created_model.status == ScaffoldStatus.ADDED
+    assert created_model.model_name == "UserProfile"
+    assert created_model.model_file_path == "app/models/user_profile.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
 
-    assert "class UserProfile(db.Model):" in model_contents
-    assert "__tablename__ = 'user_profiles'" in model_contents
-    assert "from .user_profile import UserProfile" in init_contents
+    assert "from app import db" in observed_model_content
+    assert "class UserProfile(db.Model):" in observed_model_content
+    assert "__tablename__ = 'user_profiles'" in observed_model_content
+    assert "id = db.Column(db.Integer, primary_key=True)" in observed_model_content
+    assert "def store_in_database(self):" in observed_model_content
+    assert "def delete_from_database(self):" in observed_model_content
+    assert "return f'<UserProfile id:{self.id}>'" in observed_model_content
+    assert observed_init_content == expected_init_content
+
+    assert "Created New Model" in message
+    assert "UserProfile" in message
+    assert "app/models/user_profile.py" in message
+    assert "app/models/__init__.py" in message
 
 def test_model_make_file_acronym_name_uses_camel_to_snake(model_project):
-    is_successful, message = model_make_file(model_name="UserAPI")
-
-    assert is_successful is True
-    assert "Created New Model" in message
+    created_model, message = model_make_file(model_name="UserAPI")
 
     model_file = model_project / "app" / "models" / "user_api.py"
     init_file = model_project / "app" / "models" / "__init__.py"
 
-    assert model_file.exists()
+    observed_model_content = model_file.read_text(encoding="utf-8")
+    observed_init_content = init_file.read_text(encoding="utf-8")
+    expected_init_content = (
+        "\n"
+        "from .user_api import UserAPI\n"
+    )
 
-    model_contents = model_file.read_text(encoding="utf-8")
-    init_contents = init_file.read_text(encoding="utf-8")
+    assert created_model.is_successful is True
+    assert created_model.status == ScaffoldStatus.ADDED
+    assert created_model.model_name == "UserAPI"
+    assert created_model.model_file_path == "app/models/user_api.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
 
-    assert "class UserAPI(db.Model):" in model_contents
-    assert "__tablename__ = 'user_apis'" in model_contents
-    assert "from .user_api import UserAPI" in init_contents
+    assert "from app import db" in observed_model_content
+    assert "class UserAPI(db.Model):" in observed_model_content
+    assert "__tablename__ = 'user_apis'" in observed_model_content
+    assert "id = db.Column(db.Integer, primary_key=True)" in observed_model_content
+    assert "def store_in_database(self):" in observed_model_content
+    assert "def delete_from_database(self):" in observed_model_content
+    assert "return f'<UserAPI id:{self.id}>'" in observed_model_content
+    assert observed_init_content == expected_init_content
+
+    assert "Created New Model" in message
+    assert "UserAPI" in message
+    assert "app/models/user_api.py" in message
+    assert "app/models/__init__.py" in message
 
 def test_model_make_file_compound_name_file_already_exists(model_project):
     model_file = model_project / "app" / "models" / "user_profile.py"
     model_file.write_text("\n", encoding="utf-8")
 
-    is_successful, message = model_make_file(model_name="UserProfile")
+    created_model, message = model_make_file(model_name="UserProfile")
 
-    assert is_successful is False
+    init_file = model_project / "app" / "models" / "__init__.py"
+
+    assert created_model.is_successful is False
+    assert created_model.status == ScaffoldStatus.EXISTS
+    assert created_model.model_name == "UserProfile"
+    assert created_model.model_file_path == "app/models/user_profile.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
+
+    assert model_file.read_text(encoding="utf-8") == "\n"
+    assert init_file.read_text(encoding="utf-8") == "\n"
+
     assert "Model Already Exists" in message
+    assert "UserProfile" in message
 
 def test_model_make_file_init_missing_still_creates_compound_model_file(tmp_path, monkeypatch):
     project_root = tmp_path
@@ -732,17 +833,28 @@ def test_model_make_file_init_missing_still_creates_compound_model_file(tmp_path
 
     monkeypatch.chdir(project_root)
 
-    is_successful, message = model_make_file(model_name="UserProfile")
-
-    assert is_successful is False
-    assert "Model __init__.py Missing" in message
+    created_model, message = model_make_file(model_name="UserProfile")
 
     model_file = project_root / "app" / "models" / "user_profile.py"
-    assert model_file.exists()
+    observed_model_content = model_file.read_text(encoding="utf-8")
 
-    model_contents = model_file.read_text(encoding="utf-8")
-    assert "class UserProfile(db.Model):" in model_contents
-    assert "__tablename__ = 'user_profiles'" in model_contents
+    assert created_model.is_successful is False
+    assert created_model.status == ScaffoldStatus.WARNING
+    assert created_model.model_name == "UserProfile"
+    assert created_model.model_file_path == "app/models/user_profile.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
+
+    assert "from app import db" in observed_model_content
+    assert "class UserProfile(db.Model):" in observed_model_content
+    assert "__tablename__ = 'user_profiles'" in observed_model_content
+    assert "id = db.Column(db.Integer, primary_key=True)" in observed_model_content
+    assert "def store_in_database(self):" in observed_model_content
+    assert "def delete_from_database(self):" in observed_model_content
+    assert "return f'<UserProfile id:{self.id}>'" in observed_model_content
+
+    assert "Model __init__.py Missing" in message
+    assert "UserProfile" in message
+    assert "register it manually" in message
 
 def test_model_model_names_to_snake_case_names_basic():
     assert model_model_names_to_snake_case_names(["Post"]) == ["post"]
