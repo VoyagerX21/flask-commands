@@ -168,7 +168,8 @@ class ControllerResult:
         registration_file_path (str | None): File path where registration/import
             updates were applied when relevant.
         methods_added (list[str]): Controller methods added during this run.
-
+        methods_existing (list[str]): Controller methods that already existed and
+            were intentionally reused without change during this run.
     Examples:
         >>> controller_result = ControllerResult(
         ...     controller_name="PostController",
@@ -177,6 +178,7 @@ class ControllerResult:
         ...     is_successful=True,
         ...     registration_file_path="app/controllers/__init__.py",
         ...     methods_added=["index", "show"],
+        ...     methods_existing=["create", "store"]
         ... )
         >>> controller_result.methods_added
         ['index', 'show']
@@ -191,6 +193,7 @@ class ControllerResult:
     is_successful: bool
     registration_file_path: str | None = None
     methods_added: list[str] = field(default_factory=list)
+    methods_existing: list[str] = field(default_factory=list)
 
 @dataclass(frozen=True)
 class CreatedModel:

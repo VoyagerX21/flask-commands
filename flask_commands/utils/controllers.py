@@ -101,7 +101,8 @@ def controller_add_method(
             return _generate_controller_result(
                 controller_name,
                 controller_file_path,
-                status=ScaffoldStatus.EXISTS), message
+                status=ScaffoldStatus.EXISTS,
+                methods_existing=[action]), message
 
         # Try to find class definition to insert method into
         class_pattern = rf"^class\s+{re.escape(controller_name)}\b.*:\s*$"
@@ -680,7 +681,8 @@ def _generate_controller_result(
         controller_file_path: str,
         status: ScaffoldStatus,
         registration_file_path: str | None = None,
-        methods_added: list[str] | None = None
+        methods_added: list[str] | None = None,
+        methods_existing: list[str] | None = None
 ) -> ControllerResult:
     """
     Build a normalized `ControllerResult` from controller scaffold metadata.
@@ -718,6 +720,7 @@ def _generate_controller_result(
         is_successful=status == ScaffoldStatus.ADDED,
         registration_file_path=registration_file_path,
         methods_added=[] if methods_added is None else methods_added,
+        methods_existing=[] if methods_existing is None else methods_existing
     )
 
 

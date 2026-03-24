@@ -300,15 +300,23 @@ def wiring_generate_crud_result(
         crud_result.action_results.append(wiring_result.action_result)
 
         if wiring_result.controller_result is not None:
-            crud_result.controller_result.is_successful = (
-                crud_result.controller_result.is_successful and
-                wiring_result.controller_result.is_successful
-            )
+            if wiring_result.controller_result.status != ScaffoldStatus.EXISTS:
+                crud_result.controller_result.is_successful = (
+                    crud_result.controller_result.is_successful and
+                    wiring_result.controller_result.is_successful
+                )
+
             if wiring_result.controller_result.methods_added:
                 crud_result.controller_result.methods_added.extend(
                     wiring_result.controller_result.methods_added
                 )
-            if wiring_result.controller_result.status != ScaffoldStatus.ADDED:
+
+            if wiring_result.controller_result.methods_existing:
+                crud_result.controller_result.methods_existing.extend(
+                    wiring_result.controller_result.methods_existing
+                )
+
+            if wiring_result.controller_result.status not in [ScaffoldStatus.ADDED, ScaffoldStatus.EXISTS]:
                 crud_result.controller_result.status = \
                     wiring_result.controller_result.status
 
