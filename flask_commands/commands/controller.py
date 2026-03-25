@@ -287,7 +287,6 @@ def make_controller(
         for update in message_updates:
             click.echo(update)
 
-
     if not all_successful:
         click.secho("⚠️  Warning: One or more make controller steps produced a warning or failure.", fg="yellow", bold=True)
 

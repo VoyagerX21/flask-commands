@@ -3,18 +3,28 @@ import click
 
 from flask_commands.utils.controllers import (
     controller_generate_controller_name_from_relative_path,
-    controller_generate_relative_path_from_controller_name
+    controller_generate_relative_path_from_controller_name,
+    controller_make_file,
+    controller_present_controller_crud_summary,
+    controller_present_crud_route_summary,
+    controller_present_crud_wiring,
+)
+from flask_commands.utils.data_types import (
+    ControllerResult,
+    CrudResult,
+    ModelResult,
+    ScaffoldStatus,
 )
 from flask_commands.utils.files import file_is_project_root
 from flask_commands.utils.models import (
     model_generate_model_name_from_model_name,
+    model_generate_model_name_from_dotted_path_with_action,
     model_get_registered_models,
     model_make_file,
     model_model_names_to_snake_case_names
 )
 from flask_commands.utils.naming import camel_to_snake, pluralize, singularize
-from flask_commands.utils.routes import route_generate_route_name
-from flask_commands.utils.wirings import wiring_generate_wiring_result
+from flask_commands.utils.wirings import wiring_generate_crud_result, wiring_generate_wiring_result
 
 
 @click.command(name="make:model")
@@ -65,13 +75,14 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
         if force_flat:
             use_nested = False
             models_to_create = [non_nested_model_name]
-            click.secho(f"💡 Info: Using --flat. Generated model(s): "
-                        f"{non_nested_model_name}", fg="cyan")
+            info_updates.append(
+                f"Using --flat. Generated model(s): {non_nested_model_name}")
         elif force_nest:
             use_nested = True
             models_to_create = nested_model_names
-            click.secho(f"💡 Info: Using --nest. Generated model(s): "
-                        f"{', '.join(nested_model_names)}", fg="cyan")
+            info_updates.append(
+                f"Using --nest. Generated model(s): {', '.join(nested_model_names)}"
+            )   
         else:
             click.echo("Detected nested model structure:")
             click.echo(f"  1) (flatten model) = {non_nested_model_name}")
@@ -103,8 +114,6 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
 
     # 2) CRUD wiring (controller + routes + views)
     if crud:
-        restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
-
         if use_nested:
             relative_path = \
                 controller_generate_relative_path_from_controller_name(
@@ -115,38 +124,118 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
         controller_name = \
             controller_generate_controller_name_from_relative_path(
                 relative_path)
-
+        controller_file_path = os.path.join(
+            "app",
+            "controllers",
+            f"{camel_to_snake(controller_name)}.py",
+        )
+        if os.path.exists(controller_file_path):
+            controller_result = ControllerResult(
+                controller_name=controller_name,
+                controller_file_path=controller_file_path,
+                status=ScaffoldStatus.EXISTS,
+                is_successful=True,
+                registration_file_path=None,
+                methods_added=[],
+                methods_existing=[],
+            )
+        else:
+            controller_result, message = controller_make_file(
+                relative_path=None,
+                action=None,
+                controller_name=controller_name,
+                controller_file_path=controller_file_path,
+                route_name=None,
+                view_directory=None)
+            all_successful = all_successful and controller_result.is_successful
+        
         relative_path_segments = [
             segment for segment in relative_path.split("/") if segment]
         registered_models = model_get_registered_models()
         registered_snake_models = model_model_names_to_snake_case_names(
             registered_models)
+        
+        if relative_path_segments:
+            relative_path_last_segment = relative_path_segments[-1]
+            is_last_segment_a_model = \
+                singularize(relative_path_last_segment) \
+                    in registered_snake_models
+
+            if not is_last_segment_a_model:
+                another_new_model_name = \
+                    model_generate_model_name_from_dotted_path_with_action(
+                        f"{relative_path.replace('/', '.')}.index"
+                    )
+                created_model, message = model_make_file(another_new_model_name)
+                message_updates.append(message)
+                all_successful = all_successful and created_model.is_successful
+                model_result.is_successful = \
+                    model_result.is_successful and created_model.is_successful
+                model_result.created_models.append(created_model)
+
+                registered_models = model_get_registered_models()
+                registered_snake_models = model_model_names_to_snake_case_names(
+                    registered_models)
+
         relative_path_segment_models = [
             segment for segment in relative_path_segments
             if singularize(segment) in registered_snake_models]
 
-        for action in restful_actions:
-            route_name = route_generate_route_name(
-                relative_path=relative_path,
-                action=action,
-                is_restful=True,
-                relative_path_segments=relative_path_segments,
-                relative_path_segment_models=relative_path_segment_models
+        crud_result, crud_warning_updates = wiring_generate_crud_result(
+            relative_path=relative_path,
+            controller_name=controller_name,
+            controller_result=controller_result,
+            model_result=model_result,
+            relative_path_segments=relative_path_segments,
+            relative_path_segment_models=relative_path_segment_models,
+        )
+
+        all_successful = all_successful and crud_result.controller_result.is_successful
+        all_successful = all_successful and crud_result.model_result.is_successful
+        all_successful = all_successful and (
+            crud_result.route_result.is_successful
+            if crud_result.route_result is not None
+            else True
+        )
+        all_successful = all_successful and all(
+            action_result.is_successful
+            for action_result in crud_result.action_results
+        )     
+        
+    if info_updates:
+        info_messages = (
+            click.style("💡 Info: Generated From Flags\n", fg="cyan", bold=True) +
+            "".join(
+                click.style(f"    - {update}\n", fg="cyan")
+                for update in info_updates
+            )
+        )
+        click.echo(info_messages)
+
+    if crud and crud_result is not None:
+        click.echo(controller_present_controller_crud_summary(
+            crud_result.controller_result))
+
+        if message_updates:
+            for update in message_updates:
+                click.echo(update)
+
+        if crud_result.route_result is not None:
+            click.echo(
+                controller_present_crud_route_summary(
+                    crud_result.route_result,
+                    crud_result.action_results,
+                )
             )
 
-            wiring_result = wiring_generate_wiring_result(
-                relative_path,
-                action,
-                controller_name,
-                route_name
-            )
-            all_successful = all_successful and wiring_result.is_successful
+        click.echo(controller_present_crud_wiring(crud_result.action_results))
 
-            for message in wiring_result.success_messages:
-                click.echo(message)
+        for update in crud_warning_updates:
+            click.echo(update)
 
-            for message in wiring_result.warning_messages:
-                click.echo(message)
-
+    elif message_updates:
+        for update in message_updates:
+            click.echo(update)
+       
     if not all_successful:
         click.secho("⚠️  Warning: One or more make model steps produced a warning or failure.", fg="yellow", bold=True)

@@ -497,12 +497,14 @@ def controller_present_controller_crud_summary(controller_result: ControllerResu
     """
     Build the consolidated CRUD controller presentation block.
 
-    This formatter renders the controller section used by `make:controller --crud`.
+    This formatter renders the controller section used by CRUD scaffold flows.
     It summarizes:
-    - controller creation
+    - whether the controller was created or already existed
     - controller file location
-    - controller registration path
-    - any controller methods added during CRUD wiring
+    - controller registration path when created
+    - controller methods added during CRUD wiring
+    - controller methods that were already present and reused
+
 
     Args:
         controller_result (ControllerResult): Aggregate controller result for
@@ -516,28 +518,47 @@ def controller_present_controller_crud_summary(controller_result: ControllerResu
         >>> "Created Controller Class" in summary
         True
     """
-    message = (
-        click.style("✅ Success: Created Controller Class\n", fg="green", bold=True) +
-        click.style(
-            f"    - Created a new controller called {click.style(controller_result.controller_name, bold=True)}\n",
-            fg="green",
-        ) +
-        click.style(
-            f"    - New controller located at {click.style(controller_result.controller_file_path, bold=True)}\n",
-            fg="green",
+    if controller_result.status == ScaffoldStatus.EXISTS:
+        message = (
+            click.style("✅ Success: Reused Existing Controller Class\n", fg="green", bold=True) +
+            click.style(
+                f"    - Controller {controller_result.controller_name} already existed\n",
+                fg="green",
+            ) +
+            click.style(
+                f"    - Existing controller located at {controller_result.controller_file_path}\n",
+                fg="green",
+            )
         )
-    )
+    else:
+        message = (
+            click.style("✅ Success: Created Controller Class\n", fg="green", bold=True) +
+            click.style(
+                f"    - Created a new controller called {controller_result.controller_name}\n",
+                fg="green",
+            ) +
+            click.style(
+                f"    - New controller located at {controller_result.controller_file_path}\n",
+                fg="green",
+            )
+        )
 
-    if controller_result.registration_file_path:
+    if controller_result.registration_file_path and controller_result.status != ScaffoldStatus.EXISTS:
         message += click.style(
-            f"    - Registered {click.style(controller_result.controller_name, bold=True)} at "
-            f"{click.style(controller_result.registration_file_path, bold=True)}\n",
+            f"    - Registered {controller_result.controller_name} at "
+            f"{controller_result.registration_file_path}\n",
             fg="green",
         )
 
     if controller_result.methods_added:
         message += click.style(
             f"    - Added controller methods: {', '.join(controller_result.methods_added)}\n",
+            fg="green",
+        )
+    
+    if controller_result.methods_existing:
+        message += click.style(
+            f"    - Controller methods already present: {', '.join(controller_result.methods_existing)}\n",
             fg="green",
         )
 
