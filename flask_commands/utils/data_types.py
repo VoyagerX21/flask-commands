@@ -273,37 +273,55 @@ class CrudResult:
     """
     Store aggregate structured results for a full CRUD scaffold operation.
 
-    This dataclass combines controller/model state with route-directory and
-    action-level outcomes so presentation helpers can render one consolidated
-    CRUD summary.
+    This dataclass combines:
+    - controller scaffold state
+    - model scaffold state
+    - route-directory state when a route package was created
+    - action-level results for the RESTful action set
+    - command-level message blocks collected during CRUD preparation/wiring
+    - the overall success state for the CRUD flow 
+    This wasy presentation helpers can render one consolidated CRUD summary.
 
     Attributes:
         controller_result (ControllerResult): Aggregate controller scaffold result.
         model_result (ModelResult): Aggregate model scaffold result.
+        is_successful (bool): Whether the full CRUD flow completed successfully.
         route_result (RouteResult | None): Route-directory result when a route
             package was created/registered; `None` when only existing route files
             were updated.
         action_results (list[ActionResult]): Action-level results for generated
             CRUD actions.
+        message_updates (list[str]): Extra message blocks produced during CRUD
+            preparation, such as fallback model creation.
+        warning_updates (list[str]): Warning/error messages collected during
+            CRUD wiring.
 
     Examples:
         >>> crud_result = CrudResult(
         ...     controller_result=controller_result,
         ...     model_result=model_result,
+        ...     is_successful=True,
         ...     route_result=route_result,
         ...     action_results=[action_result],
+        ...     message_updates=[],
+        ...     warning_updates=[],
         ... )
-        >>> bool(crud_result.action_results)
+        >>> crud_result.is_successful
         True
 
     Notes:
         `action_results` is the primary source for per-action output in CRUD
         summaries.
+        `message_updates` and `warning_updates` carry command-level presentation
+        context gathered during the full CRUD flow.
     """
     controller_result: ControllerResult
     model_result: ModelResult
+    is_successful: bool
     route_result: RouteResult | None = None
     action_results: list[ActionResult] = field(default_factory=list)
+    message_updates: list[str] = field(default_factory=list)
+    warning_updates: list[str] = field(default_factory=list)
 
 @dataclass
 class WiringResult:

@@ -10,17 +10,25 @@ from flask_commands.utils.data_types import (
     ScaffoldStatus,
     WiringResult
 )
-
-from .controllers import controller_add_method, controller_make_file
-from .naming import camel_to_snake, singularize
-from .routes import (
+from flask_commands.utils.controllers import (
+    controller_add_method, 
+    controller_make_file
+)
+from flask_commands.utils.models import (
+    model_generate_model_name_from_dotted_path_with_action, 
+    model_get_registered_models, 
+    model_make_file, 
+    model_model_names_to_snake_case_names
+)
+from flask_commands.utils.naming import camel_to_snake, singularize
+from flask_commands.utils.routes import (
     route_add_method,
     route_generate_route_name,
     route_generate_route_visit_example,
     route_http_method_for_action,
     route_write_directory_and_register_blueprint
 )
-from .views import view_make_file
+from flask_commands.utils.views import view_make_file
 
 
 def wiring_generate_wiring_result(
@@ -209,14 +217,13 @@ def wiring_generate_wiring_result(
         success_messages=success_messages,
         warning_messages=warning_messages)
 
+# TODO: this doc string is now stale and needs to be rewritten
 def wiring_generate_crud_result(
         relative_path: str,
         controller_name: str,
         controller_result: ControllerResult,
-        model_result: ModelResult,
-        relative_path_segments: list[str],
-        relative_path_segment_models: list[str]
-) -> tuple[CrudResult, list[str]]:
+        model_result: ModelResult
+) -> CrudResult:
     """
     Scaffold a full RESTful resource and aggregate the result into one `CrudResult`.
 
@@ -274,13 +281,50 @@ def wiring_generate_crud_result(
 
     restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
 
+    message_updates: list[str] = []
+    is_successful: bool = True
+
+    relative_path_segments = [
+            segment for segment in relative_path.split("/") if segment]
+    registered_models = model_get_registered_models()
+    registered_snake_models = model_model_names_to_snake_case_names(
+        registered_models)
+    
+    if relative_path_segments:
+        relative_path_last_segment = relative_path_segments[-1]
+        is_last_segment_a_model = \
+            singularize(relative_path_last_segment) \
+                in registered_snake_models
+
+        if not is_last_segment_a_model:
+            another_new_model_name = \
+                model_generate_model_name_from_dotted_path_with_action(
+                    f"{relative_path.replace('/', '.')}.index"
+                )
+            created_model, message = model_make_file(another_new_model_name)
+            message_updates.append(message)
+            is_successful = is_successful and created_model.is_successful
+            model_result.is_successful = \
+                model_result.is_successful and created_model.is_successful
+            model_result.created_models.append(created_model)
+
+            registered_models = model_get_registered_models()
+            registered_snake_models = model_model_names_to_snake_case_names(
+                registered_models)
+
+    relative_path_segment_models = [
+        segment for segment in relative_path_segments
+        if singularize(segment) in registered_snake_models]
+
     crud_result = CrudResult(
         controller_result=controller_result,
         model_result=model_result,
+        is_successful=is_successful,
         route_result=None,
-        action_results=[]
+        action_results=[],
+        message_updates=message_updates,
+        warning_updates=[]
     )
-    warning_updates: list[str] = []
 
     for action in restful_actions:
         route_name = route_generate_route_name(
@@ -323,6 +367,20 @@ def wiring_generate_crud_result(
         if wiring_result.route_result is not None and crud_result.route_result is None:
             crud_result.route_result = wiring_result.route_result
 
-        warning_updates.extend(wiring_result.warning_messages)
+        crud_result.warning_updates.extend(wiring_result.warning_messages)
 
-    return crud_result, warning_updates
+    crud_result.is_successful = (
+        crud_result.controller_result.is_successful
+        and crud_result.model_result.is_successful
+        and (
+            crud_result.route_result.is_successful
+            if crud_result.route_result is not None
+            else True
+        )
+        and all(
+            action_result.is_successful
+            for action_result in crud_result.action_results
+        )
+    )
+
+    return crud_result

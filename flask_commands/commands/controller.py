@@ -3,10 +3,7 @@ import click
 
 from flask_commands.utils.controllers import (
     controller_make_file,
-    controller_generate_relative_path_from_controller_name,
-    controller_present_controller_crud_summary,
-    controller_present_crud_route_summary,
-    controller_present_crud_wiring
+    controller_generate_relative_path_from_controller_name
 )
 from flask_commands.utils.data_types import (
     CrudResult,
@@ -16,12 +13,10 @@ from flask_commands.utils.files import file_is_project_root
 from flask_commands.utils.models import (
     model_generate_hierarchy_from_controller_name,
     model_generate_model_name_from_controller_name,
-    model_generate_model_name_from_dotted_path_with_action,
-    model_get_registered_models,
-    model_make_file,
-    model_model_names_to_snake_case_names
+    model_make_file
 )
-from flask_commands.utils.naming import camel_to_snake, singularize
+from flask_commands.utils.naming import camel_to_snake
+from flask_commands.utils.presents import present_output_blocks
 from flask_commands.utils.wirings import wiring_generate_crud_result
 
 
@@ -199,93 +194,21 @@ def make_controller(
             model_result.created_models.append(created_model)
     if crud:
         relative_path = controller_generate_relative_path_from_controller_name(controller_name)
-        relative_path_segments = [
-            segment for segment in relative_path.split("/") if segment]
-
-        registered_models = model_get_registered_models()
-        registered_snake_models = model_model_names_to_snake_case_names(
-            registered_models)
-
-        if relative_path_segments:
-            relative_path_last_segment = relative_path_segments[-1]
-            is_last_segment_a_model = \
-                singularize(relative_path_last_segment) \
-                    in registered_snake_models
-
-            if not is_last_segment_a_model:
-                new_model_name = model_generate_model_name_from_dotted_path_with_action(
-                    f"{relative_path.replace('/', '.')}.index"
-                )
-                created_model, message = model_make_file(new_model_name)
-                message_updates.append(message)
-                all_successful = all_successful and created_model.is_successful
-                model_result.is_successful = \
-                    model_result.is_successful and created_model.is_successful
-                model_result.created_models.append(created_model)
-
-                registered_models = model_get_registered_models()
-                registered_snake_models = model_model_names_to_snake_case_names(
-                    registered_models)
-
-        relative_path_segment_models = [
-            segment for segment in relative_path_segments
-            if singularize(segment) in registered_snake_models]
-
-        crud_result, crud_warning_updates = wiring_generate_crud_result(
+        crud_result = wiring_generate_crud_result(
             relative_path=relative_path,
             controller_name=controller_name,
             controller_result=controller_result,
-            model_result=model_result,
-            relative_path_segments=relative_path_segments,
-            relative_path_segment_models=relative_path_segment_models,
+            model_result=model_result
         )
 
-        all_successful = all_successful and crud_result.controller_result.is_successful
-        all_successful = all_successful and crud_result.model_result.is_successful
-        all_successful = all_successful and (
-            crud_result.route_result.is_successful
-            if crud_result.route_result is not None
-            else True
-        )
-        all_successful = all_successful and all(
-            action_result.is_successful
-            for action_result in crud_result.action_results
-        )
+        all_successful = all_successful and crud_result.is_successful
 
-    if info_updates:
-        info_messages = (
-            click.style("💡 Info: Generated From Flags\n", fg="cyan", bold=True) +
-            "".join(
-                click.style(f"    - {update}\n", fg="cyan")
-                for update in info_updates
-            )
-        )
-        click.echo(info_messages)
-
-    if crud and crud_result is not None:
-        click.echo(controller_present_controller_crud_summary(
-            crud_result.controller_result))
-
-        if message_updates:
-            for update in message_updates:
-                click.echo(update)
-
-        if crud_result.route_result is not None:
-            click.echo(
-                controller_present_crud_route_summary(
-                    crud_result.route_result,
-                    crud_result.action_results,
-                )
-            )
-
-        click.echo(controller_present_crud_wiring(crud_result.action_results))
-
-        for update in crud_warning_updates:
-            click.echo(update)
-
-    elif message_updates:
-        for update in message_updates:
-            click.echo(update)
+    present_blocks = present_output_blocks(
+        info_updates=info_updates, 
+        message_updates=message_updates, 
+        crud_result=crud_result)
+    for block in present_blocks:
+        click.echo(block)
 
     if not all_successful:
         click.secho("⚠️  Warning: One or more make controller steps produced a warning or failure.", fg="yellow", bold=True)
