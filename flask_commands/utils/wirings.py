@@ -217,7 +217,6 @@ def wiring_generate_wiring_result(
         success_messages=success_messages,
         warning_messages=warning_messages)
 
-# TODO: this doc string is now stale and needs to be rewritten
 def wiring_generate_crud_result(
         relative_path: str,
         controller_name: str,
@@ -225,7 +224,7 @@ def wiring_generate_crud_result(
         model_result: ModelResult
 ) -> CrudResult:
     """
-    Scaffold a full RESTful resource and aggregate the result into one `CrudResult`.
+    Prepare and scaffold a full RESTful resource into one `CrudResult`.
 
     This function coordinates the canonical CRUD action set for a resource:
 
@@ -237,46 +236,49 @@ def wiring_generate_crud_result(
     - `update`
     - `destroy`
 
-    It uses `wiring_generate_wiring_result()` for each action, then aggregates:
-    - controller method additions
-    - action-level results
-    - route-directory creation result, when one occurred
-    - warning/error messages that should still be surfaced after the summary
+    Workflow:
+    1. Analyze `relative_path` and its segments.
+    2. If the last segment is not a registered model, generate a fallback model
+       and record its message in `CrudResult.message_updates`.
+    3. Recompute registered model segments for route generation.
+    4. Use `wiring_generate_wiring_result()` for each CRUD action.
+    5. Aggregate:
+       - controller method additions and existing methods
+       - action-level results
+       - route-directory creation result, when one occurred
+       - warning/error messages
+       - overall CRUD success
 
     Args:
         relative_path (str): Slash-delimited resource path, such as `"posts"` or
             `"posts/comments"`.
         controller_name (str): Controller class name for the resource.
-        controller_result (ControllerResult): Existing controller result created
-            earlier in the command flow.
+        controller_result (ControllerResult): Existing or newly created
+            controller result created earlier in the command flow.
         model_result (ModelResult): Aggregate model result assembled earlier in
             the command flow.
-        relative_path_segments (list[str]): Split `relative_path` segments.
-        relative_path_segment_models (list[str]): Segments that map to known
-            registered models.
 
     Returns:
-        tuple[CrudResult, list[str]]:
-            - `CrudResult`: aggregated structured CRUD result
-            - `list[str]`: warning/error messages collected during CRUD wiring
+        CrudResult: Fully aggregated CRUD scaffold result, including command-level
+        `message_updates`, `warning_updates`, and `is_successful`.
 
     Examples:
-        >>> crud_result, warnings = wiring_generate_crud_result(
+        >>> crud_result = wiring_generate_crud_result(
         ...     relative_path="posts",
         ...     controller_name="PostController",
         ...     controller_result=controller_result,
         ...     model_result=model_result,
-        ...     relative_path_segments=["posts"],
-        ...     relative_path_segment_models=["posts"],
         ... )
         >>> len(crud_result.action_results)
         7
 
     Notes:
-    - `route_result` remains `None` when CRUD wiring only added routes to an
+    - `route_result` remains `None` when CRUD wiring only adds routes to an
       already existing route package.
-    - Success-path per-action messages are intentionally not returned here;
-      callers render a consolidated CRUD summary instead.
+    - Existing controller methods are accumulated on
+      `controller_result.methods_existing`.
+    - Success-path per-action messages are normalized into structured results
+      and summary fields instead of being returned one-by-one.
     """
 
     restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
@@ -297,11 +299,11 @@ def wiring_generate_crud_result(
                 in registered_snake_models
 
         if not is_last_segment_a_model:
-            another_new_model_name = \
+            new_model_name = \
                 model_generate_model_name_from_dotted_path_with_action(
                     f"{relative_path.replace('/', '.')}.index"
                 )
-            created_model, message = model_make_file(another_new_model_name)
+            created_model, message = model_make_file(new_model_name)
             message_updates.append(message)
             is_successful = is_successful and created_model.is_successful
             model_result.is_successful = \

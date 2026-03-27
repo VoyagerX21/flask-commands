@@ -8,14 +8,64 @@ from flask_commands.utils.data_types import (
     ScaffoldStatus
 )
 
-def _generated_from_flags(info_updates: list[str]) -> str:
-    return (
-        click.style("💡 Info: Generated From Flags\n", fg="cyan", bold=True) +
-        "".join(
-            click.style(f"    - {update}\n", fg="cyan")
-            for update in info_updates
-        )
-    )
+def present_output_blocks(
+        info_updates: list[str], 
+        message_updates: list[str], 
+        crud_result: CrudResult | None
+) -> list[str]:
+    """
+    Build the ordered output blocks for controller/model commands.
+
+    This helper centralizes command presentation so both `make:controller` and
+    `make:model` can render consistent output.
+
+    Args:
+        info_updates (list[str]): Informational updates gathered from flags or
+            prompt decisions.
+        message_updates (list[str]): Non-CRUD message blocks gathered earlier in
+            the command flow, such as controller/model creation messages.
+        crud_result (CrudResult | None): Aggregate CRUD result when running a
+            CRUD scaffold flow; `None` for non-CRUD command runs.
+
+    Returns:
+        list[str]: Ordered terminal-ready blocks to `click.echo(...)`.
+
+    Notes:
+    - When `crud_result` is provided, this includes:
+      - the controller CRUD summary
+      - pre-CRUD message updates
+      - CRUD preparation message updates
+      - route summary when applicable
+      - CRUD wiring summary
+      - CRUD warning updates
+    - When `crud_result` is `None`, only `info_updates` and `message_updates`
+      are rendered.
+    """
+    blocks: list[str] = []
+    
+    if info_updates:
+        blocks.append(_generated_from_flags(info_updates))
+    
+    if crud_result is not None:
+        blocks.append(
+            _controller_crud_summary(crud_result.controller_result))
+        blocks.extend(message_updates)
+        blocks.extend(crud_result.message_updates)
+
+        if crud_result.route_result is not None:
+            blocks.append(
+                _crud_route_summary(
+                    crud_result.route_result,
+                    crud_result.action_results,
+                )
+            )
+        
+        blocks.append(_crud_wiring(crud_result.action_results))
+        blocks.extend(crud_result.warning_updates)
+    else:
+        blocks.extend(message_updates)
+    
+    return blocks
 
 def _controller_crud_summary(controller_result: ControllerResult) -> str:
     """
@@ -28,7 +78,6 @@ def _controller_crud_summary(controller_result: ControllerResult) -> str:
     - controller registration path when created
     - controller methods added during CRUD wiring
     - controller methods that were already present and reused
-
 
     Args:
         controller_result (ControllerResult): Aggregate controller result for
@@ -138,18 +187,18 @@ def _crud_route_summary(
     if route_result.directory_status == ScaffoldStatus.ADDED:
         if route_result.route_init_path:
             message += click.style(
-                f"    - Created __init__.py at {click.style(route_result.route_init_path, bold=True)}\n",
+                f"    - Created __init__.py at {route_result.route_init_path}\n",
                 fg="green",
             )
         if route_result.route_file_path:
             message += click.style(
-                f"    - Created routes.py at {click.style(route_result.route_file_path, bold=True)}\n",
+                f"    - Created routes.py at {route_result.route_file_path}\n",
                 fg="green",
             )
         if route_result.blueprint_name and route_result.blueprint_registration_file_path:
             message += click.style(
-                f"    - Registered the new route directory as {click.style(route_result.blueprint_name, bold=True)} "
-                f"at {click.style(route_result.blueprint_registration_file_path, bold=True)}\n",
+                f"    - Registered the new route directory as {route_result.blueprint_name} "
+                f"at {route_result.blueprint_registration_file_path}\n",
                 fg="green",
             )
 
@@ -202,7 +251,7 @@ def _crud_wiring(action_results: list[ActionResult]) -> str:
             and action_result.view_file_path
         ):
             message += click.style(
-                f"      Added view file at {click.style(action_result.view_file_path, bold=True)}\n",
+                f"      Added view file at {action_result.view_file_path}\n",
                 fg="green",
             )
 
@@ -221,33 +270,36 @@ def _crud_wiring(action_results: list[ActionResult]) -> str:
 
     return message
 
-def present_output_blocks(
-        info_updates: list[str], 
-        message_updates: list[str], 
-        crud_result: CrudResult | None
-) -> list[str]:
-    blocks: list[str] = []
-    
-    if info_updates:
-        blocks.append(_generated_from_flags(info_updates))
-    
-    if crud_result is not None:
-        blocks.append(
-            _controller_crud_summary(crud_result.controller_result))
-        blocks.extend(message_updates)
-        blocks.extend(crud_result.message_updates)
+def _generated_from_flags(info_updates: list[str]) -> str:
+    """
+    Build the informational output block for flag-driven generation choices.
 
-        if crud_result.route_result is not None:
-            blocks.append(
-                _crud_route_summary(
-                    crud_result.route_result,
-                    crud_result.action_results,
-                )
-            )
-        
-        blocks.append(_crud_wiring(crud_result.action_results))
-        blocks.extend(crud_result.warning_updates)
-    else:
-        blocks.extend(message_updates)
-    
-    return blocks
+    This private helper formats the cyan summary shown when CLI flags such as
+    `--flat` or `--nest` influenced how models were generated.
+
+    Args:
+        info_updates (list[str]): Human-readable informational lines collected
+            during command setup.
+
+    Returns:
+        str: Styled multi-line info block ready for terminal output.
+
+    Examples:
+        >>> block = _generated_from_flags(
+        ...     ["Using --flat. Generated model(s): UserComment"]
+        ... )
+        >>> "Generated From Flags" in block
+        True
+
+    Notes:
+    - Each item in `info_updates` is rendered as its own indented bullet line.
+    - When no updates exist, callers should skip invoking this helper.
+    """
+    return (
+        click.style("💡 Info: Generated From Flags\n", fg="cyan", bold=True) +
+        "".join(
+            click.style(f"    - {update}\n", fg="cyan")
+            for update in info_updates
+        )
+    )
+

@@ -39,7 +39,6 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
     if not file_is_project_root():
         return
 
-    # near top of make_model (after project root check)
     if force_flat and force_nest:
         raise click.UsageError("Use either --flat or --nest, not both.")
 
@@ -50,7 +49,6 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
     info_updates: list[str] = []
     message_updates: list[str] = []
     crud_result: CrudResult | None = None
-    crud_warning_updates: list[str] = []
     model_result = ModelResult(is_successful=True)
 
 

@@ -280,7 +280,7 @@ class CrudResult:
     - action-level results for the RESTful action set
     - command-level message blocks collected during CRUD preparation/wiring
     - the overall success state for the CRUD flow 
-    This wasy presentation helpers can render one consolidated CRUD summary.
+    This way presentation helpers can render one consolidated CRUD summary.
 
     Attributes:
         controller_result (ControllerResult): Aggregate controller scaffold result.

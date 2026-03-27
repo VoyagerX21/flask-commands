@@ -106,7 +106,6 @@ def make_controller(
     info_updates: list[str] = []
     message_updates: list[str] = []
     crud_result: CrudResult | None = None
-    crud_warning_updates: list[str] = []
     model_result = ModelResult(is_successful=True)
 
     controller_result, message = controller_make_file(

@@ -126,6 +126,7 @@ def test_make_model_with_crud(project):
         "from flask import redirect, url_for\n"
         "\n"
         "class CommentController:\n"
+        "\n"
         "    @staticmethod\n"
         "    def index() -> str:\n"
         "        return render_template('comments/index.html')\n"
@@ -263,6 +264,7 @@ def test_make_model_with_crud_nested_leaf_flatten_choice(project):
         "from flask import redirect, url_for\n"
         "\n"
         "class UserCommentController:\n"
+        "\n"
         "    @staticmethod\n"
         "    def index() -> str:\n"
         "        return render_template('user_comments/index.html')\n"
@@ -370,6 +372,7 @@ def test_make_model_with_crud_nested_leaf_nested_choice(project):
         "from flask import redirect, url_for\n"
         "\n"
         "class UserCommentController:\n"
+        "\n"
         "    @staticmethod\n"
         "    def index(user_id: int) -> str:\n"
         "        return render_template('users/comments/index.html')\n"
@@ -480,6 +483,7 @@ def test_make_model_with_crud_nested_chain_nested_choice(project):
         "from flask import redirect, url_for\n"
         "\n"
         "class PostCommentController:\n"
+        "\n"
         "    @staticmethod\n"
         "    def index(post_id: int) -> str:\n"
         "        return render_template('posts/comments/index.html')\n"
@@ -580,6 +584,7 @@ def test_make_model_with_crud_controller(project):
         "from flask import redirect, url_for\n"
         "\n"
         "class ControllerController:\n"
+        "\n"
         "    @staticmethod\n"
         "    def index() -> str:\n"
         "        return render_template('controllers/index.html')\n"
@@ -672,14 +677,13 @@ def test_make_model_with_crud_flat_flag_skips_prompt(project):
     assert result.exit_code == 0, result.output
     assert "Choose model structure" not in result.output
     assert "Detected nested model structure" not in result.output
-    assert "💡 Info: Using --flat. Generated model(s): UserComment" in result.output
+    assert "- Using --flat. Generated model(s): UserComment" in result.output
 
     assert (project / "app" / "models" / "user_comment.py").exists()
     assert not (project / "app" / "models" / "comment.py").exists()
 
     models_init = (project / "app" / "models" / "__init__.py").read_text(encoding="utf-8")
     assert "from .user_comment import UserComment" in models_init
-
 
 def test_make_model_with_crud_nest_flag_skips_prompt(project):
     runner = CliRunner()
@@ -688,7 +692,7 @@ def test_make_model_with_crud_nest_flag_skips_prompt(project):
     assert result.exit_code == 0, result.output
     assert "Choose model structure" not in result.output
     assert "Detected nested model structure" not in result.output
-    assert "💡 Info: Using --nest. Generated model(s): Comment" in result.output
+    assert "- Using --nest. Generated model(s): Comment" in result.output
 
     assert not (project / "app" / "models" / "user_comment.py").exists()
     assert (project / "app" / "models" / "comment.py").exists()
