@@ -155,6 +155,7 @@ def make_model(model_name: str, crud: bool, force_flat: bool, force_nest: bool) 
         info_updates=info_updates, 
         message_updates=message_updates, 
         crud_result=crud_result)
+    
     for block in present_blocks:
         click.echo(block)
        

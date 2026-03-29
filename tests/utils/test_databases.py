@@ -26,9 +26,13 @@ def test_install_sqlitedb_success(tmp_path, monkeypatch):
         ([venv_flask, "db", "upgrade"], True, project_path),
     ]
 
-def test_install_sqlitedb_raises_when_flask_missing(tmp_path):
+def test_install_sqlitedb_raises_when_flask_missing(tmp_path, monkeypatch, capsys):
     project_path = tmp_path / "proj"
     project_path.mkdir()
 
     with pytest.raises(ClickException, match="venv/bin/flask not found"):
         install_sqlitedb(project_path)
+
+    captured = capsys.readouterr()
+    assert "Setting up sqlite database for development..." in captured.out
+

@@ -1,7 +1,6 @@
 import pytest
-from flask_commands.utils.data_types import ScaffoldStatus
-from flask_commands.utils.wirings import wiring_generate_wiring_result
-
+from flask_commands.utils.data_types import ControllerResult, ModelResult, ScaffoldStatus
+from flask_commands.utils.wirings import wiring_generate_crud_result, wiring_generate_wiring_result
 
 @pytest.fixture
 def project(tmp_path, monkeypatch):
@@ -136,6 +135,112 @@ def project(tmp_path, monkeypatch):
 
     monkeypatch.chdir(project_root)
     return project_root
+
+def test_wiring_generate_crud_result_root_relative_path_skips_model_segment_analysis(project):
+    controller_result = ControllerResult(
+        controller_name="MainController",
+        controller_file_path="app/controllers/main_controller.py",
+        status=ScaffoldStatus.EXISTS,
+        is_successful=True,
+        methods_added=[],
+        methods_existing=[],
+    )
+    model_result = ModelResult(is_successful=True)
+
+    crud_result = wiring_generate_crud_result(
+        relative_path="",
+        controller_name="MainController",
+        controller_result=controller_result,
+        model_result=model_result,
+    )
+
+    assert crud_result.route_result is None
+    assert crud_result.message_updates == []
+    assert len(crud_result.action_results) == 7
+
+def test_wiring_generate_crud_result_existing_controller_methods_accumulate_as_methods_existing(project):
+    controller_result = ControllerResult(
+        controller_name="PostController",
+        controller_file_path="app/controllers/post_controller.py",
+        status=ScaffoldStatus.EXISTS,
+        is_successful=True,
+        methods_added=[],
+        methods_existing=[],
+    )
+    model_result = ModelResult(is_successful=True)
+
+    crud_result = wiring_generate_crud_result(
+        relative_path="posts",
+        controller_name="PostController",
+        controller_result=controller_result,
+        model_result=model_result,
+    )
+
+    assert "index" in crud_result.controller_result.methods_existing
+    assert "show" in crud_result.controller_result.methods_added
+    assert crud_result.controller_result.status == ScaffoldStatus.EXISTS
+
+def test_wiring_generate_crud_result_controller_warning_status_propagates(project):
+    post_controller_file = project / "app" / "controllers" / "post_controller.py"
+    post_controller_file.write_text(
+        "from flask import render_template\n"
+        "\n"
+        "class NotPostController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        return render_template('posts/index.html')\n",
+        encoding="utf-8",
+    )
+
+    controller_result = ControllerResult(
+        controller_name="PostController",
+        controller_file_path="app/controllers/post_controller.py",
+        status=ScaffoldStatus.EXISTS,
+        is_successful=True,
+        methods_added=[],
+        methods_existing=[],
+    )
+    model_result = ModelResult(is_successful=True)
+
+    crud_result = wiring_generate_crud_result(
+        relative_path="posts",
+        controller_name="PostController",
+        controller_result=controller_result,
+        model_result=model_result,
+    )
+
+    assert crud_result.controller_result.status == ScaffoldStatus.WARNING
+    assert crud_result.controller_result.is_successful is False
+    assert crud_result.is_successful is False
+    assert crud_result.warning_updates
+
+def test_wiring_generate_crud_result_allows_actions_without_controller_result(project):
+    """
+    Synthetic coverage test:
+    force wiring_generate_wiring_result(...) to skip controller wiring so
+    wiring_result.controller_result stays None inside CRUD aggregation.
+    """
+    controller_result = ControllerResult(
+        controller_name="SyntheticController",
+        controller_file_path="app/controllers/synthetic_controller.py",
+        status=ScaffoldStatus.EXISTS,
+        is_successful=True,
+        methods_added=[],
+        methods_existing=[],
+    )
+    model_result = ModelResult(is_successful=True)
+
+    crud_result = wiring_generate_crud_result(
+        relative_path="",
+        controller_name="",
+        controller_result=controller_result,
+        model_result=model_result,
+    )
+
+    assert len(crud_result.action_results) == 7
+    assert crud_result.controller_result == controller_result
+    assert crud_result.controller_result.methods_added == []
+    assert crud_result.controller_result.methods_existing == []
 
 def test_wiring_generate_wiring_result_root_action_updates_mains_files(project):
     main_controller_file = project / "app" / "controllers" / "main_controller.py"
@@ -679,3 +784,21 @@ def test_generate_wiring_result_creates_route_directory_when_missing(project):
     assert (project / "app" / "templates" / "tags" / "show.html").exists()
     assert "app/templates/tags/show.html" in observed_messages
     assert "url_for('tags.show', tag_id=1)" in observed_messages
+
+def test_generate_wiring_result_existing_route_method_puts_message_in_warning_updates(project):
+    wiring_result = wiring_generate_wiring_result(
+        relative_path="posts",
+        action="index",
+        controller_name="PostController",
+        route_name="/posts",
+    )
+
+    observed_messages = "\n".join(
+        wiring_result.success_messages + wiring_result.warning_messages)
+   
+    assert wiring_result.action_result.is_successful is False
+    assert wiring_result.action_result.route_status == ScaffoldStatus.WARNING
+    assert wiring_result.controller_result is not None
+    assert wiring_result.controller_result.status == ScaffoldStatus.EXISTS
+    assert "Method Already Exists" in observed_messages or "already has a method named index" in observed_messages
+

@@ -206,6 +206,7 @@ def make_controller(
         info_updates=info_updates, 
         message_updates=message_updates, 
         crud_result=crud_result)
+
     for block in present_blocks:
         click.echo(block)
 

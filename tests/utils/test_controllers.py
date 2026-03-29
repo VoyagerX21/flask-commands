@@ -97,7 +97,6 @@ def test_controller_add_method_no_controller_class(controller_project):
     assert "app/controllers/post_controller.py" in message
     assert updated_source == original_source
 
-
 def test_controller_add_method_success(controller_project):
     controller_file = controller_project(
         "post_controller.py",
@@ -150,7 +149,6 @@ def test_controller_add_method_success(controller_project):
     assert "app/controllers/post_controller.py" in message
     assert updated_source == expected_source
 
-
 def test_controller_add_method_success_with_relation(controller_project):
     controller_file = controller_project(
         "user_post_controller.py",
@@ -197,7 +195,6 @@ def test_controller_add_method_success_with_relation(controller_project):
     assert "app/controllers/user_post_controller.py" in message
     assert updated_source == expected_source
 
-
 def test_controller_add_method_exception(controller_project, monkeypatch):
     controller_file = controller_project(
         "post_controller.py",
@@ -241,7 +238,6 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
     assert "kaboom" in message
     assert updated_source == original_source
 
-
 def test_controller_add_method_inserts_redirect_imports(controller_project):
     controller_file = controller_project(
         "post_controller.py",
@@ -280,7 +276,6 @@ def test_controller_add_method_inserts_redirect_imports(controller_project):
     assert "PostController" in message
     assert "app/controllers/post_controller.py" in message
     assert updated_source == expected_source
-
 
 def test_controller_add_method_redirect_return_line_uses_nested_param_reference(controller_project):
     controller_file = controller_project(
@@ -324,7 +319,6 @@ def test_controller_add_method_redirect_return_line_uses_nested_param_reference(
     assert "app/controllers/post_comment_controller.py" in message
     assert updated_source == expected_source
 
-
 def test_controller_add_method_removes_pass_only_class_body(controller_project):
     controller_file = controller_project(
         "user_controller.py",
@@ -363,7 +357,6 @@ def test_controller_add_method_removes_pass_only_class_body(controller_project):
     assert "UserController" in message
     assert "app/controllers/user_controller.py" in message
     assert updated_source == expected_source
-
 
 def test_controller_generate_controller_name_from_relative_path():
     assert controller_generate_controller_name_from_relative_path('posts') == 'PostController'
@@ -418,7 +411,6 @@ def test_controller_make_file_success(controller_project):
     assert "app/controllers/post_controller.py" in message
     assert "app/controllers/__init__.py" in message
 
-
 def test_controller_make_file_success_with_route_name(controller_project):
     controller_result, message = controller_make_file(
         relative_path="posts",
@@ -461,6 +453,43 @@ def test_controller_make_file_success_with_route_name(controller_project):
     assert "app/controllers/post_controller.py" in message
     assert "app/controllers/__init__.py" in message
 
+def test_controller_make_file_success_without_method(controller_project):
+    controller_result, message = controller_make_file(
+        relative_path=None,
+        action=None,
+        controller_name="PostController",
+        controller_file_path="app/controllers/post_controller.py",
+    )
+
+    controller_file = Path("app/controllers/post_controller.py")
+    controller_init_file = Path("app/controllers/__init__.py")
+
+    expected_controller_content = (
+        "class PostController:\n"
+        "    pass\n"
+    )
+
+    expected_init_content = (
+        "\n"
+        "from .post_controller import PostController\n"
+    )
+
+    assert controller_result.is_successful is True
+    assert controller_result.status == ScaffoldStatus.ADDED
+    assert controller_result.controller_name == "PostController"
+    assert controller_result.controller_file_path == "app/controllers/post_controller.py"
+    assert controller_result.registration_file_path == "app/controllers/__init__.py"
+    assert controller_result.methods_added == []
+    assert controller_result.methods_existing == []
+
+    assert controller_file.read_text(encoding="utf-8") == expected_controller_content
+    assert controller_init_file.read_text(encoding="utf-8") == expected_init_content
+
+    assert "Created Controller Class" in message
+    assert "PostController" in message
+    assert "app/controllers/post_controller.py" in message
+    assert "app/controllers/__init__.py" in message
+    assert "With Method" not in message
 
 def test_controller_make_file_file_already_exists(controller_project):
     controller_project(
@@ -526,7 +555,6 @@ def test_controller_make_file_file_write_file_exception(tmp_path, monkeypatch):
     assert "Failed to create controller" in message
     assert "disk exploded" in message
 
-
 def test_controller_make_file_init_missing(tmp_path, monkeypatch):
     project_root = tmp_path
     controller_dir = project_root / "app" / "controllers"
@@ -565,7 +593,6 @@ def test_controller_make_file_init_missing(tmp_path, monkeypatch):
     assert "PostController" in message
     assert "register the controller manually" in message
 
-
 def test_controller_make_file_init_exception(controller_project, monkeypatch):
     def boom(*args, **kwargs):
         raise Exception("permission denied")
@@ -608,51 +635,6 @@ def test_controller_make_file_init_exception(controller_project, monkeypatch):
 
     assert "Failed to update __init__.py" in message
     assert "permission denied" in message
-
-
-def test_controller_make_file_init_exception(controller_project, monkeypatch):
-    def boom(*args, **kwargs):
-        raise Exception("permission denied")
-
-    monkeypatch.setattr(
-        "flask_commands.utils.controllers.file_append_file",
-        boom,
-    )
-
-    controller_result, message = controller_make_file(
-        relative_path="posts",
-        action="index",
-        controller_name="PostController",
-        controller_file_path="app/controllers/post_controller.py",
-    )
-
-    controller_file = Path("app/controllers/post_controller.py")
-    controller_init_file = Path("app/controllers/__init__.py")
-
-    expected_controller_content = (
-        "from flask import render_template\n"
-        "\n"
-        "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
-        "        return render_template('posts/index.html')\n"
-    )
-
-    expected_init_content = "\n"
-
-    assert controller_result.is_successful is False
-    assert controller_result.status == ScaffoldStatus.ERROR
-    assert controller_result.controller_name == "PostController"
-    assert controller_result.controller_file_path == "app/controllers/post_controller.py"
-    assert controller_result.registration_file_path == "app/controllers/__init__.py"
-    assert controller_result.methods_added == ["index"]
-
-    assert controller_file.read_text(encoding="utf-8") == expected_controller_content
-    assert controller_init_file.read_text(encoding="utf-8") == expected_init_content
-
-    assert "Failed to update __init__.py" in message
-    assert "permission denied" in message
-
 
 def test_controller_make_file_relative_view_file_path_no_method_name():
     controller_result, message = controller_make_file(
@@ -671,6 +653,23 @@ def test_controller_make_file_relative_view_file_path_no_method_name():
 
     assert "relative_path required when action present" in message
 
+def test_controller_make_file_method_name_no_relative_view_file_path():
+    controller_result, message = controller_make_file(
+        relative_path="posts",
+        action=None,
+        controller_name="PostController",
+        controller_file_path="app/controllers/post_controller.py",
+    )
+
+    assert controller_result.is_successful is False
+    assert controller_result.status == ScaffoldStatus.ERROR
+    assert controller_result.controller_name == "PostController"
+    assert controller_result.controller_file_path == "app/controllers/post_controller.py"
+    assert controller_result.registration_file_path is None
+    assert controller_result.methods_added == []
+    assert controller_result.methods_existing == []
+
+    assert "action required when relative_path present" in message
 
 def test_controller_make_file_with_a_post(controller_project):
     controller_result, message = controller_make_file(
@@ -712,4 +711,3 @@ def test_controller_make_file_with_a_post(controller_project):
     assert "store" in message
     assert "app/controllers/post_controller.py" in message
     assert "app/controllers/__init__.py" in message
-

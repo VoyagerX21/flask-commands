@@ -701,6 +701,62 @@ def test_make_model_with_crud_nest_flag_skips_prompt(project):
     assert "from .comment import Comment" in models_init
     assert "from .user_comment import UserComment" not in models_init
 
+def test_make_model_with_crud_reuses_existing_controller(project):
+    controller_file = project / "app" / "controllers" / "comment_controller.py"
+    controller_file.write_text(
+        "from flask import render_template\n"
+        "\n"
+        "class CommentController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        print('do not change')\n"
+        "        return render_template('comments/index.html')\n",
+        encoding="utf-8",
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(make_model, ["Comment", "--crud"])
+
+    assert result.exit_code == 0, result.output    
+
+    expected_controller_content = (
+        "from flask import render_template\n"
+        "from flask import redirect, url_for\n"
+        "\n"
+        "class CommentController:\n"
+        "    @staticmethod\n"
+        "    def index() -> str:\n"
+        "        print('do not change')\n"
+        "        return render_template('comments/index.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def show(comment_id: int) -> str:\n"
+        "        return render_template('comments/show.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def create() -> str:\n"
+        "        return render_template('comments/create.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def store() -> str:\n"
+        "        return redirect(url_for('comments.index'))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def edit(comment_id: int) -> str:\n"
+        "        return render_template('comments/edit.html')\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def update(comment_id: int) -> str:\n"
+        "        return redirect(url_for('comments.index'))\n"
+        "\n"
+        "    @staticmethod\n"
+        "    def destroy(comment_id: int) -> str:\n"
+        "        return redirect(url_for('comments.index'))"
+    )
+    observed_controller_content = controller_file.read_text(encoding="utf-8")
+    assert observed_controller_content == expected_controller_content
+
+
 def test_make_model_rejects_flat_and_nest_together(project):
     runner = CliRunner()
     result = runner.invoke(make_model, ["UserComment", "--crud", "--flat", "--nest"])

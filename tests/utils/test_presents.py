@@ -344,9 +344,6 @@ def test__crud_wiring_existing_get_route_skips_visit_and_url_lines():
 
     message = _crud_wiring(action_results)
 
-    print()
-    print(message)
-
     assert "show (GET)" in message
     assert "Added view file at app/templates/posts/show.html" in message
     assert "Visit the new route at /posts/1" not in message
@@ -436,9 +433,6 @@ def test_present_output_blocks_crud_orders_controller_messages_route_wiring_and_
         message_updates=["Created requested model message"],
         crud_result=crud_result,
     )
-
-    print()
-    print(blocks)
 
     assert len(blocks) == 7
     assert "Generated From Flags" in blocks[0]

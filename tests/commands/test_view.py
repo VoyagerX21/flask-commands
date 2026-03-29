@@ -476,7 +476,6 @@ def test_make_view_explicit_mains_root_action_keeps_mains_in_url_and_template(pr
     assert "Added view file at app/templates/mains/landing.html" in result.output
     assert "url_for('mains.landing')" in result.output
 
-
 def test_make_view_root_action_with_explicit_wiring_keeps_root_template(project):
 
     runner = CliRunner()
@@ -524,3 +523,18 @@ def test_make_view_root_action_with_explicit_wiring_keeps_root_template(project)
     assert not (project / "app" / "templates" / "mains" / "landing.html").exists()
     assert "Added view file at app/templates/landing.html" in result.output
     assert "url_for('mains.landing')" in result.output
+
+def test_make_view_plain_view_only_has_no_message_updates(project):
+    runner = CliRunner()
+
+    result = runner.invoke(make_view, ["card"])
+    template_file = project / "app" / "templates" / "card.html"
+
+    assert result.exit_code == 0, result.output
+    assert template_file.exists()
+    assert template_file.read_text(encoding="utf-8").strip() != ""
+
+    assert "Method Added To Controller" not in result.output
+    assert "Created Controller Class" not in result.output
+    assert "Added Route" not in result.output
+    assert "Created New Model" not in result.output

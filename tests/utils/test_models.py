@@ -657,26 +657,6 @@ def test_model_make_file_file_already_exists(model_project):
     assert "Model Already Exists" in message
     assert "Post" in message
 
-def test_model_make_file_file_already_exists(model_project):
-    model_file = model_project / "app" / "models" / "post.py"
-    model_file.write_text("\n", encoding="utf-8")
-
-    created_model, message = model_make_file(model_name="Post")
-
-    init_file = model_project / "app" / "models" / "__init__.py"
-
-    assert created_model.is_successful is False
-    assert created_model.status == ScaffoldStatus.EXISTS
-    assert created_model.model_name == "Post"
-    assert created_model.model_file_path == "app/models/post.py"
-    assert created_model.registration_file_path == "app/models/__init__.py"
-
-    assert model_file.read_text(encoding="utf-8") == "\n"
-    assert init_file.read_text(encoding="utf-8") == "\n"
-
-    assert "Model Already Exists" in message
-    assert "Post" in message
-
 def test_model_make_file_init_missing(tmp_path, monkeypatch):
     project_root = tmp_path
     model_dir = project_root / "app" / "models"
@@ -738,6 +718,31 @@ def test_model_make_file_file_append_file_exception(model_project, monkeypatch):
     assert init_file.read_text(encoding="utf-8") == "\n"
 
     assert "Failed to update __init__.py" in message
+    assert "screen failure" in message
+
+def test_model_make_file_file_write_file_exception(model_project, monkeypatch):
+    def boom(*args, **kwargs):
+        raise Exception("screen failure")
+
+    monkeypatch.setattr(
+        "flask_commands.utils.models.file_write_file",
+        boom,
+    )
+
+    created_model, message = model_make_file(model_name="Post")
+
+    init_file = model_project / "app" / "models" / "__init__.py"
+
+    assert created_model.is_successful is False
+    assert created_model.status == ScaffoldStatus.ERROR
+    assert created_model.model_name == "Post"
+    assert created_model.model_file_path == "app/models/post.py"
+    assert created_model.registration_file_path == "app/models/__init__.py"
+
+    assert not (model_project / "app" / "models" / "post.py").exists()
+    assert init_file.read_text(encoding="utf-8") == "\n"
+
+    assert "Failed to create model" in message
     assert "screen failure" in message
 
 def test_model_make_file_compound_name_uses_snake_case_file_import_and_table(model_project):

@@ -141,9 +141,8 @@ def make_view(
         )
         click.echo(info_messages)
 
-    if message_updates:
-        for update in message_updates:
-            click.echo(update)
+    for update in message_updates:
+        click.echo(update)
 
     if not all_successful:
         click.secho("⚠️  Warning: One or more make view steps produced a warning or failure.", fg="yellow", bold=True)

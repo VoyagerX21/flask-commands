@@ -81,3 +81,28 @@ def test__append_tailwind_scripts_invalid_json(tmp_path):
     assert "build:css" in data["scripts"]
     assert "watch:css" in data["scripts"]
 
+
+
+def test__append_tailwind_scripts_creates_package_json_when_missing(tmp_path):
+    project = tmp_path / "my_app"
+    project.mkdir()
+
+    package_json = project / "package.json"
+    assert not package_json.exists()
+
+    _append_tailwind_scripts(str(project))
+
+    assert package_json.exists()
+
+    data = json.loads(package_json.read_text(encoding="utf-8"))
+    assert data["scripts"]["build:css"] == (
+        "npx @tailwindcss/cli "
+        "-i ./app/static/src/input.css "
+        "-o ./app/static/tailwind.min.css "
+        "--watch --minify"
+    )
+    assert data["scripts"]["watch:css"] == (
+        "npx @tailwindcss/cli "
+        "-i ./app/static/src/input.css "
+        "-o ./app/static/tailwind.css --watch"
+    )

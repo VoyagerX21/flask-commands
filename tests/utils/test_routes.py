@@ -546,7 +546,7 @@ def test_route_http_method_for_action_post_destroy():
 def test_route_http_method_for_action_post_delete():
     assert route_http_method_for_action("delete") == "POST"
 
-def test_route_http_method_for_action_post_delete():
+def test_route_http_method_for_action_get_custom():
     assert route_http_method_for_action("custom_action") == "GET"
 
 def test_route_write_directory_and_register_blueprint_success(project):

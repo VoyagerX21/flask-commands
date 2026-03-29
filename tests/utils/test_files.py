@@ -137,7 +137,6 @@ def test_file_copy_templates_applies_replacements(tmp_path, monkeypatch):
     _, contents = calls[0]
     assert contents == ["Hello World"]
 
-
 def test_file_insert_import_into_lines_with_blank_at_the_start():
     lines = ["", "from flask import redirect, url_for", "", "print('hello')"]
     import_statement = 'from flask import render_template'
@@ -151,6 +150,35 @@ def test_file_insert_import_into_lines_with_blank_at_the_start():
     ]
     assert new_lines == expected_outcome
 
+def test_file_insert_import_into_lines_with_leading_blank_lines_and_no_existing_imports():
+    lines = ["import os", "", "", "print('hello')", "", "print('bye')", ""]
+    import_statement = "from flask import render_template"
+
+    new_lines = file_insert_import_into_lines(
+        lines=lines,
+        import_statement=import_statement,
+    )
+
+    expected_outcome = [
+        "import os",
+        "from flask import render_template",
+        "",
+        "",
+        "print('hello')",
+        "",
+        "print('bye')",
+        ""
+    ]
+    assert new_lines == expected_outcome
+
+def test_file_insert_import_into_lines_with_empty_lines_list():
+    new_lines = file_insert_import_into_lines(
+        lines=[],
+        import_statement="from flask import render_template",
+    )
+
+    assert new_lines == ["from flask import render_template"]
+
 def test_file_is_project_root_true(tmp_path, monkeypatch):
     app_directory = tmp_path / "app"
     app_directory.mkdir()
@@ -159,9 +187,14 @@ def test_file_is_project_root_true(tmp_path, monkeypatch):
     is_successful = file_is_project_root()
     assert is_successful is True
 
-def test_file_is_project_root_false(tmp_path):
+def test_file_is_project_root_false(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+
     is_successful = file_is_project_root()
+    captured = capsys.readouterr()
+
     assert is_successful is False
+    assert "Warning: You are not currently in a Flask project root directory" in captured.out
 
 def test_file_write_file_success(tmp_path):
     file_path = tmp_path / "test.txt"
@@ -188,6 +221,25 @@ def test_file_write_file_nested(tmp_path):
     file_write_file(file_path, ["hello", "world"])
 
     assert (tmp_path / 'nested').is_dir()
+    assert file_path.read_text(encoding="utf-8") == "hello\nworld\n"
+
+def test_file_write_file_creates_missing_parent_directories_for_nested_path(tmp_path):
+    file_path = tmp_path / "deep" / "nested" / "template.txt"
+
+    file_write_file(str(file_path), ["hello", "world"])
+
+    assert (tmp_path / "deep").is_dir()
+    assert (tmp_path / "deep" / "nested").is_dir()
+    assert file_path.exists()
+    assert file_path.read_text(encoding="utf-8") == "hello\nworld\n"
+
+def test_file_write_file_without_directory_component(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    file_write_file("test.txt", ["hello", "world"])
+
+    file_path = tmp_path / "test.txt"
+    assert file_path.exists()
     assert file_path.read_text(encoding="utf-8") == "hello\nworld\n"
 
 def test__read_template_reads_contents(tmp_path):

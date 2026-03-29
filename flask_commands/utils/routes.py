@@ -584,8 +584,7 @@ def route_write_directory_and_register_blueprint(
         #   2) Create the routes __init__.py file
         is_successful, reason, route_init_path = \
             _write_init_file(route_directory_path)
-        if reason:
-            updates.append(reason)
+        updates.append(reason)
         route_result.route_init_path = route_init_path
 
         if not is_successful:
@@ -601,8 +600,7 @@ def route_write_directory_and_register_blueprint(
                 action=action,
                 route_name=route_name,
                 controller_name=controller_name)
-        if reason:
-            updates.append(reason)
+        updates.append(reason)
         route_result.route_file_path = route_file_path
         if not is_successful:
             message = (
@@ -616,8 +614,7 @@ def route_write_directory_and_register_blueprint(
             relative_path=relative_path,
             route_directory_path=route_directory_path,
         )
-        if reason:
-            updates.append(reason)
+        updates.append(reason)
         route_result.blueprint_name = blueprint_name
         route_result.blueprint_registration_file_path = blueprint_registration_file_path
 
