@@ -22,9 +22,8 @@ Flask-Commands
    :target: https://github.com/drewbutcher/flask-commands/stargazers
 
 **Flask-Commands** is a local-first CLI tool that scaffolds Flask projects and
-generates views, routes, controllers, and models so you can stay in flow (and
-spend less time wiring the same things together, impeccably, for the hundredth
-time).
+generates views, routes, controllers, and models so you can stay in flow and
+spend less time wiring the same things together for the hundredth time.
 
 Quick Start
 -----------
@@ -39,7 +38,7 @@ Generate a view with controller, route, and model wiring:
 
 .. code-block:: bash
 
-   flask make:view posts.index -crm
+   flask make:view posts.index -rcm
 
 Why Flask-Commands
 ------------------
@@ -55,6 +54,9 @@ Current Release: |release|
    :maxdepth: 4
    :caption: Contents:
 
-   introduction
+   welcome
+   install_and_first_run
+   starting_a_project
    commands/index
-   changelog
+   release_notes
+   video_series

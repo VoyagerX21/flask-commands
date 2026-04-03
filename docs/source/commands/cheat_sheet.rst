@@ -1,23 +1,21 @@
 Cheat Sheet
 ===========
 
-If you only remember one thing, remember this: you can type the long command,
-or you can type the short command and get back to building your app.
+Not every visit to the documentation needs to be a full lesson. Sometimes you
+just want the command pattern, the flag, and a little reassurance that you are
+not inventing a workflow that makes no sense.
 
-Naming conventions
+Naming Conventions
 ------------------
 
-Flask-Commands assumes a few conventions. They are simple, and they save you
-from surprises later.
-
-- **Views** use dotted names and are pluralized by convention (for example,
+- **Views** use dotted names and follow plural resource naming (for example,
   ``posts.comments.images.show`` or ``components.buttons``).
-- **Controllers** use PascalCase (Upper CamelCase) and are singular, ending in ``Controller`` (for
-  example, ``PostCommentImageController``).
-- **Models** use PascalCase (Upper CamelCase) and are singular (for
-  example, ``Post``, ``Comment``, ``Image``).
+- **Controllers** use PascalCase (Upper CamelCase) and are singular, ending in
+  ``Controller`` (for example, ``RecipeCommentController``).
+- **Models** use PascalCase (Upper CamelCase) and are singular (for example,
+  ``Recipe``, ``Comment``, ``Image``).
 
-Common patterns
+Common Patterns
 ---------------
 
 .. list-table::
@@ -28,28 +26,30 @@ Common patterns
    * - ``flask new myproject``
      - Scaffold a new Flask project with a database and migrations.
    * - ``flask new myproject --no-db``
-     - Scaffold a Flask project without DB packages/models/migrations.
+     - Scaffold a Flask project without the database packages, models, or migrations.
    * - ``flask make:view about``
-     - Create a template only (no wiring).
+     - Create a template only.
+   * - ``flask make:view about -rc``
+     - Create a template and wire a route and controller.
+   * - ``flask make:view mains.about -rc``
+     - Keep the template under ``mains`` while still generating the public route ``/about``.
    * - ``flask make:view recipes.index -rcm``
-     - Create recipe index view + route + controller + model in one command.
-   * - ``flask make:view recipes.ingredients.show -rcm``
-     - Add a nested show template for ingredients under recipes and wire route + controller + model.
-   * - ``flask make:view admin.recipes.comments.index -rc``
-     - Generate a route + controller method and optionally accept/decline missing-model creation prompt.
-   * - ``flask make:controller RecipeController --crud -m``
-     - Scaffold full RESTful recipe controller/routes/views and create a recipe model.
-   * - ``flask make:controller RecipeIngredientController --crud``
-     - Scaffold nested RESTful ingredient routes/views under recipes.
-   * - ``flask make:controller RecipeIngredientController -m --flat``
-     - Infer model from controller name and forces flattened model generation.
-   * - ``flask make:controller RecipeIngredientController -m --nest``
-     - Infer model from controller name and forces nested model generation.
-   * - ``flask make:model Ingredient``
-     - Create and register a single ``Ingredient`` model scaffold.
-   * - ``flask make:model Ingredient --crud``
-     - Create and register a single ``Ingredient`` model scaffold plus RESTful controller, routes, and views.
-   * - ``flask make:model RecipeIngredient --crud --flat``
-     - Create ``RecipeIngredient`` and scaffold flat CRUD layers.
-   * - ``flask make:model RecipeIngredient --crud --nest``
-     - Create nested ``Ingredient`` model flow with nested CRUD routes/views.
+     - Create a recipe list view plus the route, controller, and model.
+   * - ``flask make:view recipes.show -rc``
+     - Add a detail page to the existing recipe resource.
+   * - ``flask make:view recipes.comments.index -rcm``
+     - Create a nested comments resource under recipes.
+   * - ``flask make:controller IngredientController --crud``
+     - Generate RESTful controller methods, routes, and templates for ingredients.
+   * - ``flask make:controller IngredientController -m``
+     - Create the controller and infer a matching model from the controller name.
+   * - ``flask make:controller RecipeIngredientController --crud -m --nest``
+     - Force the nested model interpretation for a controller-based CRUD flow.
+   * - ``flask make:model Recipe``
+     - Create and register a single model scaffold.
+   * - ``flask make:model Recipe --crud``
+     - Create the model and scaffold the controller, routes, and views around it.
+   * - ``flask make:model UserComment --crud --flat``
+     - Force a flat CRUD structure for a model name that could also be nested.
+   * - ``flask make:model UserComment --crud --nest``
+     - Force a nested CRUD structure for a model name that could also be flat.
