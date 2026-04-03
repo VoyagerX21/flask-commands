@@ -455,6 +455,25 @@ def test_route_generate_parameter_reference_single_param():
 def test_route_generate_parameter_reference_multiple_params():
     assert route_generate_parameter_reference(["post_id", "comment_id"]) == ", post_id=post_id, comment_id=comment_id"
 
+def test_route_generate_route_name_strips_mains_namespace_from_public_url():
+    assert route_generate_route_name(
+        relative_path="mains",
+        action="about",
+        is_restful=False,
+        relative_path_segments=["mains"],
+        relative_path_segment_models=[]
+    ) == "/about"
+
+def test_route_generate_route_name_non_restful_last_segment_not_model():
+    assert route_generate_route_name(
+        relative_path="posts/reports",
+        action="export_csv",
+        is_restful=False,
+        relative_path_segments=["posts", "reports"],
+        relative_path_segment_models=["posts"],
+    ) == "/posts/<int:post_id>/reports/export-csv"
+
+
 def test_route_generate_route_name_empty_relative_path():
     assert route_generate_route_name(
         relative_path="",

@@ -2,3 +2,7 @@ osascript -e 'tell application "System Events" to tell process "Terminal" to key
 osascript -e 'tell application "Terminal" to do script "pipx install --editable ." in front window'
 osascript -e 'tell application "Terminal" to do script "code ." in front window'
 osascript -e 'tell application "Terminal" to do script "poetry run sphinx-autobuild -a -E -W -n -b html docs/source docs/build/html" in front window'
+
+#!/bin/bash
+
+open -a "Google Chrome" "http://127.0.0.1:8000/"

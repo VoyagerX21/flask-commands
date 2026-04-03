@@ -462,7 +462,7 @@ def test_make_view_explicit_mains_root_action_keeps_mains_in_url_and_template(pr
         "def index():\n"
         "    return MainController.index()\n"
         "\n"
-        "@bp.route('/mains/landing', methods=['GET'])\n"
+        "@bp.route('/landing', methods=['GET'])\n"
         "def landing():\n"
         "    return MainController.landing()\n"
     )
@@ -472,7 +472,7 @@ def test_make_view_explicit_mains_root_action_keeps_mains_in_url_and_template(pr
     assert observed_routes_content == expected_routes_content
     assert (project / "app" / "templates" / "mains" / "landing.html").exists()
     assert not (project / "app" / "templates" / "landing.html").exists()
-    assert "Generated route /mains/landing" in result.output
+    assert "Generated route /landing" in result.output
     assert "Added view file at app/templates/mains/landing.html" in result.output
     assert "url_for('mains.landing')" in result.output
 

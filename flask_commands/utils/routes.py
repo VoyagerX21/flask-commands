@@ -296,6 +296,15 @@ def route_generate_route_name(
     """
     action_part = action.replace("_", "-")
 
+    # Treat "mains" as an internal namespace, not a public URL segment.
+    if relative_path_segments[:1] == ["mains"]:
+        relative_path_segments = relative_path_segments[1:]
+        relative_path_segment_models = [
+            segment for segment in relative_path_segment_models
+            if segment != "mains"
+        ]
+        relative_path = "/".join(relative_path_segments)
+
     if relative_path == "":
         return f"/{action_part}"
 
