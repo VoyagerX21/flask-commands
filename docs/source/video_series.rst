@@ -1,25 +1,18 @@
-Video Series
-============
+Videos
+======
 
 Some people prefer to read first. Some people prefer to watch first. Some
 people plan to watch one quick tutorial and then look up an hour later with a
 much deeper relationship to nested routes than they expected.
 
-This page is the playlist home for the documentation videos.
+This page is the playlist home for the documentation videos, and I still like
+the two-tier system for organizing them:
 
-For now, the videos are still referenced throughout the written docs with the
-same callout:
+- `Chapter Walkthroughs` for the longer “follow the guide with me” videos
+- `Focused Tutorials` for the shorter one-topic videos
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-That keeps the written section and the matching video tied together.
-
-What Will Live Here
--------------------
-
-- chapter-by-chapter videos that match the docs
-- a simple way to see what has been watched
-- quick access to the whole series in one place
+Choose a group from the left navigation and then use the page sections on the
+right to jump to the exact video you want.
 
 Why Keep Video and Docs Together
 --------------------------------
@@ -39,3 +32,9 @@ Wrap-Up
 
 Once the playlist links are fully in place, this page becomes the home for the
 whole series.
+
+.. toctree::
+   :hidden:
+
+   videos/chapter_walkthroughs
+   videos/focused_tutorials

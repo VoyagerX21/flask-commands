@@ -56,34 +56,40 @@ exclude_patterns = []
 html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
+    "logo": {
+        "text": "Flask-Commands",
+        "image_light": "_static/flask-commands-logo.png",
+        "image_dark": "_static/flask-commands-logo.png",
+    },
     # Core layout
     "navbar_align": "left",
     "show_prev_next": True,
     "navigation_with_keys": True,
     "collapse_navigation": False,
     "navigation_depth": 4,
-    "show_nav_level": 2,
+    "show_nav_level": 1,
     "show_toc_level": 2,
     "back_to_top_button": False,
 
     # Header layout
     "navbar_start": ["navbar-logo"],
-    "navbar_center": ["navbar-nav"],
-    "navbar_persistent": ["search-button-field"],
-    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "navbar_center": [],
+    "navbar_persistent": [],
+    "navbar_end": ["navbar-nav", "search-button-field", "theme-switcher", "navbar-icon-links"],
 
     # Article header and right sidebar
     "article_header_start": ["breadcrumbs"],
     "article_header_end": [],
-    "secondary_sidebar_items": ["page-toc"],
+    "secondary_sidebar_items": {
+        "**": ["page-toc"],
+        "index": [],
+    },
 
     # Search
     "search_bar_text": "Search Flask-Commands docs...",
 
     # Header links
-    "external_links": [
-        {"name": "PyPI", "url": "https://pypi.org/project/flask-commands/"},
-    ],
+    "external_links": [],
     "icon_links": [
         {
             "name": "GitHub",
@@ -108,6 +114,9 @@ html_logo = "_static/flask-commands-logo.png"
 html_favicon = "_static/flask-commands-logo.png"
 html_static_path = ["_static"]
 html_css_files = ["theme-overrides.css"]
+html_sidebars = {
+    "index": [],
+}
 
 source_suffix = {'.rst': 'restructuredtext'}
 

@@ -41,14 +41,289 @@ a.reference.external {
   border-bottom: 0px !important;
 }
 
+/* Keep brand links clean */
+.navbar-brand,
+.navbar-brand:hover,
+.navbar-brand:focus,
+.logo__title,
+.logo__title:hover,
+.logo__title:focus {
+  text-decoration: none !important;
+  border-bottom: 0 !important;
+}
+
+/* Navbar buttons */
+.bd-header .navbar-header-items {
+  margin-left: auto;
+}
+
+.bd-header .navbar-header-items__end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.navbar-nav .nav-link {
+  border-radius: 14px;
+  padding: 0.65rem 1rem !important;
+  margin: 0 0.25rem;
+  border-bottom: 0 !important;
+  font-weight: 600;
+  box-shadow: none !important;
+}
+
+.navbar-nav .nav-link:hover {
+  background: rgba(94, 67, 214, 0.08);
+}
+
+.navbar-nav .nav-link::after,
+.navbar-nav .nav-link::before,
+.navbar-nav .nav-item::after,
+.navbar-nav .nav-item::before,
+.navbar-nav .current::after,
+.navbar-nav .current > .nav-link::after {
+  display: none !important;
+  content: none !important;
+}
+
+.navbar-nav .nav-link.active,
+.navbar-nav .current > .nav-link {
+  background: rgba(94, 67, 214, 0.12);
+  color: #5e43d6 !important;
+  box-shadow: inset 0 0 0 1px rgba(94, 67, 214, 0.18) !important;
+  border-bottom: 0 !important;
+}
+
 /* Code Block Stying */
 div.highlight {
-  border-radius: 4px;
+  border-radius: 12px;
 }
 
 /* Default hidden so sidebar logo remains primary on desktop */
 .page-logo {
   display: none;
+}
+
+/* Landing page */
+body:has(.landing-hero-card) article.bd-article > h1:first-of-type,
+body:has(.landing-hero-card) .page-logo {
+  display: none !important;
+}
+
+.landing-hero-card {
+  text-align: center;
+  padding: 0.2rem 0 0;
+  margin-bottom: 0.35rem;
+}
+
+.landing-brand-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 auto;
+}
+
+.landing-brand-mark {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.landing-brand-name {
+  font-family: "Baskerville Old Face", "Bookman Old Style", "Palatino Linotype", "Times New Roman", serif;
+  font-size: clamp(3rem, 6vw, 5.4rem);
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  color: #1f2937;
+}
+
+.landing-promise-card {
+  max-width: 54rem;
+  margin: 1rem auto 0;
+  padding: 1.4rem 1.6rem;
+  border-radius: 28px;
+  background: linear-gradient(180deg, #fafbfe, #f1f4fb);
+  box-shadow:
+    inset 0 0 0 1px rgba(43, 51, 69, 0.06),
+    0 12px 28px rgba(43, 51, 69, 0.05);
+  text-align: center;
+}
+
+.landing-promise-card p {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.65;
+  color: #253044;
+}
+
+body:has(.landing-hero-card) .landing-hero-card + p {
+  text-align: center;
+  margin: 0.65rem auto 0;
+}
+
+body:has(.landing-hero-card) .landing-hero-card + p a {
+  display: inline-block;
+  margin: 0.18rem 0.14rem;
+}
+
+.landing-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.1rem 0 1.3rem;
+  flex-wrap: wrap;
+}
+
+.landing-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.landing-feature-card {
+  background: linear-gradient(180deg, #f8f9fd, #eef2fb);
+  border-radius: 20px;
+  padding: 1.15rem 1.2rem;
+  box-shadow: inset 0 0 0 1px rgba(43, 51, 69, 0.06);
+}
+
+.landing-feature-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.55rem;
+}
+
+.landing-feature-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.landing-feature-card p {
+  margin: 0;
+  color: #586174;
+}
+
+.landing-feature-icon {
+  font-size: 2rem;
+  margin-bottom: 0;
+  line-height: 1;
+}
+
+.video-page-grid {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 260px;
+  gap: 1.4rem;
+  align-items: start;
+}
+
+.video-sidebar,
+.video-list,
+.video-group-card {
+  background: #f8f9fd;
+  border-radius: 20px;
+  padding: 1rem 1.1rem;
+  box-shadow: inset 0 0 0 1px rgba(43, 51, 69, 0.06);
+}
+
+.video-sidebar h3,
+.video-list h3,
+.video-group-card h2 {
+  margin-top: 0;
+}
+
+.video-sidebar ul,
+.video-list ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.5rem 0 0;
+}
+
+.video-sidebar li,
+.video-list li {
+  margin: 0.55rem 0;
+}
+
+.video-group-card + .video-group-card {
+  margin-top: 1rem;
+}
+
+.video-group-card details {
+  border-top: 1px solid rgba(43, 51, 69, 0.08);
+  padding: 0.9rem 0;
+}
+
+.video-group-card summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.video-group-card details p {
+  margin: 0.55rem 0 0;
+  color: #586174;
+  line-height: 1.55;
+}
+
+.landing-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 270px;
+  padding: 0.64rem 1.55rem;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 1.08rem;
+  text-decoration: none !important;
+  border-bottom: 0 !important;
+}
+
+.landing-button-icon {
+  flex: 0 0 auto;
+  display: block;
+}
+
+.landing-button-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.landing-button-content span {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.landing-button-primary {
+  color: #fff !important;
+  background: linear-gradient(135deg, #6c4ff0, #7f5cff);
+  box-shadow: 0 14px 30px rgba(108, 79, 240, 0.3);
+}
+
+.landing-button-secondary {
+  color: #2b3345 !important;
+  background: #f4f6fb;
+  box-shadow: inset 0 0 0 1px rgba(43, 51, 69, 0.08);
+}
+
+.bd-main .bd-content .bd-article-container {
+  max-width: 60rem;
+}
+
+.bd-article-container h1 {
+  margin-bottom: 0.4rem;
+}
+
+.bd-article-container > p:first-of-type {
+  font-size: 1.2rem;
+  line-height: 1.65;
+  max-width: 50rem;
 }
 
 /* Show logo at top of content on small screens when sidebar collapses */
@@ -70,5 +345,24 @@ div.highlight {
   ul.simple {
     margin-left: 1.5rem;
   }
-}
 
+  .landing-feature-grid,
+  .video-page-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .landing-brand-row {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .landing-button {
+    width: 100%;
+    min-width: 0;
+  }
+}
