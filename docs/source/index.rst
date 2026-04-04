@@ -3,101 +3,95 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. raw:: html
+
+   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
 .. title:: Flask-Commands
 
 .. raw:: html
 
-   <section class="landing-hero-card">
-     <div class="landing-brand-row">
-       <img src="_static/flask-commands-logo.png" alt="Flask Commands logo" class="landing-brand-mark" />
-       <div class="landing-brand-text">
-         <div class="landing-brand-name">Flask-Commands</div>
-       </div>
-     </div>
-   </section>
+    <section class="pt-1 text-center">
+        <div class="mx-auto flex items-center justify-center gap-4">
+            <img src="_static/flask-commands-logo.png" alt="Flask Commands logo" class="h-24 w-24 shrink-0 object-contain" />
+            <div>
+                <div class="text-[clamp(3rem,6vw,5.4rem)] leading-[0.95] tracking-[-0.04em] text-slate-800" style="font-family: 'Baskerville Old Face', 'Bookman Old Style', 'Palatino Linotype', 'Times New Roman', serif; font-weight: 600;">
+                Flask-Commands
+                </div>
+            </div>
+        </div>
+    </section>
 
-|pypi| |tests| |coverage| |docs| |license| |stars|
+    <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+        <a href="https://pypi.org/project/flask-commands/"><img src="https://img.shields.io/pypi/v/flask-commands.svg?cacheSeconds=300" alt="PyPI version badge" /></a>
+        <a href="https://github.com/drewbutcher/flask-commands/actions"><img src="https://img.shields.io/github/actions/workflow/status/drewbutcher/flask-commands/tests.yml?branch=main" alt="Build status badge" /></a>
+        <a href="https://codecov.io/gh/drewbutcher/flask-commands"><img src="https://codecov.io/gh/drewbutcher/flask-commands/branch/main/graph/badge.svg" alt="Coverage badge" /></a>
+        <a href="https://flask-commands.readthedocs.io/"><img src="https://img.shields.io/readthedocs/flask-commands/latest" alt="Docs badge" /></a>
+        <a href="https://github.com/drewbutcher/flask-commands/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/flask-commands.svg" alt="License badge" /></a>
+        <a href="https://github.com/drewbutcher/flask-commands/stargazers"><img src="https://img.shields.io/github/stars/drewbutcher/flask-commands" alt="GitHub stars badge" /></a>
+    </div>
 
-.. |pypi| image:: https://img.shields.io/pypi/v/flask-commands.svg?cacheSeconds=300&v=|release|
-   :target: https://pypi.org/project/flask-commands/
-.. |tests| image:: https://img.shields.io/github/actions/workflow/status/drewbutcher/flask-commands/tests.yml?branch=main
-   :target: https://github.com/drewbutcher/flask-commands/actions
-.. |coverage| image:: https://codecov.io/gh/drewbutcher/flask-commands/branch/main/graph/badge.svg
-   :target: https://codecov.io/gh/drewbutcher/flask-commands
-.. |docs| image:: https://img.shields.io/readthedocs/flask-commands/latest
-   :target: https://flask-commands.readthedocs.io/
-.. |license| image:: https://img.shields.io/pypi/l/flask-commands.svg
-   :target: https://github.com/drewbutcher/flask-commands/blob/main/LICENSE
-.. |stars| image:: https://img.shields.io/github/stars/drewbutcher/flask-commands
-   :target: https://github.com/drewbutcher/flask-commands/stargazers
+    <div class="mt-4 mx-auto max-w-4xl bg-gradient-to-b from-slate-50 to-slate-100/90 p-4 rounded-2xl border border-slate-200 text-center">
+        <p class="m-0 text-slate-700">
+        Scaffold Flask projects, views, controllers, routes, and models in one line so you can skip the boilerplate wiring and get back to building your app.
+        </p>
+    </div>
 
-.. raw:: html
+    <div class="my-4 flex flex-wrap items-center justify-center gap-4">
+        <a href="docs.html" class="no-underline! bg-gradient-to-br from-violet-100 to-violet-200  text-indigo-800! flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-violet-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 20h16"></path>
+                <rect x="5" y="4" width="4" height="16" rx="1"></rect>
+                <rect x="10" y="2" width="4" height="18" rx="1"></rect>
+                <rect x="15" y="6" width="4" height="14" rx="1"></rect>
+            </svg>
+            <span>Read The Docs</span>
+        </a>
+        <a href="video_series.html" class="no-underline! bg-gradient-to-r from-slate-100/80 to-slate-100 flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-slate-200 hover:text-[#0a7d91]! text-[#0a7d91]!">
+            <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M17 2 12 7 7 2"></path>
+                <rect width="20" height="15" x="2" y="7" rx="2"></rect>
+            </svg>
+            <span>Browse YouTube Videos</span>
+        </a>
+    </div>
 
-   <div class="landing-promise-card">
-     <p>
-       Scaffold Flask projects, views, controllers, routes, and models in one line
-       so you can skip the boilerplate wiring and get back to building your app.
-     </p>
-   </div>
+    <h1>Why Flask-Commands</h1>
 
-   <div class="landing-actions">
-     <a class="landing-button landing-button-primary" href="docs.html">
-       <span class="landing-button-content">
-         <svg class="landing-button-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-           <path d="M4 20h16" />
-           <rect x="5" y="4" width="4" height="16" rx="1" />
-           <rect x="10" y="2" width="4" height="18" rx="1" />
-           <rect x="15" y="6" width="4" height="14" rx="1" />
-         </svg>
-         <span>Read the docs</span>
-       </span>
-     </a>
-     <a class="landing-button landing-button-secondary" href="video_series.html">
-       <span class="landing-button-content">
-         <svg class="landing-button-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-           <path d="m17 2-5 5-5-5" />
-           <rect width="20" height="15" x="2" y="7" rx="2" />
-         </svg>
-         <div class="mt-1">Browse YouTube videos</div>
-       </span>
-     </a>
-   </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 my-4">
+        
+        <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 ring-1 ring-slate-200">
+            <div class="flex gap-2 items-center">
+                <div class="text-3xl ">⚡</div>
+                <h3 class=" m-0">Fast Scaffolding</h3>
+            </div>
+            <p class="m-0 text-slate-600">One command scaffolds a working template wired to your applciation's data.</p>
+        </div>
 
-Why Flask-Commands
-------------------
+        <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 ring-1 ring-slate-200">
+            <div class="flex gap-2 items-center">
+                <div class="text-3xl ">📂</div>
+                <h3 class=" m-0">Plain Files</h3>
+            </div>
+            <p class="m-0 text-slate-600">Generated files stay plain, consistent, and easy to edit on disk, so you still own the app.</p>
+        </div>
+    
+        <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 ring-1 ring-slate-200">
+            <div class="flex gap-2 items-center">
+                <div class="text-3xl ">😇</div>
+                <h3 class=" m-0">Honest Nesting</h3>
+            </div>
+            <p class="m-0 text-slate-600">Nested resources read truthfully in folders, routes, controllers, and endpoint names.</p>
+        </div>
 
-.. raw:: html
-
-   <div class="landing-feature-grid">
-     <div class="landing-feature-card">
-       <div class="landing-feature-heading">
-         <div class="landing-feature-icon">⚡</div>
-         <h3>Fast Scaffolding</h3>
-       </div>
-       <p>One command can generate a real slice of working Flask structure.</p>
-     </div>
-     <div class="landing-feature-card">
-       <div class="landing-feature-heading">
-         <div class="landing-feature-icon">📂</div>
-         <h3>Plain Files</h3>
-       </div>
-       <p>Generated code stays plain and readable on disk so you still own the app.</p>
-     </div>
-     <div class="landing-feature-card">
-       <div class="landing-feature-heading">
-         <div class="landing-feature-icon">😇</div>
-         <h3>Honest Nesting</h3>
-       </div>
-       <p>Nested resources read truthfully in folders, routes, controllers, and endpoint names.</p>
-     </div>
-     <div class="landing-feature-card">
-       <div class="landing-feature-heading">
-         <div class="landing-feature-icon">⏱️</div>
-         <h3>Save Time</h3>
-       </div>
-       <p>You spend less time wiring boilerplate blueprint routes, controllers, and view and more time building your application.</p>
-     </div>
-   </div>
+        <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 ring-1 ring-slate-200">
+            <div class="flex gap-2 items-center">
+                <div class="text-3xl ">🧱</div>
+                <h3 class=" m-0">Less Boilerplate</h3>
+            </div>
+            <p class="m-0 text-slate-600">Spend less time typing boilerplate code in your routes, controllers, views, and models.</p>
+        </div>
+    </div>
 
 Quick Start
 -----------

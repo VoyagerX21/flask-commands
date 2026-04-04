@@ -69,7 +69,7 @@ html_theme_options = {
     "navigation_depth": 4,
     "show_nav_level": 1,
     "show_toc_level": 2,
-    "back_to_top_button": False,
+    "back_to_top_button": True,
 
     # Header layout
     "navbar_start": ["navbar-logo"],
@@ -120,9 +120,3 @@ html_sidebars = {
 
 source_suffix = {'.rst': 'restructuredtext'}
 
-rst_prolog = """
-.. container:: page-logo
-
-   .. image:: /_static/flask-commands-logo.png
-      :alt: Logo of Flask-Commands
-"""
