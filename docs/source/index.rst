@@ -38,7 +38,7 @@
     </div>
 
     <div class="my-4 flex flex-wrap items-center justify-center gap-4">
-        <a href="docs.html" class="no-underline! bg-gradient-to-br from-violet-100 to-violet-200  text-indigo-800! flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-violet-200">
+        <a href="docs.html" class="shadow-md active:shadow-none! no-underline! bg-gradient-to-br from-violet-100 to-violet-200  text-indigo-800! flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-violet-200">
             <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M4 20h16"></path>
                 <rect x="5" y="4" width="4" height="16" rx="1"></rect>
@@ -47,7 +47,7 @@
             </svg>
             <span>Read The Docs</span>
         </a>
-        <a href="video_series.html" class="no-underline! bg-gradient-to-r from-slate-100/80 to-slate-100 flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-slate-200 hover:text-[#0a7d91]! text-[#0a7d91]!">
+        <a href="video_series.html" class="shadow-md active:shadow-none! no-underline! bg-gradient-to-r from-slate-100/80 to-slate-100 flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-slate-200 hover:text-[#0a7d91]! text-[#0a7d91]!">
             <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M17 2 12 7 7 2"></path>
                 <rect width="20" height="15" x="2" y="7" rx="2"></rect>
