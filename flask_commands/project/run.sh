@@ -24,8 +24,8 @@ osascript -e 'tell application "Terminal" to do script "cd project_path && code 
 
 sleep 5
 
-# Open Safari and navigate to http://127.0.0.1:5000
-open -a "Safari" "http://127.0.0.1:5000"
+# Open Chrome and navigate to http://127.0.0.1:5000
+open -a "Google Chrome" "http://127.0.0.1:5000"
 
 
 #!/bin/bash
@@ -38,13 +38,13 @@ WATCH_FOLDER_MODELS="$(pwd)/app/models"
 WATCH_FOLDER_ROUTES="$(pwd)/app/routes"
 
 # Function to refresh Chrome
-refresh_safari() {
+refresh_chrome() {
     osascript <<EOF
-tell application "Safari"
+tell application "Google Chrome"
     repeat with w in windows
         repeat with t in tabs of w
             if (URL of t contains "http://127.0.0.1:5000/") then
-                tell t to do JavaScript "window.location.reload();"
+                tell t to reload
             end if
         end repeat
     end repeat
@@ -60,5 +60,5 @@ do
     echo "Change detected: $event"
 
     # Call the function to refresh Chrome
-    refresh_safari
+    refresh_chrome
 done
