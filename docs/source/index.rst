@@ -5,360 +5,241 @@
 
 .. raw:: html
 
-   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+    </style>
+
+   <style>
+    
+        .bd-main .bd-content .bd-article-container {
+            max-width: none !important;
+            padding-left: 0px !important;
+            padding-right: 0px !important;
+            width: 100% !important;
+        }
+        .bd-article-container {
+            padding-top: 0px !important;
+            padding-bottom: 0px !important;
+        }
+
+        .bd-article {
+            padding: 0 !important;
+        }
+
+        @media (min-width: 960px) {
+            .bd-page-width {
+                max-width: none !important;
+            }
+            .bd-header__inner.bd-page-width {
+
+                max-width: 88rem !important;
+            }
+        }
+
+        .bd-container {
+            padding: 0px !important;
+            margin: 0px !important;
+            width: 100%;
+        }
+        .right-next {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+    </style>
 
 .. title:: Flask-Commands
 
 .. raw:: html
 
-    <section class="pt-1 text-center">
-        <div class="mx-auto flex items-center justify-center gap-4">
-            <img src="_static/flask-commands-logo.png" alt="Flask Commands logo" class="h-24 w-24 shrink-0 object-contain" />
-            <div>
-                <div class="text-[clamp(3rem,6vw,5.4rem)] leading-[0.95] tracking-[-0.04em] text-slate-800" style="font-family: 'Baskerville Old Face', 'Bookman Old Style', 'Palatino Linotype', 'Times New Roman', serif; font-weight: 600;">
-                Flask-Commands
+    <div class="relative isolate bg-gradient-to-b from-slate-50 to-slate-100/90 max-h-[600px] overflow-hidden dark:to-slate-800 dark:from-slate-800 dark:to-slate-900 ">
+        <div class="max-w-6xl mx-auto ">
+            <section class="pt-4 text-center">
+                <div class="mx-auto flex items-center justify-center gap-4 ">
+                    <img src="_static/flask-commands-logo.png" alt="Flask Commands logo" class="h-24 w-24 shrink-0 only-light" />
+                    <img src="_static/flask-commands-logo.png" alt="Flask Commands logo" class="h-24 w-24 shrink-0 only-dark " />
+                    <div>
+                        <div class="text-[clamp(3rem,6vw,5.4rem)] leading-[0.95] tracking-[-0.04em] text-slate-800 dark:text-slate-100" style="font-family: 'Baskerville Old Face', 'Bookman Old Style', 'Palatino Linotype', 'Times New Roman', serif; font-weight: 600;">
+                            Flask-Commands
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </section>
+            </section>
 
-    <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-        <a href="https://pypi.org/project/flask-commands/"><img src="https://img.shields.io/pypi/v/flask-commands.svg?cacheSeconds=300" alt="PyPI version badge" /></a>
-        <a href="https://github.com/drewbutcher/flask-commands/actions"><img src="https://img.shields.io/github/actions/workflow/status/drewbutcher/flask-commands/tests.yml?branch=main" alt="Build status badge" /></a>
-        <a href="https://codecov.io/gh/drewbutcher/flask-commands"><img src="https://codecov.io/gh/drewbutcher/flask-commands/branch/main/graph/badge.svg" alt="Coverage badge" /></a>
-        <a href="https://flask-commands.readthedocs.io/"><img src="https://img.shields.io/readthedocs/flask-commands/latest" alt="Docs badge" /></a>
-        <a href="https://github.com/drewbutcher/flask-commands/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/flask-commands.svg" alt="License badge" /></a>
-        <a href="https://github.com/drewbutcher/flask-commands/stargazers"><img src="https://img.shields.io/github/stars/drewbutcher/flask-commands" alt="GitHub stars badge" /></a>
+            <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+                <a href="https://pypi.org/project/flask-commands/"><img src="https://img.shields.io/pypi/v/flask-commands.svg?cacheSeconds=300" alt="PyPI version badge" /></a>
+                <a href="https://github.com/drewbutcher/flask-commands/actions"><img src="https://img.shields.io/github/actions/workflow/status/drewbutcher/flask-commands/tests.yml?branch=main" alt="Build status badge" /></a>
+                <a href="https://codecov.io/gh/drewbutcher/flask-commands"><img src="https://codecov.io/gh/drewbutcher/flask-commands/branch/main/graph/badge.svg" alt="Coverage badge" /></a>
+                <a href="https://flask-commands.readthedocs.io/"><img src="https://img.shields.io/readthedocs/flask-commands/latest" alt="Docs badge" /></a>
+                <a href="https://github.com/drewbutcher/flask-commands/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/flask-commands.svg" alt="License badge" /></a>
+                <a href="https://github.com/drewbutcher/flask-commands/stargazers"><img src="https://img.shields.io/github/stars/drewbutcher/flask-commands" alt="GitHub stars badge" /></a>
+            </div>
+
+            <section class="flex mt-4 gap-8 ">
+                <div class="flex-1">
+                    <h1 class="text-7xl! dark:text-slate-100!">Scaffold Flask apps in seconds.</h1>
+                    <div class="mt-4 mx-auto max-w-4xl ">
+                        <p class="m-0 text-slate-700 dark:text-slate-100">
+                            Skip the boilerplate and get straight to coding.
+                            Flask-Commands streamlines creating routes, models,
+                            and controllers for your Flask applications.
+                        </p>
+                    </div>
+                    <div class="my-4 flex items-center justify-center gap-4 whitespace-nowrap">
+                        <a href="docs.html" class="no-underline! bg-gradient-to-br from-violet-100 to-violet-200  text-indigo-800! flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-violet-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 20h16"></path>
+                                <rect x="5" y="4" width="4" height="16" rx="1"></rect>
+                                <rect x="10" y="2" width="4" height="18" rx="1"></rect>
+                                <rect x="15" y="6" width="4" height="14" rx="1"></rect>
+                            </svg>
+                            <span>Read The Docs</span>
+                        </a>
+                        <a href="video_series.html" class="no-underline! bg-gradient-to-r from-slate-100/80 to-slate-100 flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-slate-200 hover:text-[#0a7d91]! text-[#0a7d91]!">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M17 2 12 7 7 2"></path>
+                                <rect width="20" height="15" x="2" y="7" rx="2"></rect>
+                            </svg>
+                            <span>Browse YouTube Videos</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="min-w-0 w-full max-w-xl font-mono text-sm bg-slate-50 p-4 rounded-md border border-slate-200 dark:border-black! bg-black text-white">
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">% flask make:model Post --crud</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">✅ Success: Created Controller Class</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - Created a new controller called PostController</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - New controller located at app/controllers/post_controller.py</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - Registered PostController at app/controllers/__init__.py</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - Added controller methods: index, show, create, store, edit, update, destroy</div>
+                    <div class="h-4"></div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">✅ Success: Created New Model</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - Created model Post at app/models/post.py</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - Registered Post model at app/models/__init__.py</div>
+                    <div class="h-4"></div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">✅ Success: Created New Route Directory</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - Created __init__.py at app/routes/posts/__init__.py</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - Created routes.py at app/routes/posts/routes.py</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - Registered the new route directory as posts_blueprint at app/__init__.py</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - Added route functions: index, show, create, store, edit, update, destroy</div>
+                    <div class="h-4"></div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">✅ Success: Generated CRUD Wiring</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - index (GET)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Added view file at app/templates/posts/index.html</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Visit the new route at /posts</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Reference this route with url_for('posts.index')</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - show (GET)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Added view file at app/templates/posts/show.html</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Visit the new route at /posts/1</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Reference this route with url_for('posts.show', post_id=1)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - create (GET)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Added view file at app/templates/posts/create.html</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Visit the new route at /posts/create</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Reference this route with url_for('posts.create')</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - store (POST)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Reference this route with url_for('posts.store')</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - edit (GET)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Added view file at app/templates/posts/edit.html</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Visit the new route at /posts/1/edit</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Reference this route with url_for('posts.edit', post_id=1)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - update (POST)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Reference this route with url_for('posts.update', post_id=1)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">    - destroy (POST)</div>
+                    <div class="overflow-hidden text-ellipsis whitespace-pre">      Reference this route with url_for('posts.destroy', post_id=1)</div>
+                </div>
+            </section>
+        </div>
+        <div aria-hidden="true" class="pointer-events-none absolute inset-x-0 bottom-0 h-[80px] bg-gradient-to-b from-white/0  to-white dark:to-slate-900 "></div>
     </div>
 
-    <section class="flex mt-4 gap-8">
-        <div class="flex-1">
-            <h1 class="text-7xl!">Scaffold Flask apps in seconds.</h1>
-            <p class="mt-4 text-lg! text-slate-500">
-                Skip the boilerplate and get straight to coding.
-                Flask-Commands streamlines creating routes, models,
-                and controllers for your Flask applications.
-            </p>
-            <div class="my-4 flex items-center justify-center gap-4 whitespace-nowrap">
-                <a href="docs.html" class="no-underline! bg-gradient-to-br from-violet-100 to-violet-200  text-indigo-800! flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-violet-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M4 20h16"></path>
-                        <rect x="5" y="4" width="4" height="16" rx="1"></rect>
-                        <rect x="10" y="2" width="4" height="18" rx="1"></rect>
-                        <rect x="15" y="6" width="4" height="14" rx="1"></rect>
-                    </svg>
-                    <span>Read The Docs</span>
-                </a>
-                <a href="video_series.html" class="no-underline! bg-gradient-to-r from-slate-100/80 to-slate-100 flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-slate-200 hover:text-[#0a7d91]! text-[#0a7d91]!">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M17 2 12 7 7 2"></path>
-                        <rect width="20" height="15" x="2" y="7" rx="2"></rect>
-                    </svg>
-                    <span>Browse YouTube Videos</span>
-                </a>
-            </div>
-        </div>
-
-        <div class="min-w-0 w-full max-w-xl font-mono text-sm bg-slate-50 p-4 rounded-md border border-slate-200">
-            <div class="overflow-hidden text-ellipsis whitespace-pre">% flask make:model Post --crud</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">✅ Success: Created Controller Class</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - Created a new controller called PostController</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - New controller located at app/controllers/post_controller.py</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - Registered PostController at app/controllers/__init__.py</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - Added controller methods: index, show, create, store, edit, update, destroy</div>
-            <div class="h-4"></div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">✅ Success: Created New Model</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - Created model Post at app/models/post.py</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - Registered Post model at app/models/__init__.py</div>
-            <div class="h-4"></div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">✅ Success: Created New Route Directory</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - Created __init__.py at app/routes/posts/__init__.py</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - Created routes.py at app/routes/posts/routes.py</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - Registered the new route directory as posts_blueprint at app/__init__.py</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - Added route functions: index, show, create, store, edit, update, destroy</div>
-            <div class="h-4"></div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">✅ Success: Generated CRUD Wiring</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - index (GET)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Added view file at app/templates/posts/index.html</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Visit the new route at /posts</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Reference this route with url_for('posts.index')</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - show (GET)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Added view file at app/templates/posts/show.html</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Visit the new route at /posts/1</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Reference this route with url_for('posts.show', post_id=1)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - create (GET)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Added view file at app/templates/posts/create.html</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Visit the new route at /posts/create</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Reference this route with url_for('posts.create')</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - store (POST)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Reference this route with url_for('posts.store')</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - edit (GET)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Added view file at app/templates/posts/edit.html</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Visit the new route at /posts/1/edit</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Reference this route with url_for('posts.edit', post_id=1)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - update (POST)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Reference this route with url_for('posts.update', post_id=1)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    - destroy (POST)</div>
-            <div class="overflow-hidden text-ellipsis whitespace-pre">    Reference this route with url_for('posts.destroy', post_id=1)</div>
-        </div>
-    </section>
-
-    <section class="fc-hero">
-        <div class="fc-hero__copy">
-            <h1>Scaffold Flask apps in seconds.</h1>
-                <p>
-                    Skip the boilerplate and get straight to coding.
-                    Flask-Commands streamlines creating routes, models,
-                    and controllers for your Flask applications.
-                </p>
-            <div class="fc-actions">
-                <a class="fc-btn fc-btn--primary" href="install_and_first_run.html">Get Started</a>
-                <a class="fc-btn fc-btn--secondary" href="docs.html">Browse Commands</a>
-            </div>
-        </div>
-
-        <div class="fc-hero__panel">
-            <pre>
-                <code>
-                    $ flask new myproject
-                    $ cd myproject
-                    $ flask make:vc posts index --rva
-                </code>
-            </pre>
-        </div>
-   </section>
-
-   <section class="fc-section">
-        <h2>Why Flask-Commands?</h2>
-        <div class="fc-card-grid">
-            <div class="fc-card">
-                <h3>Fast Scaffolding</h3>
-                <p>Scaffold a Flask project instantly with a single command.</p>
-            </div>
-            <div class="fc-card">
-                <h3>Plain Files</h3>
-                <p>Generate clean, flat files ready to edit and customize.</p>
-            </div>
-            <div class="fc-card">
-                <h3>Honest Nesting</h3>
-                <p>Neatly nested structure for routes, models, and controllers.</p>
-            </div>
-            <div class="fc-card fc-card--wide">
-                <h3>Less Boilerplate</h3>
-                <p>Simplify your code by skipping repetitive setup.</p>
-            </div>
-        </div>
-   </section>
-
-   <section class="fc-section">
-        <h2>Get Started in 3 Easy Steps</h2>
-        <div class="fc-steps">
-            <div>1. Create a new Flask project</div>
-            <div>2. Move into your project directory</div>
-            <div>3. Generate a resource</div>
-        </div>
-        <div class="fc-code-panel">
-            <pre>
-                <code>
-                    $ flask new myproject
-                    $ cd myproject
-                    $ flask make:vc posts index --rva
-                </code>
-            </pre>
-        </div>
-   </section>
-
-   <section class="fc-cta">
-        <h2>Supercharge your Flask projects today!</h2>
-        <div class="fc-actions">
-            <a class="fc-btn fc-btn--primary" href="install_and_first_run.html">Start With Installation</a>
-            <a class="fc-btn fc-btn--secondary" href="docs.html">Browse Commands</a>
-        </div>
-   </section>
-
-.. raw:: html
-
-    
-
-    <div class="mt-4 mx-auto max-w-4xl bg-gradient-to-b from-slate-50 to-slate-100/90 p-4 rounded-2xl border border-slate-200 text-center">
-        <p class="m-0 text-slate-700">
-        Scaffold Flask projects, views, controllers, routes, and models in one line so you can skip the boilerplate wiring and get back to building your app.
-        </p>
-    </div>
-
-    <div class="my-4 flex flex-wrap items-center justify-center gap-4">
-        <a href="docs.html" class="shadow-md active:shadow-none! no-underline! bg-gradient-to-br from-violet-100 to-violet-200  text-indigo-800! flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-violet-200">
-            <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M4 20h16"></path>
-                <rect x="5" y="4" width="4" height="16" rx="1"></rect>
-                <rect x="10" y="2" width="4" height="18" rx="1"></rect>
-                <rect x="15" y="6" width="4" height="14" rx="1"></rect>
-            </svg>
-            <span>Read The Docs</span>
-        </a>
-        <a href="video_series.html" class="shadow-md active:shadow-none! no-underline! bg-gradient-to-r from-slate-100/80 to-slate-100 flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-slate-200 hover:text-[#0a7d91]! text-[#0a7d91]!">
-            <svg xmlns="http://www.w3.org/2000/svg" class="block h-[22px] w-[22px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M17 2 12 7 7 2"></path>
-                <rect width="20" height="15" x="2" y="7" rx="2"></rect>
-            </svg>
-            <span>Browse YouTube Videos</span>
-        </a>
-    </div>
-
-    <h1>Why Flask-Commands</h1>
-
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 my-4">
-        
-        <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 ring-1 ring-slate-200">
-            <div class="flex gap-2 items-center">
-                <div class="text-3xl ">⚡</div>
-                <h3 class=" m-0">Fast Scaffolding</h3>
-            </div>
-            <p class="m-0 text-slate-600">One command scaffolds a working template wired to your applciation's data.</p>
-        </div>
-
-        <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 ring-1 ring-slate-200">
-            <div class="flex gap-2 items-center">
-                <div class="text-3xl ">📂</div>
-                <h3 class=" m-0">Plain Files</h3>
-            </div>
-            <p class="m-0 text-slate-600">Generated files stay plain, consistent, and easy to edit on disk, so you still own the app.</p>
-        </div>
-    
-        <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 ring-1 ring-slate-200">
-            <div class="flex gap-2 items-center">
-                <div class="text-3xl ">😇</div>
-                <h3 class=" m-0">Honest Nesting</h3>
-            </div>
-            <p class="m-0 text-slate-600">Nested resources read truthfully in folders, routes, controllers, and endpoint names.</p>
-        </div>
-
-        <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 ring-1 ring-slate-200">
-            <div class="flex gap-2 items-center">
-                <div class="text-3xl ">🧱</div>
-                <h3 class="m-0">Less Boilerplate</h3>
-            </div>
-            <p class="m-0 text-slate-600">Spend less time typing boilerplate code in your routes, controllers, views, and models.</p>
+    <div class="dark:bg-slate-900 dark:border dark:border-slate-900 pb-4">
+        <div class="max-w-6xl  mx-auto">
+            <section>
+                <h2 class="dark:text-slate-100!">Why Flask-Commands?</h2>
+                <div class="grid grid-cols-3 gap-4 ">
+                    <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50  rounded-lg py-4 px-8 border-1 border-slate-200 dark:from-slate-600 dark:to-black dark:border-slate-900">
+                        <div class="flex gap-2 items-center">
+                            <div class="text-3xl ">⚡</div>
+                            <h3 class="m-0">Fast Scaffolding</h3>
+                        </div>
+                        <p class="m-0 text-slate-600">Commands for scaffold a working Flask project, and wiring your application's data.</p>
+                    </div>
+                    <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 border-1 border-slate-200 dark:from-slate-600 dark:to-black dark:border-slate-900">
+                        <div class="flex gap-2 items-center">
+                            <div class="text-3xl ">📂</div>
+                            <h3 class="m-0">Plain Files</h3>
+                        </div>
+                        <p plass="m-0 text-slate-600">Generated clean files ready to edit so you still own your appilcation's files.</p>
+                    </div>
+                    <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 border-1 border-slate-200 dark:from-slate-600 dark:to-black dark:border-slate-900">
+                        <div class="flex gap-2 items-center">
+                            <div class="text-3xl ">😇</div>
+                            <h3 class="m-0">Honest Nesting</h3>
+                        </div>
+                        <p class="m-0 text-slate-600">Neatly nested structure for routes, models, and controllers that represent your data structures.</p>
+                    </div>
+                    <div class="col-span-3 flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 border-1 border-slate-200 dark:from-slate-600 dark:to-black dark:border-slate-900">
+                        <div class="flex gap-2 items-center">
+                            <div class="text-3xl ">🧱</div>
+                            <h3 class="m-0">Less Boilerplate</h3>
+                        </div>
+                        <p>Spend less time typing boilerplate code in your routes, controllers, views, and models.</p>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
 
-    <h2>Quick Start</h2>
+    <div class="pt-2 dark:pt-0 bg-gradient-to-b from-slate-100/90 to-white dark:from-gray-900 dark:to-gray-900 dark:border dark:border-gray-900">
+        <div class="max-w-6xl  mx-auto">
+            <section>
+                
+                <h2 class="mt-4 dark:text-slate-100!">Get Started in 3 Easy Steps</h2>
+                <div class="rounded-lg px-4 py-2 border-1 border-slate-200 shadow-md">
+                    <div class="flex gap-2">
+                        <div class="border-r border-slate-200 flex-1 rounded-xl p-1 text-center">1. Create a new Flask project</div>
+                        <div class="border-r border-slate-200 flex-1 rounded-lg p-1 text-center">2. Move into your project directory</div>
+                        <div class=" flex-1 rounded-lg p-1 text-center">3. Generate a resource</div>
+                    </div>
+                    <div class="text-white rounded-lg flex overflow-hidden my-2">
+                        
+                        <div class="font-mono text-sm flex-1 bg-black px-4 py-2 flex flex-col justify-center">
+                            <div>$ flask new myproject</div>
+                            <div>$ cd myproject</div>
+                            <div>$ flask make:view posts.index -rcm</div>
+                        </div>
+                        <div class="flex-1 bg-gray-800 px-4 py-2 flex flex-col justify-center">
+                            In three commands, Flask-Commands takes you from zero to generated your owns application's routes, controllers, models, and views.
+                        </div>
+                            
+                    </div>
+                </div>
+                
+            </section>
 
-    
-The fastest way to feel what Flask-Commands does is to watch one command
-generate a real resource and see the output for yourself.
+            <section>
+                <h2 class="m-0 text-2xl font-bold text-slate-900 dark:text-slate-100! text-center mt-4">
+                    Supercharge your Flask projects today!
+                </h2>
+                <div class="flex gap-2 mt-2 mb-8 justify-center">
+                    <a href="install_and_first_run.html" class="no-underline! bg-gradient-to-br from-violet-100 to-violet-200  text-indigo-800! flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-violet-200">
+                        <span>Start With Installation</span>
+                    </a>
+                    <a href="docs.html" class="no-underline! bg-gradient-to-r from-slate-100/80 to-slate-100 flex items-start gap-2  font-extrabold px-4 py-2 rounded border-1 border-slate-200 hover:text-[#0a7d91]! text-[#0a7d91]!">                        
+                        <span>Browse Commands</span>
+                    </a>
+                <div>
+            </section>            
+        </div>
+    </div>
 
-Start a new project:
-
-.. code-block:: bash
-
-   flask new myproject
-
-Then move into the project and generate a posts resource:
-
-.. code-block:: bash
-
-   flask make:view posts.index -rcm
-
-Actual terminal output from ``flask make:view posts.index -rcm``:
-
-.. code-block:: text
-
-   $ flask make:view posts.index -rcm
-
-   💡 Info: Generated From Flags
-       - Generated controller PostController
-       - Generated model Post
-       - Generated route /posts
-
-   ✅ Success: Created New Model
-       - Created model Post at app/models/post.py
-       - Registered Post model at app/models/__init__.py
-   ✅ Success: Created New View
-       - Added view file at app/templates/posts/index.html
-
-   ✅ Success: Created Controller Class With Method
-       - Created a new controller called PostController
-       - Added method index to controller
-       - Registered PostController at app/controllers/__init__.py
-       - New controller located at app/controllers/post_controller.py
-
-   ✅ Success: Created New Route Directory
-       - Created __init__.py at app/routes/posts/__init__.py
-       - Created routes.py at app/routes/posts/routes.py
-       - Registered the new route directory as posts_blueprint at app/__init__.py
-       - Visit the new route at /posts
-       - Reference this route with url_for('posts.index')
-
-That is the part I want people to feel right away: one command and a ton of
-the boring structure is already laid out and connected for you.
-
-Generate a Full CRUD Resource
------------------------------
-
-If you want the full resource story in one shot, this is where things get
-especially satisfying.
-
-Use:
-
-.. code-block:: bash
-
-   flask make:model Post --crud
-
-That one command creates the model, controller, route wiring, and the GET
-templates for the full RESTful resource.
-
-Actual terminal output from ``flask make:model Post --crud``:
-
-.. code-block:: text
-
-   $ flask make:model Post --crud
-
-   ✅ Success: Created Controller Class
-       - Created a new controller called PostController
-       - New controller located at app/controllers/post_controller.py
-       - Registered PostController at app/controllers/__init__.py
-       - Added controller methods: index, show, create, store, edit, update, destroy
-
-   ✅ Success: Created New Model
-       - Created model Post at app/models/post.py
-       - Registered Post model at app/models/__init__.py
-
-   ✅ Success: Created New Route Directory
-       - Created __init__.py at app/routes/posts/__init__.py
-       - Created routes.py at app/routes/posts/routes.py
-       - Registered the new route directory as posts_blueprint at app/__init__.py
-       - Added route functions: index, show, create, store, edit, update, destroy
-
-   ✅ Success: Generated CRUD Wiring
-       - index (GET)
-         Added view file at app/templates/posts/index.html
-         Visit the new route at /posts
-         Reference this route with url_for('posts.index')
-       - show (GET)
-         Added view file at app/templates/posts/show.html
-         Visit the new route at /posts/1
-         Reference this route with url_for('posts.show', post_id=1)
-       - create (GET)
-         Added view file at app/templates/posts/create.html
-         Visit the new route at /posts/create
-         Reference this route with url_for('posts.create')
-       - store (POST)
-         Reference this route with url_for('posts.store')
-       - edit (GET)
-         Added view file at app/templates/posts/edit.html
-         Visit the new route at /posts/1/edit
-         Reference this route with url_for('posts.edit', post_id=1)
-       - update (POST)
-         Reference this route with url_for('posts.update', post_id=1)
-       - destroy (POST)
-         Reference this route with url_for('posts.destroy', post_id=1)
-
-That is a lot of working structure from one command, and that is exactly the
-kind of trade Flask-Commands is trying to give you.
 
 .. toctree::
    :hidden:
 
    Docs <docs>
    Videos <video_series>
+   
+    
