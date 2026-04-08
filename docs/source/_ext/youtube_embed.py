@@ -7,6 +7,7 @@ from pathlib import Path
 
 from docutils import nodes
 from docutils.parsers.rst import Directive, directives
+from sphinx import addnodes
 
 
 def _slugify(value: str) -> str:
@@ -218,8 +219,23 @@ class VideoCatalogPage(Directive):
         nodes_out = []
         for group in page.get("groups", []):
             heading = group["heading"]
+            doc_target = group.get("doc")
             section = nodes.section(ids=[nodes.make_id(heading)])
-            section += nodes.title(text=heading)
+            title_node = nodes.title()
+            if doc_target:
+                doc_link = addnodes.pending_xref(
+                    "",
+                    refdomain="std",
+                    reftype="doc",
+                    reftarget=doc_target,
+                    refexplicit=True,
+                    refwarn=True,
+                )
+                doc_link += nodes.inline("", heading)
+                title_node += doc_link
+            else:
+                title_node += nodes.Text(heading)
+            section += title_node
 
             for video_key in group.get("video_keys", []):
                 video = videos.get(video_key)

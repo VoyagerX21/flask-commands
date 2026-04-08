@@ -3,10 +3,15 @@ Welcome
 
 .. youtube_embed:: what-is-flask-commands
 
-Flask-Commands is a local-first CLI for building Flask application structure
+Flask-Commands is a local-first CLI tool that adds a small amount of  
+opinionated but transparent structure for building Flask application 
 quickly. The goal is not to make a pretty website. The goal is to help you
 scaffold views, controllers, routes, and models so you can spend less time
 wiring and more time building.
+
+It focuses on removing repetitive setup work, from project scaffolding to
+wiring views, controllers, routes, and front-end tooling, while keeping
+everything local, readable, and easy to customize.
 
 All generated code is plain Flask code on disk. No hidden runtime layers. No
 framework lock-in. No mystery sauce. Just files you can open, read, edit, and
@@ -21,9 +26,9 @@ Flask-Commands is not a design system, CSS framework, or website beautifier.
 The examples in this documentation keep the templates intentionally plain so
 the focus stays on structure.
 
-If you want to make something beautiful later, wonderful. But that is a
-different layer of work. Flask-Commands is here to help you build the app
-shape, not win a beauty pageant 💃
+If you want to make something beautiful later, I will have a solution to that 
+soon (Flask-Flare). Flask-Commands however is a different layer of work.  It 
+is here to help you build the app shape, not win a beauty pageant 💃
 
 
 The Plain Recipe App We Are Building
