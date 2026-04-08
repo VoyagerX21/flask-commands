@@ -12,9 +12,7 @@ all the wiring by hand.
 Build ``recipes.index``
 -----------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Build recipes.index as the first resource.*
+.. youtube_embed:: build-recipes-index-as-the-first-resource
 
 Let’s start by building the first real resource page for our recipe app:
 
@@ -40,9 +38,7 @@ working slice of the application structure in one shot.
 Understand What ``-rcm`` Created
 --------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Understand what -rcm created.*
+.. youtube_embed:: understand-what-rcm-created
 
 Let’s break that command down:
 
@@ -84,9 +80,7 @@ If you are new to RESTful naming, think of ``index`` as the list page and
 Add ``recipes.show``
 --------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Add recipes.show to the resource.*
+.. youtube_embed:: add-recipes-show-to-the-resource
 
 Once the resource exists, adding another RESTful page is much lighter.
 
@@ -119,9 +113,7 @@ already there.
 Why ``show`` Matters
 --------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Why recipes.show matters.*
+.. youtube_embed:: why-recipes-show-matters
 
 The ``index`` page shows many recipes.
 
@@ -150,9 +142,7 @@ of trade I like.
 Keep the Templates Intentionally Plain
 --------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Keep the templates intentionally plain.*
+.. youtube_embed:: keep-the-templates-intentionally-plain
 
 At this point, it can be tempting to start decorating everything.
 

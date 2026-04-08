@@ -8,9 +8,7 @@ your application.
 Choose Flat vs Nested with ``--crud``
 -------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Choose flat vs nested with make:model --crud.*
+.. youtube_embed:: choose-flat-vs-nested-with-make-model-crud
 
 Sometimes a model name describes one obvious structure.
 

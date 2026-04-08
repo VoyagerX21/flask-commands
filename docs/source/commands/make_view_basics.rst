@@ -37,9 +37,7 @@ Let’s ease into this one step at a time.
 Create a Simple Template
 ------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Create a simple template with flask make:view.*
+.. youtube_embed:: create-a-simple-template-with-flask-make-view
 
 Suppose you want an ``about`` page for your company:
 
@@ -71,9 +69,7 @@ been wired up to a route or a controller.
 Understand the ``mains`` Namespace
 ----------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Understand the mains namespace.*
+.. youtube_embed:: understand-the-mains-namespace
 
 Before we wire up that ``about`` page, we should talk about ``mains``.
 
@@ -116,9 +112,7 @@ stay nice and clean.
 Wire a Page Explicitly
 ----------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Wire a page explicitly.*
+.. youtube_embed:: wire-a-page-explicitly
 
 Now let’s wire up that ``about`` page.
 
@@ -156,9 +150,7 @@ It also involves a little more typing.
 Use Generator Flags
 -------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Use generator flags with make:view.*
+.. youtube_embed:: use-generator-flags-with-make-view
 
 Generator flags to the rescue and make this long command into a shortcut 🎉
 with ``-r`` and ``-c`` (or even shorter by combining them as ``-rc``).
@@ -185,9 +177,7 @@ are familiar, the short flags become very easy to remember.
 Use ``mains`` Intentionally
 ---------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Use mains intentionally.*
+.. youtube_embed:: use-mains-intentionally
 
 Now let’s use the ``mains`` namespace on purpose.
 
@@ -259,9 +249,7 @@ we do 😎
 A Quick Peek at Nested Views
 ----------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: A quick peek at nested views.*
+.. youtube_embed:: a-quick-peek-at-nested-views
 
 Dot notation also becomes handy when you want to organize reusable templates.
 
@@ -289,9 +277,7 @@ dot notation is already helping keep the template structure nice and tidy.
 When ``make:view`` Is the Right Starting Point
 ----------------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: When make:view is the right starting point.*
+.. youtube_embed:: when-make-view-is-the-right-starting-point
 
 A view-first workflow makes sense when the page is the clearest thing in your
 head.

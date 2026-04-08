@@ -12,9 +12,7 @@ it did.
 Project-Root Safety
 -------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Project-root safety.*
+.. youtube_embed:: project-root-safety
 
 The ``make:*`` commands are designed to run from a Flask project root.
 
@@ -36,9 +34,7 @@ its whole job is to create the project root for you.
 RESTful Actions
 ---------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: RESTful actions.*
+.. youtube_embed:: restful-actions
 
 Flask-Commands follows the seven RESTful actions.
 
@@ -83,9 +79,7 @@ methods, and templates start making sense very quickly.
 Dot Notation
 ------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Dot notation.*
+.. youtube_embed:: dot-notation
 
 Dot notation is one of the core ideas in Flask-Commands.
 
@@ -151,9 +145,7 @@ about the data.
 Naming Conventions
 ------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Naming conventions.*
+.. youtube_embed:: naming-conventions
 
 Flask-Commands assumes a few conventions. They are simple, and they save you
 from surprises later.
@@ -177,9 +169,7 @@ Here is the short version:
 Input Normalization
 -------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Input normalization.*
+.. youtube_embed:: input-normalization
 
 Flask-Commands tries to be forgiving about common input variations.
 

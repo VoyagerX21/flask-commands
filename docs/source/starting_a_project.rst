@@ -8,9 +8,7 @@ looking helpful.
 Create a Project with ``flask new``
 -----------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Create a project with flask new.*
+.. youtube_embed:: create-a-project-with-flask-new
 
 The fastest way to begin is to scaffold a new project directory and move into
 it.
@@ -26,9 +24,7 @@ This creates a Flask application scaffold in a new folder called
 What the Default Scaffold Gives You
 -----------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: What the default scaffold gives you.*
+.. youtube_embed:: what-the-default-scaffold-gives-you
 
 By default, ``flask new`` creates a ready-to-run project with database support
 and a clear application structure.
@@ -55,9 +51,7 @@ starting structure that you can open, read, and edit right away.
 Create a Project Without a Database
 -----------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Create a project without a database.*
+.. youtube_embed:: create-a-project-without-a-database
 
 Sometimes you want the Flask structure without the database pieces. That is
 exactly what ``--no-db`` is for.
@@ -78,9 +72,7 @@ That can be useful when:
 Run the New Project
 -------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Run the new project.*
+.. youtube_embed:: run-the-new-project
 
 Once the project has been created, the recommended way to start it on macOS is:
 

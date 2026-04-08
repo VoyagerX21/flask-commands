@@ -11,9 +11,7 @@ usually something stored in the database.
 Make a Basic Model
 ------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Make a basic model.*
+.. youtube_embed:: make-a-basic-model
 
 The simplest model command looks like this:
 
@@ -35,9 +33,7 @@ routes, or views.
 What the Model Includes
 -----------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: What the model includes.*
+.. youtube_embed:: what-the-model-includes
 
 The generated model includes a small but useful starter shape:
 
@@ -54,9 +50,7 @@ finished.
 Edit the Model and Migrate the Database
 ---------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Edit the model and migrate the database.*
+.. youtube_embed:: edit-the-model-and-migrate-the-database
 
 At some point you will want to add real columns to the model.
 

@@ -18,9 +18,7 @@ If you only keep one sentence from this chapter, keep that one.
 Flat Structure
 --------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Understand flat structure.*
+.. youtube_embed:: understand-flat-structure
 
 A flat resource stands on its own.
 
@@ -40,9 +38,7 @@ Flat structure is a good fit when the resource makes sense by itself.
 Nested Structure
 ----------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Understand nested structure.*
+.. youtube_embed:: understand-nested-structure
 
 A nested resource belongs under a parent.
 
@@ -62,9 +58,7 @@ Nested structure is a good fit when the child depends on the parent.
 How to Choose
 -------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: How to choose flat vs nested.*
+.. youtube_embed:: how-to-choose-flat-vs-nested
 
 Choose **flat** when:
 
@@ -85,9 +79,7 @@ decision is obvious.
 Why This Matters
 ----------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Why flat vs nested matters.*
+.. youtube_embed:: why-flat-vs-nested-matters
 
 This choice affects more than the URL.
 

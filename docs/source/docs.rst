@@ -28,3 +28,4 @@ your friend.
    commands/flat_vs_nested
    commands/cheat_sheet
    release_notes
+   changelog

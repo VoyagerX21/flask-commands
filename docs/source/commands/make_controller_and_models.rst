@@ -8,9 +8,7 @@ controller files.
 Add a Model with ``--model`` vs ``-m``
 --------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Add a model with --model vs -m.*
+.. youtube_embed:: add-a-model-with-model-vs-m
 
 Often a controller is tied to a model. Flask-Commands gives you two ways to
 handle that.
@@ -46,9 +44,7 @@ you start working with nested structures.
 Go Nested with ``--crud``
 -------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Go nested with make:controller --crud.*
+.. youtube_embed:: go-nested-with-make-controller-crud
 
 Now let’s say our cooking app needs a relationship like **Recipe -> Ingredient**.
 

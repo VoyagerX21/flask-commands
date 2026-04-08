@@ -8,9 +8,7 @@ rest of the application.
 Build a Resource with ``--crud``
 --------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Build a resource with make:model --crud.*
+.. youtube_embed:: build-a-resource-with-make-model-crud
 
 If you already know you want the whole resource structure, add ``--crud``:
 

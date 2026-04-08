@@ -31,9 +31,7 @@ of the things I was unwilling to compromise on while building this package.
 Build ``recipes.comments.index``
 --------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Build recipes.comments.index.*
+.. youtube_embed:: build-recipes-comments-index
 
 Let’s continue with our cooking app and suppose we are going to allow users to
 leave comments on recipes.
@@ -112,9 +110,7 @@ that reads honestly.
 Add ``recipes.comments.show``
 -----------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Add recipes.comments.show.*
+.. youtube_embed:: add-recipes-comments-show
 
 Now that the nested comments resource exists, adding another page works the
 same way it did before:
@@ -145,9 +141,7 @@ making you recreate the same pieces over and over again.
 Why the Nested Structure Matters
 --------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Why the nested structure matters.*
+.. youtube_embed:: why-the-nested-structure-matters
 
 This is the part I really care about.
 
@@ -174,9 +168,7 @@ That kind of clarity is not flashy, but it saves real mental energy later.
 Go Three Levels Deep with Images
 --------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Go three levels deep with images.*
+.. youtube_embed:: go-three-levels-deep-with-images
 
 Now let’s dive a little deeper down this rabbit hole 🐇
 
@@ -235,9 +227,7 @@ even if it is technically correct.
 Understand Dotted Endpoint Naming
 ---------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Understand dotted endpoint naming.*
+.. youtube_embed:: understand-dotted-endpoint-naming
 
 This is one of the parts of the package I was unwilling to compromise on.
 
@@ -274,9 +264,7 @@ up with the data relationship, the app becomes much easier to read.
 A Beginner-Friendly Way to Think About This
 -------------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: A beginner-friendly way to think about nested resources.*
+.. youtube_embed:: a-beginner-friendly-way-to-think-about-nested-resources
 
 If you are still learning how web apps fit together, here is a simple way to
 think about what is happening.

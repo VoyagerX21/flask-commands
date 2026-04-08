@@ -8,9 +8,7 @@ can get to the fun part quickly.
 Install with ``pipx``
 ---------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Install Flask-Commands with pipx.*
+.. youtube_embed:: install-flask-commands-with-pipx
 
 Because Flask-Commands is a command-line tool you will probably want available
 globally, ``pipx`` is a great fit.
@@ -25,9 +23,7 @@ to manage a dedicated project environment just to use the generator.
 Install with ``pip``
 --------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Install Flask-Commands with pip.*
+.. youtube_embed:: install-flask-commands-with-pip
 
 If you prefer, you can also install Flask-Commands with ``pip``.
 
@@ -60,9 +56,7 @@ without cluttering your global Python setup.
 Confirm the Command with ``--version``
 --------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Confirm the command with --version.*
+.. youtube_embed:: confirm-the-command-with-version
 
 Once Flask-Commands is installed, the quickest way to confirm the command is
 available is to check the version.
@@ -82,9 +76,7 @@ after installation.
 Read the CLI at a Glance with ``--help``
 ----------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Read the CLI at a glance with --help.*
+.. youtube_embed:: read-the-cli-at-a-glance-with-help
 
 Once you know the command exists, the next step is to look at what it can do.
 

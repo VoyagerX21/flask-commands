@@ -23,9 +23,7 @@ So this chapter is about four things:
 Normalize Input Before Scaffolding
 ----------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Normalize input before scaffolding.*
+.. youtube_embed:: normalize-input-before-scaffolding
 
 Before we get too deep into the examples, I would like to make some
 confessions about what happens behind the scenes with ``flask make:view``.
@@ -60,9 +58,7 @@ into one clean structure before it starts generating files.
 Understand Missing-Model Prompts
 --------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Understand missing-model prompts.*
+.. youtube_embed:: understand-missing-model-prompts
 
 When you use ``-r`` or ``--generate-route`` on a RESTful action,
 Flask-Commands looks at the last resource segment and checks whether it maps to
@@ -102,9 +98,7 @@ the model you actually need to perform the RESTful action on.
 Avoid Prompts with Flags
 ------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Avoid prompts with flags.*
+.. youtube_embed:: avoid-prompts-with-flags
 
 If you already know what you want, you do not have to stop for the prompt.
 
@@ -163,9 +157,7 @@ more information to know exactly what structure you want.
 Choose Between ``--route``, ``--model``, and ``-m``
 ---------------------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Choose between --route, --model, and -m.*
+.. youtube_embed:: choose-between-route-model-and-m
 
 These options are all helpful, but they help in different ways.
 
@@ -200,9 +192,7 @@ A simple way to think about it is:
 One Small but Important Note
 ----------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: GET templates vs POST actions.*
+.. youtube_embed:: get-templates-vs-post-actions
 
 Templates are generated for ``GET`` actions.
 
@@ -230,9 +220,7 @@ appear.
 Why This Matters
 ----------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Why the smarter behavior matters.*
+.. youtube_embed:: why-the-smarter-behavior-matters
 
 All of this smarter behavior matters because it makes ``make:view`` more
 forgiving without making it fuzzy.

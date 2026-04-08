@@ -113,10 +113,10 @@ html_show_sphinx = False
 html_logo = "_static/flask-commands-logo.png"
 html_favicon = "_static/flask-commands-logo.png"
 html_static_path = ["_static"]
-html_css_files = ["theme-overrides.css"]
+html_css_files = ["theme-overrides.css", "video-library.css"]
+html_js_files = ["video-library.js"]
 html_sidebars = {
     "index": [],
 }
 
 source_suffix = {'.rst': 'restructuredtext'}
-

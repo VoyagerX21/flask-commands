@@ -1,40 +1,81 @@
-Videos
-======
+Video Series
+============
 
-Some people prefer to read first. Some people prefer to watch first. Some
-people plan to watch one quick tutorial and then look up an hour later with a
-much deeper relationship to nested routes than they expected.
+This page gathers the Flask-Commands video course in documentation order while
+also giving each major topic area its own home in the docs navigation.
 
-This page is the playlist home for the documentation videos, and I still like
-the two-tier system for organizing them:
+:doc:`Watch the Series in Order </videos/watch_the_series_in_order>`
+--------------------------------------------------------------------------------
 
-- `Chapter Walkthroughs` for the longer “follow the guide with me” videos
-- `Focused Tutorials` for the shorter one-topic videos
+Start here if you want the closest thing to a full playlist. This page follows
+the documentation from the welcome material through installation, project
+setup, generators, nested resources, and architecture choices.
 
-Choose a group from the left navigation and then use the page sections on the
-right to jump to the exact video you want.
+The takeaway is the full course flow: what Flask-Commands is for, how to get it
+running, how to build with it, and how the later structure decisions fit
+together.
 
-Why Keep Video and Docs Together
---------------------------------
+:doc:`Welcome and Setup Videos </videos/welcome_and_setup_videos>`
+--------------------------------------------------------------------------------
 
-The written docs are the source of truth.
+Here you will find the orientation material, installation steps, project
+creation flow, and the core ideas readers should understand before the deeper
+generator chapters.
 
-The videos are there to act like guided walk-throughs of the exact same ideas.
+The takeaway is foundation: what the tool does, how to install it cleanly, how
+to start a project safely, and which naming and routing ideas make the rest of
+the docs easier to understand.
 
-That way you can:
+:doc:`make:view Videos </videos/make_view_videos>`
+--------------------------------------------------------------------------------
 
-- read first, then watch
-- watch first, then read
-- or bounce back and forth depending on how your brain feels that day
+These videos follow the page-first workflow, including basic view generation,
+smarter prompts and normalization, first resource-building, and nested view
+work.
 
-Wrap-Up
--------
+The takeaway is page-first scaffolding: how to generate templates and routes
+quickly, when the prompts are helping you, and how nested view structure grows
+without turning into guesswork.
 
-Once the playlist links are fully in place, this page becomes the home for the
-whole series.
+:doc:`make:controller Videos </videos/make_controller_videos>`
+--------------------------------------------------------------------------------
+
+That group follows the controller-first workflow, from simple controller
+creation through CRUD scaffolding, controller-driven model generation, and
+structure choices.
+
+The takeaway is controller-first thinking: when to start from the behavior
+layer, how CRUD generation expands a resource, and how model creation can be
+pulled into that same workflow.
+
+:doc:`make:model Videos </videos/make_model_videos>`
+--------------------------------------------------------------------------------
+
+This page follows the model-first workflow, covering basic model generation,
+CRUD scaffolding from a model, and the flat-vs-nested choice when generating
+structure.
+
+The takeaway is data-first scaffolding: how to start from the model, how that
+decision pushes outward into routes and controllers, and when that workflow
+makes more sense than starting from views or controllers.
+
+:doc:`Flat-vs-Nested Videos </videos/flat_vs_nested_videos>`
+--------------------------------------------------------------------------------
+
+Those videos focus on comparison and decision-making, helping readers
+understand the tradeoffs between flat and nested project structure.
+
+The takeaway is architecture judgment: how to compare two honest ways of
+organizing a Flask app, what each structure is optimizing for, and how to pick
+the one that matches your project.
 
 .. toctree::
    :hidden:
+   :maxdepth: 1
 
-   videos/chapter_walkthroughs
-   videos/focused_tutorials
+   videos/watch_the_series_in_order
+   videos/welcome_and_setup_videos
+   videos/make_view_videos
+   videos/make_controller_videos
+   videos/make_model_videos
+   videos/flat_vs_nested_videos

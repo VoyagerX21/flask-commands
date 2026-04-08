@@ -11,9 +11,7 @@ that decides what response should be returned for a route.
 A Simple Controller
 -------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Create a simple controller.*
+.. youtube_embed:: create-a-simple-controller
 
 Use ``flask make:controller`` to scaffold a controller class under
 ``app/controllers/`` and register it in ``app/controllers/__init__.py``.
@@ -42,9 +40,7 @@ start turning on the more interesting flags.
 Add RESTful Actions with ``--crud``
 -----------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Add RESTful actions with --crud.*
+.. youtube_embed:: add-restful-actions-with-crud
 
 Life is all about the options and ``--crud`` is a very handy option.
 

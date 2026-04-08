@@ -26,9 +26,7 @@ The biggest changes are:
 Why These Changes Matter
 ------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Why the latest release changes matter.*
+.. youtube_embed:: why-the-latest-release-changes-matter
 
 ``flask new --no-db`` matters because not every project needs a database on
 day one.

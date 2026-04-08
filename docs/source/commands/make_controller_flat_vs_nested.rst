@@ -8,9 +8,7 @@ interesting.
 Choose Flat vs Nested When Using ``-m``
 ---------------------------------------
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-*Video placeholder: Choose flat vs nested when using -m.*
+.. youtube_embed:: choose-flat-vs-nested-when-using-m
 
 Suppose you run:
 
