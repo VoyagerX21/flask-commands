@@ -223,11 +223,14 @@ class VideoCatalogPage(Directive):
             section = nodes.section(ids=[nodes.make_id(heading)])
             title_node = nodes.title()
             if doc_target:
+                normalized_doc_target = (
+                    doc_target if doc_target.startswith("/") else f"/{doc_target}"
+                )
                 doc_link = addnodes.pending_xref(
                     "",
                     refdomain="std",
                     reftype="doc",
-                    reftarget=doc_target,
+                    reftarget=normalized_doc_target,
                     refexplicit=True,
                     refwarn=True,
                 )

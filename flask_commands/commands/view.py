@@ -46,13 +46,13 @@ def make_view(
 
     When root controller and/or route wiring is auto-generated (for example
     `flask make:view landing -rc`), the generated root artifacts are organized
-    under the default `mains` namespace:
-    - view template at `app/templates/mains/<action>.html`
+    under the default `mains` namespace with the exception of the templates:
+    - view template at `app/templates/<action>.html`
     - route wiring in `app/routes/mains`
     - controller wiring through `MainController`
 
-    Explicit `--controller` and `--route` values are treated as user-directed
-    wiring and do not trigger that implicit `mains` template placement.
+    Explicit namespaces in the view name, such as `mains.about`, are preserved in
+    the template path, so that command creates `app/templates/mains/about.html`.
 
     Use `-c/-r/-m` to generate controller/route/model, or provide
     `--controller`, `--route`, and `--model`. If `--generate-route` is used on
@@ -79,14 +79,6 @@ def make_view(
     relative_path, action = \
         split_dotted_path_with_action_into_relative_path_and_action(
             dotted_path_with_action)
-
-    is_view_directory_mains = (
-        relative_path == ""
-        and (
-            (generate_controller and controller_name is None)
-            or (generate_route and route_name is None)
-        )
-    )
 
     # 1) Generate controller name if not provided
     if generate_controller and controller_name is None:
@@ -126,8 +118,7 @@ def make_view(
         relative_path,
         action,
         controller_name,
-        route_name,
-        is_view_directory_mains)
+        route_name)
     message_updates.extend(wiring_result.success_messages)
     message_updates.extend(wiring_result.warning_messages)
     all_successful = all_successful \

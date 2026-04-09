@@ -122,6 +122,37 @@ def test_make_view_component_only(project):
     # Output should mention file created
     assert "Created New View" in result.output
 
+def test_make_view_root_action_with_generated_wiring_keeps_root_template(project):
+    runner = CliRunner()
+    result = runner.invoke(make_view, ["about", "-rc"])
+
+    observed_controller_content = (
+        project / "app" / "controllers" / "main_controller.py"
+    ).read_text(encoding="utf-8")
+
+    assert result.exit_code == 0, result.output
+    assert "return render_template('about.html')" in observed_controller_content
+    assert (project / "app" / "templates" / "about.html").exists()
+    assert not (project / "app" / "templates" / "mains" / "about.html").exists()
+    assert "Added view file at app/templates/about.html" in result.output
+    assert "url_for('mains.about')" in result.output
+
+def test_make_view_root_and_explicit_mains_use_different_template_targets(project):
+    runner = CliRunner()
+
+    root_result = runner.invoke(make_view, ["about", "-rc"])
+    mains_result = runner.invoke(make_view, ["mains.contact", "-rc"])
+
+    assert root_result.exit_code == 0, root_result.output
+    assert mains_result.exit_code == 0, mains_result.output
+
+    assert (project / "app" / "templates" / "about.html").exists()
+    assert not (project / "app" / "templates" / "mains" / "about.html").exists()
+
+    assert (project / "app" / "templates" / "mains" / "contact.html").exists()
+    assert not (project / "app" / "templates" / "contact.html").exists()
+
+
 def test_make_view_root_component_only_does_not_change_main_wiring(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["landing"])
@@ -386,7 +417,7 @@ def test_make_view_controller_exist(project):
     assert "Method Added" in result.output
     assert "def show" in controller_file.read_text()
 
-def test_make_view_root_action_with_generated_wiring_uses_mains_template_namespace(project):
+def test_make_view_root_action_with_generated_wiring_without_using_mains_template_namespace(project):
 
     runner = CliRunner()
     result = runner.invoke(make_view, ["landing", "-rc"])
@@ -404,7 +435,7 @@ def test_make_view_root_action_with_generated_wiring_uses_mains_template_namespa
         "\n"
         "    @staticmethod\n"
         "    def landing() -> str:\n"
-        "        return render_template('mains/landing.html')"
+        "        return render_template('landing.html')"
     )
 
     observed_routes_content = (
@@ -426,12 +457,12 @@ def test_make_view_root_action_with_generated_wiring_uses_mains_template_namespa
     assert result.exit_code == 0, result.output
     assert observed_controller_content == expected_controller_content
     assert observed_routes_content == expected_routes_content
-    assert (project / "app" / "templates" / "mains" / "landing.html").exists()
-    assert not (project / "app" / "templates" / "landing.html").exists()
-    assert "Added view file at app/templates/mains/landing.html" in result.output
+    assert (project / "app" / "templates" / "landing.html").exists()
+    assert not (project / "app" / "templates" / "mains" / "landing.html").exists()
+    assert "Added view file at app/templates/landing.html" in result.output
     assert "url_for('mains.landing')" in result.output
 
-def test_make_view_explicit_mains_root_action_keeps_mains_in_url_and_template(project):
+def test_make_view_explicit_mains_root_action_keeps_mains_out_of_url_but_in_mains_template(project):
     runner = CliRunner()
     result = runner.invoke(make_view, ["mains.landing", "-rc"])
 

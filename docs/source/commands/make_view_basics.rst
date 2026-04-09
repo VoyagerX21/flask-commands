@@ -8,9 +8,9 @@ project**. This is not a correctional behavioral choice. This is a life-saving
 choice to make sure you do not create a ton of files in the wrong place 😥
 
 The ``flask make:view`` command generates template files under
-``app/templates/``. At its simplest, it just makes a view file. But it can
-also help wire that view into your application with a route, a controller, and
-even a model if you want to keep going.
+``app/templates/``. At its simplest, Flask-Commands just makes a view file. 
+But it can also help wire that view into your application with a route, a 
+controller, and even a model if you want to keep going.
 
 That is one of the reasons I like this command so much: you can start small
 and let the structure grow as your app grows.
@@ -26,8 +26,8 @@ The optional generator flags are:
 - ``-c / --generate-controller`` or ``--controller NAME``
   Creates or extends a controller **class** in your application.
 - ``-r / --generate-route`` or ``--route PATH``
-  Adds a blueprint route for the view. This works for simple pages and for
-  RESTful actions too.
+  Adds a blueprint route for the view. This works for custom naming and for
+  RESTful actions.
 - ``-m / --generate-model`` or ``--model NAME``
   Seeds a SQLAlchemy model with boilerplate columns: ``id``, ``created_at``,
   and ``updated_at``.
@@ -59,7 +59,7 @@ Just the file.
 That may sound a little underwhelming at first, but sometimes that is exactly
 what you want. Maybe you are making a basic page. Maybe you are sketching
 something out. Maybe you just want the file on disk first and want to think
-about the wiring after your coffee kicks in ☕️
+about the wiring after your coffee ☕️ kicks in. 
 
 The important thing to know is this: the template now exists, but it does
 **not** appear anywhere in your application yet. You cannot just type
@@ -142,18 +142,19 @@ So the pieces line up like this:
 A browser request for ``/about`` hits the route, the route calls the
 controller method, and the controller renders the view.
 
-This is the “say exactly what you mean” version of the command. Very clear.
-Very direct. Very doctor emoji 👨‍⚕️
-
-It also involves a little more typing.
+This is the “say exactly what you mean” version of the command. This method is
+very clear, very direct, and very surgical 👨‍⚕️. It also involves a bit of typing.
 
 Use Generator Flags
 -------------------
 
 .. youtube_embed:: use-generator-flags-with-make-view
 
-Generator flags to the rescue and make this long command into a shortcut 🎉
-with ``-r`` and ``-c`` (or even shorter by combining them as ``-rc``).
+Generator flags come to the rescue and make this long command into concept 
+only.  You just want an ``about`` page and you want to wire it to see it in 
+the browser. I don't think that is asking to much so there are shortcut 🎉 
+flags ``-r`` and ``-c`` that will handle all the wiring for you.  In fact,
+you can even shorter this by combining them to ``-rc``.
 
 The same general result as above can be written like this:
 
@@ -163,8 +164,8 @@ The same general result as above can be written like this:
 
 Here:
 
-- ``-r`` means generate the **route**
-- ``-c`` means generate the **controller**
+- ``-r`` means generate the **route** url for me from the name
+- ``-c`` means generate the **controller** and add the method
 
 Much shorter. Much easier to remember.
 
@@ -243,8 +244,8 @@ That means dot notation can affect more than just the template path. It can
 also shape the controller and route wiring around the page, while still
 keeping the public URL clean for the ``mains`` namespace.
 
-I would have said this earlier, but we did not know about ``mains`` yet. Now
-we do 😎
+I would have given the shorten version earlier, but we did not know about 
+``mains`` yet. Now we do so we can use the cool kids 😎 shortcuts.
 
 A Quick Peek at Nested Views
 ----------------------------
@@ -291,11 +292,11 @@ For example, maybe you know:
 
 That is where ``flask make:view`` really shines ☀️
 
-It lets you start small and add structure only when you need it. You do not
-have to jump straight into models, controllers, and RESTful actions just
-because you wanted one page on disk before lunch.
-
-And that matters because sometimes the simplest step really is the best step.
+It lets you start small and add structure only when you need it.  Sometimes 
+the simplest step is the best first step. You do not have to jump straight 
+into models, controllers, and RESTful actions just because you wanted one 
+page on disk.  However, if you want to wire everything up and see a single page
+Flask-Commands has a simple command for that using the ``-rc`` optional flags.
 
 With the basic flow down, we can now talk about the smarter behavior hiding
 behind the command.

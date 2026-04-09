@@ -25,8 +25,9 @@ in the same directory where you run ``flask make:*``.
 
 That safeguard exists to prevent accidental file creation in the wrong
 directory. True confession, the reason I built this safeguard is because I
-accidentally ran many of the make commands in the wrong place and after several
-not so fun cleanups 🤨 I decided to safeguard the command for myself and others.
+accidentally ran the ``flask make:*`` in the wrong place several time resulting
+in many minutes of not so fun cleanups 🤨.  So there is not a safeguard on 
+the commands for myself and others.
 
 The one exception here is ``flask new``, which can be run from anywhere because
 its whole job is to create the project root for you.
@@ -54,10 +55,11 @@ There are other HTTP methods like ``PUT``, ``PATCH``, and ``DELETE``, but
 browsers traditionally only understand ``GET`` and ``POST``. I always think of
 the browser lifecycle as:
 
-**Get -> Post -> Redirect**
+.. centered:: **Get -> Post -> Redirect**
 
 You get the page, you post a form, and then you redirect to a new page to give
-feedback about what just happened.
+feedback about what just happened.  In chart form these are the seven RESTful 
+actions.  This helped me I hope it will do the same for you.
 
 .. table:: The Seven RESTful Actions
 
@@ -81,7 +83,8 @@ Dot Notation
 
 .. youtube_embed:: dot-notation
 
-Dot notation is one of the core ideas in Flask-Commands.
+Dot notation is one of the core ideas in Flask-Commands and is used to show 
+structure both in your data and your filing system.
 
 For example:
 
@@ -139,8 +142,8 @@ A dotted name can influence:
 
 This is one of the things I care a lot about in the package. If the resource
 relationship is nested, I want the naming to read as nested too. That way when
-you come back to the project later, the structure is still telling the truth
-about the data.
+you come back to the project later, the structure mimic's the data's 
+relationship. 
 
 Naming Conventions
 ------------------
@@ -163,15 +166,15 @@ Here is the short version:
 - dots separate structure into segments
 - underscores keep multiple words together inside one segment
 - controllers end in ``Controller``
-- models are singular
+- controllers and models are singular
 - views follow plural resource naming
 
-Input Normalization
--------------------
+View Input Normalization
+------------------------
 
-.. youtube_embed:: input-normalization
+.. youtube_embed:: view-input-normalization
 
-Flask-Commands tries to be forgiving about common input variations.
+For views, Flask-Commands tries to be forgiving about common input variations.
 
 That means it can normalize things like:
 
@@ -199,7 +202,7 @@ That means it can normalize things like:
      - ``recipes.comments.index``
      - Uppercase input is normalized to lowercase resource structure
 
-Let’s look at those one at a time.
+Let’s look at these one at a time.
 
 Slashes into Dotted Paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -217,8 +220,8 @@ Flask-Commands normalizes that to:
    recipes.comments.index
 
 That is helpful because sometimes your brain is thinking in folder paths, and
-sometimes your brain is thinking in dot notation, and sometimes your brain is
-just doing its best before coffee.
+sometimes your brain is thinking in dot notation url names, and sometimes 
+your brain is just doing its best before coffee ☕️.
 
 Dashes into Underscores Within a Segment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -236,10 +239,11 @@ the segments are:
 - ``shopping_list`` -> resource
 - ``index`` -> action
 
-That matters because dots separate structure into segments, while underscores
-keep multiple words together inside one segment.
+You often need more then one word to describe an object.  That's find and 
+Flask-Commands allows for this using eith ``-`` or ``_``.  I figured people 
+would use both so the offical marker is the ``_`` but user whichever you perfer.
 
-So if you want a double-word resource or folder name, use ``_``:
+Here are some example of to use a double-word resource or folder:
 
 .. code-block:: text
 
@@ -247,34 +251,35 @@ So if you want a double-word resource or folder name, use ``_``:
    pantry_items.show
    recipe_reviews.index
 
-Dots separate structure into segments.
-Underscores keep multiple words together inside one segment.
+Just remember, **dots separate** structure into segments and **underscores keep 
+multiple words together** inside one segment.
 
 Repeated Separators
 ~~~~~~~~~~~~~~~~~~~
 
 If the input gets a little messy, Flask-Commands cleans that up too.
 
-Something like:
+Something we reedit something so many time that when we finally press the 
+enter key it looks like this:
 
 .. code-block:: text
 
    recipes..comments...index
 
-is normalized to:
+that's fine Flask-Commands has your back with a lttle cleanup to this:
 
 .. code-block:: text
 
    recipes.comments.index
 
-That keeps accidental extra separators from turning into weird project
-structure.
+In other words don't stress about that accidental extra separators from 
+turning into weird project structure.
 
 Upper and Lower Case Anywhere
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the input has uppercase characters where the command expects lowercase
-resource structure, Flask-Commands normalizes that too.
+If the input has any uppercase characters anywhere Flask-Commands normalizes 
+that too.
 
 For example:
 
@@ -299,9 +304,9 @@ These are the ideas that make the rest of Flask-Commands easier to understand:
   ``app/`` folder and a ``run.py`` file
 - views use dotted names and follow plural resource naming
 - controllers use PascalCase and end in ``Controller``
-- models use singular PascalCase names
-- dots separate structure into segments
-- underscores keep multiple words together inside one segment
+- controllers and models use singular PascalCase names
+- for views dots separate structure into segments
+- for views underscores keep multiple words together inside one segment
 
 Now that the rules are clear, let’s use them in the simplest useful command:
 ``make:view``.

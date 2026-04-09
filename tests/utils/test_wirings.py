@@ -308,16 +308,15 @@ def test_wiring_generate_wiring_result_root_action_updates_mains_files(project):
     assert not (project / "app" / "controllers" / "landing_controller.py").exists()
     assert not (project / "app" / "routes" / "landing").exists()
 
-def test_generate_wiring_result_root_action_uses_mains_template_when_requested(project):
+def test_generate_wiring_result_explicit_mains_relative_path_uses_mains_template(project):
     main_controller_file = project / "app" / "controllers" / "main_controller.py"
     mains_routes_file = project / "app" / "routes" / "mains" / "routes.py"
 
     wiring_result = wiring_generate_wiring_result(
-        relative_path="",
+        relative_path="mains",
         action="landing",
         controller_name="MainController",
-        route_name="/landing",
-        is_view_directory_mains=True,
+        route_name="/landing"
     )
 
     observed_messages = "\n".join(wiring_result.success_messages + wiring_result.warning_messages)
@@ -373,7 +372,6 @@ def test_generate_wiring_result_root_action_keeps_root_template_when_mains_not_r
         action="landing",
         controller_name="MainController",
         route_name="/landing",
-        is_view_directory_mains=False,
     )
 
     observed_messages = "\n".join(result.success_messages + result.warning_messages)

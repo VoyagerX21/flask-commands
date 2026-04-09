@@ -57,5 +57,20 @@ We are also going to keep the templates intentionally plain. The point is to
 show how the data structure fits together, not to distract ourselves with CSS
 when the real lesson is how the pieces connect.
 
+How to Use This Documentation
+-----------------------------
+
+.. youtube_embed:: how-to-use-this-documentation
+
 If you like learning as you build, good news, that is exactly how the rest of
-this documentation works.
+this documentation works. This documentation is written like a small class. 
+You can read from top to bottom, or you can jump around to the command 
+family you care about.
+
+The YouTube callout appears at the top of each teachable section:
+
+**Prefer a walkthrough? Click to expand a YouTube Tutorial**
+
+That is there on purpose. The written docs are the source of truth, and the
+videos are meant to act like little guided walk-throughs of that exact section.
+

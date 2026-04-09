@@ -205,7 +205,6 @@ def wiring_generate_wiring_result(
     action: str,
     controller_name: str | None,
     route_name: str | None,
-    is_view_directory_mains: bool = False,
 ) -> WiringResult:
     """
     Wire one action's view, controller, and route artifacts and return a structured result.
@@ -221,9 +220,7 @@ def wiring_generate_wiring_result(
     4. Split generated output into success messages and warning/error messages.
 
     View placement:
-    - Normally uses `app/templates/<relative_path>/<action>.html`
-    - When `is_view_directory_mains` is True, root GET views are created under
-      `app/templates/mains/`
+    - Uses `app/templates/<relative_path>/<action>.html`
 
     Route behavior:
     - Existing route package: delegates to `route_add_method`
@@ -236,8 +233,6 @@ def wiring_generate_wiring_result(
         action (str): Action name, such as `"index"`, `"show"`, or `"store"`.
         controller_name (str | None): Controller class to wire, if any.
         route_name (str | None): Route rule to wire, if any.
-        is_view_directory_mains (bool): When True, use the default `mains`
-            template namespace for inferred root GET views.
 
     Returns:
         WiringResult:
@@ -270,7 +265,7 @@ def wiring_generate_wiring_result(
     warning_messages: list[str] = []
     all_successful = True
 
-    view_directory = "mains" if is_view_directory_mains else relative_path
+    view_directory = relative_path
 
     view_file_path: str | None = None
     view_status = ScaffoldStatus.SKIPPED

@@ -75,7 +75,7 @@ page pattern like:
 And when I say **registered model**, I mean a model that already exists in
 your app and has been added to ``app/models/__init__.py``.
 
-If that last segment is not a registered model, Flask-Commands can prompt you
+If that last segment is not a registered model, Flask-Commands prompts you
 to accept or decline generating the model and using the more RESTful route
 shape.
 
@@ -171,7 +171,7 @@ Use ``--model`` when:
 
 - you know the exact model name
 - you want to explicitly connect the view to that model
-- you do not want Flask-Commands to do the naming for you
+- you do not want Flask-Commands to do the model naming for you
 
 Use ``-m`` when:
 
@@ -231,7 +231,7 @@ You can let the package help when the structure is obvious.
 And when there is a meaningful decision to make, Flask-Commands can stop and
 ask instead of charging ahead and leaving you with cleanup work later.
 
-That is really the sweet spot I want for a command like this:
+That is really the sweet spot I wanted for a command like this:
 
 - helpful, but not pushy
 - smart, but not mysterious

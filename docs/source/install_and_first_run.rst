@@ -5,49 +5,97 @@ Before we build anything, let’s get Flask-Commands installed and make sure the
 command is available in your terminal. This part is intentionally short so you
 can get to the fun part quickly.
 
-Install with ``pipx``
----------------------
+Install the Prerequisites
+-------------------------
+
+.. youtube_embed:: install-the-prerequisites-for-flask-commands
+
+Before installing Flask-Commands, I recommend having two tools available on
+your machine:
+
+- ``pipx``
+- ``npm``
+
+If you use Homebrew, both are easy to install. If Homebrew is not installed,
+visit the `official Homebrew site <https://brew.sh/>`_ first.
+
+Because Flask-Commands is a command-line tool it is recommended to install this
+pacakage globally with  ``pipx``. You can check if your machine has ``pipx``
+by typing, run:
+
+.. code-block:: bash
+
+   pipx --version
+
+If that prints a version number, you are all set. If the command is not found,
+you can follow the `official pipx installation guide <https://pipx.pypa.io/stable/how-to/install-pipx/>`_.
+On macOS with Homebrew, that usually looks like this:
+
+.. code-block:: bash
+
+   brew install pipx
+   pipx ensurepath
+
+You will also want ``npm`` available because the generated Flask project include
+Tailwind CSS tooling. ``npm`` comes with Node.js. To check whether ``npm`` is
+installed, run:
+
+.. code-block:: bash
+
+   npm --version
+
+If that prints a version number, you are good to go. If not, install Node.js
+from the `official Node.js download page <https://nodejs.org/en/download>`_ or
+the unoffically community install using Homebrew:
+
+.. code-block:: bash
+
+   brew install node
+
+Install Flask-Commands with ``pipx``
+------------------------------------
 
 .. youtube_embed:: install-flask-commands-with-pipx
-
-Because Flask-Commands is a command-line tool you will probably want available
-globally, ``pipx`` is a great fit.
 
 .. code-block:: bash
 
    pipx install Flask-Commands
 
-This keeps the install clean and makes the command available without asking you
-to manage a dedicated project environment just to use the generator.
+This is the recommended way to install Flask-Commands. ``pipx`` keeps the
+installation isolated and makes the command available globally.
 
-Install with ``pip``
---------------------
+Install Flask-Commands with ``pip``
+-----------------------------------
 
 .. youtube_embed:: install-flask-commands-with-pip
 
-If you prefer, you can also install Flask-Commands with ``pip``.
+Alternatively, if you prefer not to have ``pipx`` manage global installations, 
+you can install Flask-Commands with ``pip``.  This can be done either globally 
+or inside a virtual environment. Please note, even with a ``pip`` install, you 
+will still want ``npm`` installed so Tailwind CSS works in the generated Flask
+project.
 
 .. code-block:: bash
 
    pip install Flask-Commands
 
-There are two common ways people do that.
+There are two common ways people handle a ``pip`` install.
 
-If you install Flask-Commands with ``pip`` inside a virtual environment, then
-that virtual environment must be activated any time you want to use the
-``flask`` command from this package. That can be a little awkward, because the
-virtual environment where Flask-Commands is installed will often live in a
-different location from the new Flask application you are trying to create
-with:
+If you install Flask-Commands inside a virtual environment, that environment
+must be activated any time you want to use this package’s ``flask`` command.
+That can be a little awkward, because the environment where Flask-Commands is
+installed will live in a different place from the Flask app you are trying to
+create with:
 
 .. code-block:: bash
 
    flask new myproject
 
-If you install Flask-Commands with ``pip`` globally, then the command will be
-available system-wide, which is more convenient. That was the older
-installation suggestion, and it works fine. The downside is that it dirties up
-your machine’s local Python environment.
+Alternatively, if you install Flask-Commands globally with ``pip``, the 
+command will be available system-wide.  This is more convenient, and was 
+the original installation recommendation. The downside is that it
+adds packages directly to your machine’s Python environment, which is why I
+now recommend ``pipx`` instead.
 
 So ``pip`` absolutely works, but ``pipx`` is usually the smoother choice for
 this package because Flask-Commands is meant to be used as a global CLI tool
