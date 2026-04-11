@@ -114,9 +114,25 @@ html_logo = "_static/flask-commands-logo.png"
 html_favicon = "_static/flask-commands-logo.png"
 html_static_path = ["_static"]
 html_css_files = ["theme-overrides.css", "video-library.css"]
-html_js_files = ["video-library.js"]
+html_js_files = [
+    "video-library.js",
+    "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"]
 html_sidebars = {
     "index": [],
 }
 
 source_suffix = {'.rst': 'restructuredtext'}
+
+def setup(app):
+    app.add_js_file(
+        None,
+        body="""
+const style = document.createElement("style");
+style.type = "text/tailwindcss";
+style.textContent = `
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+`;
+document.head.appendChild(style);
+""",
+        priority=700,
+    )

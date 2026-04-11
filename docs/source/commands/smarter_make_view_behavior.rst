@@ -83,17 +83,20 @@ For example, suppose you run:
 
 .. code-block:: bash
 
-   flask make:view recipes.index -r
+   flask make:view recipes.index -rc
 
 and ``Recipe`` does not exist yet.
 
-At that point Flask-Commands can see there are really two possible directions:
+The issue here is the generated route.  At that point Flask-Commands can see 
+there are really two possible directions for a route:
 
 - if ``Recipe`` is treated like the resource, the route becomes ``/recipes``
-- if not, Flask-Commands can fall back to the more literal ``/recipes/index``
+- if not, Flask-Commands can fall back to the more literal route ``/recipes/index``
 
-That is why the prompt exists. I figured you might have just forgotten to make
-the model you actually need to perform the RESTful action on.
+That is why the prompt exists. I figured there is a chance the model needs to 
+be created for the RESTful action to act upon, or the route you are building 
+just happen to end in a RESTful action name and you don't want the action you just 
+want the literal word in the url.  
 
 Avoid Prompts with Flags
 ------------------------
@@ -104,7 +107,7 @@ If you already know what you want, you do not have to stop for the prompt.
 
 To avoid that prompt, provide one of:
 
-- ``--route`` for an explicit route
+- ``--route`` for an explicit route instead of ``-r``
 - ``--model`` for an explicit model
 - ``-m`` or ``--generate-model`` to generate the model first
 
@@ -113,23 +116,34 @@ the model.
 
 For example:
 
-.. code-block:: bash
-
-   flask make:view recipes.index --route /recipes
-
-This says: use this route exactly.
+You could explicitly declare the route with one of the following
 
 .. code-block:: bash
 
-   flask make:view recipes.index --model Recipe
-
-This says: use this model name exactly.
+   flask make:view recipes.index -c --route /recipes 
 
 .. code-block:: bash
 
-   flask make:view recipes.index -m
+   flask make:view recipes.index -c --route /recipes/index 
 
-This says: generate the model first and keep going.
+In both of these examples, notice that the model is not created for you because 
+you have not told Flask-Commands to build a model assocated to this route.  The 
+prompt was not necessary here because you explicit told Flask-Commands the route.
+
+
+Alternatively, you can create the model on the fly when you are building the view with ``--model``
+
+.. code-block:: bash
+
+   flask make:view recipes.index -rc --model Recipe 
+
+or even better let Flask-Commands generate the model for you with
+
+.. code-block:: bash
+
+   flask make:view recipes.index -rcm
+
+Notice here that the order of ``r``, ``c`` and ``m`` does not matter.  
 
 You also do not have to choose only one of these flags. You can combine
 ``--route`` with ``--model`` or ``-m`` if you want to avoid the prompt
@@ -139,13 +153,13 @@ For example:
 
 .. code-block:: bash
 
-   flask make:view recipes.index --route /recipes --model Recipe
+   flask make:view recipes.index -c --route /recipes --model Recipe
 
 or
 
 .. code-block:: bash
 
-   flask make:view recipes.index --route /recipes -m
+   flask make:view recipes.index --route /recipes -cm
 
 In cases like that, there is no prompt because you have already given
 Flask-Commands the extra information it needs.

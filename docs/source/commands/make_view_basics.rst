@@ -150,11 +150,12 @@ Use Generator Flags
 
 .. youtube_embed:: use-generator-flags-with-make-view
 
-Generator flags come to the rescue and make this long command into concept 
-only.  You just want an ``about`` page and you want to wire it to see it in 
-the browser. I don't think that is asking to much so there are shortcut 🎉 
-flags ``-r`` and ``-c`` that will handle all the wiring for you.  In fact,
-you can even shorter this by combining them to ``-rc``.
+Sometime, and for me most of the time, I just want to see a starter page in 
+the browser all wired up and I really don't want to type a ton.  In my 
+opinion, that is not asking to much.  This is where generator flags come to 
+the rescue making the long command above into concepts only 🎉. Let start
+with ``-r`` and ``-c`` which you can combine into an even shorter
+command ``-rc``.
 
 The same general result as above can be written like this:
 
@@ -295,7 +296,7 @@ That is where ``flask make:view`` really shines ☀️
 It lets you start small and add structure only when you need it.  Sometimes 
 the simplest step is the best first step. You do not have to jump straight 
 into models, controllers, and RESTful actions just because you wanted one 
-page on disk.  However, if you want to wire everything up and see a single page
+page on disk.  However, if you want to wire everything up and see a single page,
 Flask-Commands has a simple command for that using the ``-rc`` optional flags.
 
 With the basic flow down, we can now talk about the smarter behavior hiding
