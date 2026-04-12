@@ -146,6 +146,84 @@ To enable this in VS Code:
 
 If Visual Studio Code opens the current directory, the setup is complete.
 
+
+Use Flask-Commands Inside the New Project
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once you move into the new project and activate its virtual environment, the
+``flask`` command will come from that project's local environment.
+
+That is usually exactly what you want when running the application:
+
+.. code-block:: bash
+
+   source venv/bin/activate
+   flask run --debug
+
+However, there is one important detail to understand.
+
+Flask-Commands is installed globally so that ``flask new`` works anywhere on
+your machine. But once the project virtual environment is active, your shell
+uses that environment’s local ``flask`` command instead of the global one.
+
+That means commands like ``flask make:view`` will only work in one of two ways:
+
+1. Use Flask-Commands from a separate terminal tab
+##################################################
+
+This is the recommended option.
+
+Open a second terminal tab, change into your project directory, and do not
+activate the project virtual environment in that tab.
+
+From there, you can run generator commands like:
+
+.. code-block:: bash
+
+   cd myproject
+   flask make:view recipes.index -rcm
+
+This uses your global Flask installation with the globally installed
+Flask-Commands plugin.
+
+Meanwhile, in your first terminal tab, you can keep the project virtual
+environment active and run the application normally:
+
+.. code-block:: bash
+
+   source venv/bin/activate
+   flask run --debug
+
+This setup gives you a nice split:
+- one terminal tab for running the app
+- one terminal tab for generating files
+
+2. Install Flask-Commands inside the project virtual environment
+################################################################
+
+If you prefer, you can also install Flask-Commands directly into the project's
+virtual environment.
+
+.. code-block:: bash
+
+   source venv/bin/activate
+   pip install Flask-Commands
+
+After that, the generator commands will work from inside the project:
+
+.. code-block:: bash
+
+   flask make:view recipes.index -rcm
+   flask make:controller RecipeController
+   flask make:model Recipe
+
+Both approaches are valid.
+
+The recommended path is to keep Flask-Commands installed globally and use a
+separate terminal tab for generator commands. That way you just need to update
+one global version of Flask-Commands instead of trying to keep multiple versions
+up-to-date (one for every project).
+
 Alternative (Manual Startup)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

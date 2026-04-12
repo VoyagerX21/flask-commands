@@ -1,5 +1,5 @@
-make:view Basics
-================
+make:view The Basics
+====================
 
 Now for the fun part of this package 🎉
 

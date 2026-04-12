@@ -18,7 +18,7 @@ osascript -e 'tell application "Terminal" to do script "cd project_path && npm r
 osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down'
 osascript -e 'tell application "Terminal" to do script "cd project_path && npm run build:css" in front window'
 
-# Open up VS code Text
+# Open up VS code Text and the tab used to run flask-commands commands (no virtual enviroment)
 osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "t" using command down'
 osascript -e 'tell application "Terminal" to do script "cd project_path && code ." in front window'
 

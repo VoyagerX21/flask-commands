@@ -78,8 +78,8 @@
                     <div class="mt-4 mx-auto max-w-4xl ">
                         <p class="m-0 text-slate-700 dark:text-slate-100">
                             Skip the boilerplate and get straight to coding.
-                            Flask-Commands streamlines creating routes, models,
-                            and controllers for your Flask applications.
+                            Flask-Commands plugs into Flask’s CLI so you can scaffold projects and app
+                            structure without a separate toolchain.
                         </p>
                     </div>
                     <div class="my-4 flex flex-col md:flex-row items-stretch  gap-2 items-center justify-center md:gap-4 whitespace-nowrap">

@@ -16,6 +16,9 @@ Project-Root Safety
 
 The ``make:*`` commands are designed to run from a Flask project root.
 
+These commands are exposed through Flask’s CLI plugin system, but they are still
+meant to be run from your project root once a Flask application exists.
+
 In practice, that means Flask-Commands expects to find:
 
 - ``app/``
@@ -30,7 +33,8 @@ in many minutes of not so fun cleanups 🤨.  So there is not a safeguard on
 the commands for myself and others.
 
 The one exception here is ``flask new``, which can be run from anywhere because
-its whole job is to create the project root for you.
+its job is to create the project root for you before an application exists.
+
 
 RESTful Actions
 ---------------

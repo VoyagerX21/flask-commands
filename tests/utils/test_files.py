@@ -75,39 +75,23 @@ def test_file_copy_templates_skips_models_when_db_disabled(tmp_path, monkeypatch
     assert not any(path.endswith("user.py") for path in calls)
     assert not any(os.path.join("app", "models") in path for path in calls)
 
-def test_file_copy_templates_removes_models_import_when_db_disabled(tmp_path, monkeypatch):
-    calls = []
-    project_root_directory_path = os.path.join(
-        os.path.dirname(os.path.dirname(files_module.__file__)),
-        "project",
+def test_file_copy_templates_uses_no_db_override_for_app_init(tmp_path):
+    file_copy_templates(
+        str(tmp_path),
+        include_db=False,
+        replacements=None,
     )
 
-    def fake_walk(_):
-        yield (
-            os.path.join(project_root_directory_path, "app"),
-            [],
-            ["__init__.py"],
-        )
+    package_root = os.path.dirname(os.path.dirname(files_module.__file__))
+    no_db_app_init = os.path.join(package_root, "project_no_db", "app", "__init__.py")
+    db_app_init = os.path.join(package_root, "project", "app", "__init__.py")
 
-    def fake_read_template(path):
-        assert path.endswith(os.path.join("app", "__init__.py"))
-        return "from app import models\nother\n"
+    copied_app_init = tmp_path / "app" / "__init__.py"
+    copied_contents = copied_app_init.read_text(encoding="utf-8")
 
-    monkeypatch.setattr(files_module.os, "walk", fake_walk)
-    monkeypatch.setattr(files_module, "_read_template", fake_read_template)
-
-    def fake_file_write_file(path, contents):
-        calls.append((path, contents))
-
-    monkeypatch.setattr(files_module, "file_write_file", fake_file_write_file)
-
-    file_copy_templates(str(tmp_path), include_db=False, replacements=None)
-
-    assert len(calls) == 1
-    path, contents = calls[0]
-    assert path.endswith(os.path.join("app", "__init__.py"))
-    assert "from app import models" not in contents
-    assert contents == ["other"]
+    assert copied_app_init.exists()
+    assert copied_contents == _read_template(no_db_app_init)
+    assert copied_contents != _read_template(db_app_init)
 
 def test_file_copy_templates_applies_replacements(tmp_path, monkeypatch):
     calls = []

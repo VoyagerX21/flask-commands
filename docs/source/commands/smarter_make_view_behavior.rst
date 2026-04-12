@@ -1,5 +1,5 @@
-Smarter make:view Behavior
-==========================
+make:view Model Prompt
+======================
 
 Now that we have eased into ``flask make:view``, let’s talk about the smarter
 side of the command. This is the part that quietly saves you from a lot of

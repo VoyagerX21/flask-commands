@@ -9,12 +9,21 @@ license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.11,<4.0"
 dependencies = [
+    "Flask>=3.1,<4",
     "click (>=8.3.1,<9.0.0)"
 ]
 include = [
     { path = "flask_commands/project", format = "sdist" },
     { path = "flask_commands/project", format = "wheel" }
 ]
+
+[project.entry-points."flask.commands"]
+new = "flask_commands.commands.new:new"
+commands = "flask_commands.commands.meta:commands"
+"make:model" = "flask_commands.commands.model:make_model"
+"make:view" = "flask_commands.commands.view:make_view"
+"make:controller" = "flask_commands.commands.controller:make_controller"
+
 
 [project.optional-dependencies]
 docs = [
@@ -25,9 +34,6 @@ docs = [
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[project.scripts]
-flask = "flask_commands.cli:cli"
 
 [dependency-groups]
 dev = [

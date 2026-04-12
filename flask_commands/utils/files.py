@@ -34,37 +34,38 @@ def file_copy_templates(project_path: str, include_db: bool, replacements: Optio
     """
     package_root = os.path.dirname(os.path.dirname(__file__))
     project_root_directory = os.path.join(package_root, "project")
+    project_no_db_directory = os.path.join(package_root, "project_no_db")
+
+    no_db_overrides = {
+        ".env": os.path.join(project_no_db_directory, ".env"),
+        ".env.example": os.path.join(project_no_db_directory, ".env.example"),
+        os.path.join("app", "__init__.py"): os.path.join(project_no_db_directory, "app", "__init__.py"),
+    }
+
     for root, directories, files in os.walk(project_root_directory):
         directories[:] = [d for d in directories if d != "__pycache__"]
         for filename in files:
             if filename == ".DS_Store" or filename.endswith(".pyc"):
                 continue
+
             source_path = os.path.join(root, filename)
             relative_path = os.path.relpath(source_path, project_root_directory)
 
             # Skip over models folder when setup does not include a database
             if not include_db and relative_path.startswith(os.path.join("app", "models")):
                 continue
+
             destination_path = os.path.join(project_path, relative_path)
 
-            if not include_db and relative_path == os.path.join("app", "__init__.py"):
-                no_db_app_init_template = \
-                    os.path.join(
-                        package_root, "project_no_db", "app", "__init__.py")
-                content = _read_template(no_db_app_init_template)
-            else:
-                content = _read_template(source_path)
+            template_path = source_path
+            if not include_db and relative_path in no_db_overrides:
+                template_path = no_db_overrides[relative_path]
+                
+            content = _read_template(template_path)
 
             if replacements:
                 for key, value in replacements.items():
                     content = content.replace(key, value)
-
-            # Remove models import when setup does not include a database
-            if not include_db and relative_path == os.path.join("app", "__init__.py"):
-                content = '\n'.join(
-                    line for line in content.splitlines()
-                    if line.strip() != "from app import models"
-                ) + "\n"
 
             file_write_file(destination_path, content.splitlines())
 
