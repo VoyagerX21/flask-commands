@@ -56,7 +56,7 @@
                     <img src="_static/flask-commands-logo.png" alt="Flask Commands logo" class="h-24 w-24 shrink-0 only-light" />
                     <img src="_static/flask-commands-logo.png" alt="Flask Commands logo" class="h-24 w-24 shrink-0 only-dark " />
                     <div>
-                        <div class="text-[clamp(3rem,6vw,5.4rem)] leading-[0.95] tracking-[-0.04em] text-slate-800 dark:text-slate-100" style="font-family: 'Baskerville Old Face', 'Bookman Old Style', 'Palatino Linotype', 'Times New Roman', serif; font-weight: 600;">
+                        <div class="text-[clamp(3rem,6vw,5.4rem)] leading-[0.95] text-slate-800 dark:text-slate-100" style="font-family: 'American Typewriter', 'Baskerville Old Face', 'Bookman Old Style', 'Palatino Linotype', 'Times New Roman', serif; font-weight: 400;">
                             Flask-Commands
                         </div>
                     </div>
@@ -74,7 +74,7 @@
 
             <section class="flex flex-col lg:flex-row mt-4 gap-0 lg:gap-8">
                 <div class="flex-1">
-                    <h1 class="text-7xl! dark:text-slate-100!">Scaffold Flask apps in seconds.</h1>
+                    <h1 class="text-6xl! dark:text-slate-100!">Scaffold Flask apps in seconds.</h1>
                     <div class="mt-4 mx-auto max-w-4xl ">
                         <p class="m-0 text-slate-700 dark:text-slate-100">
                             Skip the boilerplate and get straight to coding.

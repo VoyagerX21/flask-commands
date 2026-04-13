@@ -15,10 +15,7 @@ your friend.
    install_and_first_run
    starting_a_project
    commands/core_ideas
-   commands/make_view_basics
-   commands/smarter_make_view_behavior
-   commands/building_the_first_resource
-   commands/nested_resources_with_make_view
+   commands/make_view
    commands/make_controller_basics
    commands/make_controller_and_models
    commands/make_controller_flat_vs_nested

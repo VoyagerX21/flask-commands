@@ -18,6 +18,11 @@
   box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
 }
 
+.bd-article-container h1 + .fc-video-card,
+.bd-article-container h2 + .fc-video-card {
+  margin-top: 1rem;
+}
+
 .fc-video-summary {
   display: flex;
   align-items: center;

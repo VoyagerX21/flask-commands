@@ -79,13 +79,35 @@ If that last segment is not a registered model, Flask-Commands prompts you
 to accept or decline generating the model and using the more RESTful route
 shape.
 
-For example, suppose you run:
+One small note before we get into the examples: throughout this section I am
+going to keep using ``-c`` along with route generation.
+
+That is because the missing-model prompt is really about the route shape, not
+about choosing a controller. If you leave off ``-c`` and only generate the
+route, Flask-Commands will still build the route, but it will default to using
+``MainController`` in the route definition.
+
+In other words:
+
+.. code-block:: bash
+
+   flask make:view recipes.index -r
+
+generates a route that returns ``MainController.index()``.  Which by default
+serves your landing page template from ``mains/index.html``
+
+So throughout this section we will include the controller generator too using:
 
 .. code-block:: bash
 
    flask make:view recipes.index -rc
 
-and ``Recipe`` does not exist yet.
+Here Flask-Commands generates the resource-specific controller too, so the route 
+can point to ``RecipeController.index()`` instead.
+
+Lets stay focused on the real question in this chapter: whether the route 
+should become ``/recipes`` or ``/recipes/index`` when the model does not 
+exist yet.  In both examples above ``Recipe`` does not exist yet.
 
 The issue here is the generated route.  At that point Flask-Commands can see 
 there are really two possible directions for a route:
@@ -137,7 +159,7 @@ Alternatively, you can create the model on the fly when you are building the vie
 
    flask make:view recipes.index -rc --model Recipe 
 
-or even better let Flask-Commands generate the model for you with
+or even better let Flask-Commands generate the model name for you with with generator ``-m``
 
 .. code-block:: bash
 
