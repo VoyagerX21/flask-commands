@@ -16,6 +16,9 @@ ENV/
 env/
 .env/
 .env
+!flask_commands/project/.env
+!flask_commands/project_no_db/.env
+
 
 *.egg-info/
 dist/
