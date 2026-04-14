@@ -56,7 +56,7 @@
                     <img src="_static/flask-commands-logo.png" alt="Flask Commands logo" class="h-24 w-24 shrink-0 only-light" />
                     <img src="_static/flask-commands-logo.png" alt="Flask Commands logo" class="h-24 w-24 shrink-0 only-dark " />
                     <div>
-                        <div class="text-[clamp(3rem,6vw,5.4rem)] leading-[0.95] text-slate-800 dark:text-slate-100" style="font-family: 'American Typewriter', 'Baskerville Old Face', 'Bookman Old Style', 'Palatino Linotype', 'Times New Roman', serif; font-weight: 400;">
+                        <div class="text-[clamp(3rem,6vw,5.4rem)] leading-none text-slate-800 dark:text-slate-100" style="font-family: 'American Typewriter', 'Rockwell', 'Bookman Old Style', 'Georgia', 'Cambria', 'Palatino Linotype', 'Book Antiqua', serif; font-weight: 400;">
                             Flask-Commands
                         </div>
                     </div>
