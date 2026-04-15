@@ -270,18 +270,18 @@ One Small but Important Note
 
 .. youtube_embed:: get-templates-vs-post-actions
 
-Templates are generated for ``GET`` actions.
+In RESTful actions, templates are generated for ``GET`` actions.
 
-That means actions like:
+That means the actions:
 
 - ``index``
 - ``show``
 - ``create``
 - ``edit``
 
-can produce view templates.
+produce view templates.
 
-But ``POST`` actions like:
+However, the ``POST`` actions::
 
 - ``store``
 - ``update``
