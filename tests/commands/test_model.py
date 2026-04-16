@@ -122,8 +122,8 @@ def test_make_model_with_crud(project):
 
     # Check the contents of the new controller file
     expected_contents = (
-        "from flask import render_template\n"
-        "from flask import redirect, url_for\n"
+        "from flask import render_template, redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class CommentController:\n"
         "\n"
@@ -140,7 +140,7 @@ def test_make_model_with_crud(project):
         "        return render_template('comments/create.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def store() -> str:\n"
+        "    def store() -> ResponseReturnValue:\n"
         "        return redirect(url_for('comments.index'))\n"
         "\n"
         "    @staticmethod\n"
@@ -148,11 +148,11 @@ def test_make_model_with_crud(project):
         "        return render_template('comments/edit.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def update(comment_id: int) -> str:\n"
+        "    def update(comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('comments.index'))\n"
         "\n"
         "    @staticmethod\n"
-        "    def destroy(comment_id: int) -> str:\n"
+        "    def destroy(comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('comments.index'))"
     )
     assert comment_controller_file_path.read_text(encoding="utf-8") == expected_contents
@@ -260,8 +260,8 @@ def test_make_model_with_crud_nested_leaf_flatten_choice(project):
     user_comment_controller_file_path = project / "app" / "controllers" / "user_comment_controller.py"
     assert user_comment_controller_file_path.exists()
     expected_contents = (
-        "from flask import render_template\n"
-        "from flask import redirect, url_for\n"
+        "from flask import render_template, redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class UserCommentController:\n"
         "\n"
@@ -278,7 +278,7 @@ def test_make_model_with_crud_nested_leaf_flatten_choice(project):
         "        return render_template('user_comments/create.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def store() -> str:\n"
+        "    def store() -> ResponseReturnValue:\n"
         "        return redirect(url_for('user_comments.index'))\n"
         "\n"
         "    @staticmethod\n"
@@ -286,11 +286,11 @@ def test_make_model_with_crud_nested_leaf_flatten_choice(project):
         "        return render_template('user_comments/edit.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def update(user_comment_id: int) -> str:\n"
+        "    def update(user_comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('user_comments.index'))\n"
         "\n"
         "    @staticmethod\n"
-        "    def destroy(user_comment_id: int) -> str:\n"
+        "    def destroy(user_comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('user_comments.index'))"
     )
     observed_contents = user_comment_controller_file_path.read_text(encoding="utf-8")
@@ -368,8 +368,8 @@ def test_make_model_with_crud_nested_leaf_nested_choice(project):
     user_comment_controller_file_path = project / "app" / "controllers" / "user_comment_controller.py"
     assert user_comment_controller_file_path.exists()
     expected_contents = (
-        "from flask import render_template\n"
-        "from flask import redirect, url_for\n"
+        "from flask import render_template, redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class UserCommentController:\n"
         "\n"
@@ -386,7 +386,7 @@ def test_make_model_with_crud_nested_leaf_nested_choice(project):
         "        return render_template('users/comments/create.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def store(user_id: int) -> str:\n"
+        "    def store(user_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('users.comments.index', user_id=user_id))\n"
         "\n"
         "    @staticmethod\n"
@@ -394,11 +394,11 @@ def test_make_model_with_crud_nested_leaf_nested_choice(project):
         "        return render_template('users/comments/edit.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def update(user_id: int, comment_id: int) -> str:\n"
+        "    def update(user_id: int, comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('users.comments.index', user_id=user_id))\n"
         "\n"
         "    @staticmethod\n"
-        "    def destroy(user_id: int, comment_id: int) -> str:\n"
+        "    def destroy(user_id: int, comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('users.comments.index', user_id=user_id))"
     )
     observed_contents = user_comment_controller_file_path.read_text(encoding="utf-8")
@@ -479,8 +479,8 @@ def test_make_model_with_crud_nested_chain_nested_choice(project):
     post_comment_controller_file_path = project / "app" / "controllers" / "post_comment_controller.py"
     assert post_comment_controller_file_path.exists()
     expected_contents = (
-        "from flask import render_template\n"
-        "from flask import redirect, url_for\n"
+        "from flask import render_template, redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class PostCommentController:\n"
         "\n"
@@ -497,7 +497,7 @@ def test_make_model_with_crud_nested_chain_nested_choice(project):
         "        return render_template('posts/comments/create.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def store(post_id: int) -> str:\n"
+        "    def store(post_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.comments.index', post_id=post_id))\n"
         "\n"
         "    @staticmethod\n"
@@ -505,11 +505,11 @@ def test_make_model_with_crud_nested_chain_nested_choice(project):
         "        return render_template('posts/comments/edit.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def update(post_id: int, comment_id: int) -> str:\n"
+        "    def update(post_id: int, comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.comments.index', post_id=post_id))\n"
         "\n"
         "    @staticmethod\n"
-        "    def destroy(post_id: int, comment_id: int) -> str:\n"
+        "    def destroy(post_id: int, comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.comments.index', post_id=post_id))"
     )
     observed_contents = post_comment_controller_file_path.read_text(encoding="utf-8")
@@ -580,8 +580,8 @@ def test_make_model_with_crud_controller(project):
     controller_file_path = project / "app" / "controllers" / "controller_controller.py"
     assert controller_file_path.exists()
     expected_contents = (
-        "from flask import render_template\n"
-        "from flask import redirect, url_for\n"
+        "from flask import render_template, redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class ControllerController:\n"
         "\n"
@@ -598,7 +598,7 @@ def test_make_model_with_crud_controller(project):
         "        return render_template('controllers/create.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def store() -> str:\n"
+        "    def store() -> ResponseReturnValue:\n"
         "        return redirect(url_for('controllers.index'))\n"
         "\n"
         "    @staticmethod\n"
@@ -606,11 +606,11 @@ def test_make_model_with_crud_controller(project):
         "        return render_template('controllers/edit.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def update(controller_id: int) -> str:\n"
+        "    def update(controller_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('controllers.index'))\n"
         "\n"
         "    @staticmethod\n"
-        "    def destroy(controller_id: int) -> str:\n"
+        "    def destroy(controller_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('controllers.index'))"
     )
     observed_contents = controller_file_path.read_text(encoding="utf-8")
@@ -720,8 +720,8 @@ def test_make_model_with_crud_reuses_existing_controller(project):
     assert result.exit_code == 0, result.output    
 
     expected_controller_content = (
-        "from flask import render_template\n"
-        "from flask import redirect, url_for\n"
+        "from flask import render_template, redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class CommentController:\n"
         "    @staticmethod\n"
@@ -738,7 +738,7 @@ def test_make_model_with_crud_reuses_existing_controller(project):
         "        return render_template('comments/create.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def store() -> str:\n"
+        "    def store() -> ResponseReturnValue:\n"
         "        return redirect(url_for('comments.index'))\n"
         "\n"
         "    @staticmethod\n"
@@ -746,11 +746,11 @@ def test_make_model_with_crud_reuses_existing_controller(project):
         "        return render_template('comments/edit.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def update(comment_id: int) -> str:\n"
+        "    def update(comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('comments.index'))\n"
         "\n"
         "    @staticmethod\n"
-        "    def destroy(comment_id: int) -> str:\n"
+        "    def destroy(comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('comments.index'))"
     )
     observed_controller_content = controller_file.read_text(encoding="utf-8")

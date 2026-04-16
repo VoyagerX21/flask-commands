@@ -5,6 +5,7 @@ from flask_commands.utils.files import (
     file_append_file,
     file_copy_templates,
     file_insert_import_into_lines,
+    file_insert_flask_import_name_into_lines,
     file_is_project_root,
     file_write_file,
     _read_template)
@@ -162,6 +163,53 @@ def test_file_insert_import_into_lines_with_empty_lines_list():
     )
 
     assert new_lines == ["from flask import render_template"]
+
+def test_file_insert_flask_import_name_into_lines_appends_missing_method():
+    lines = ["from flask import render_template", "", "print('hello')"]
+
+    new_lines = file_insert_flask_import_name_into_lines(
+        lines=lines,
+        missing_method="redirect",
+    )
+
+    expected_outcome = [
+        "from flask import render_template, redirect",
+        "",
+        "print('hello')",
+    ]
+    assert new_lines == expected_outcome
+
+def test_file_insert_flask_import_name_into_lines_does_not_duplicate_existing_method():
+    lines = ["from flask import render_template, redirect", "", "print('hello')"]
+
+    new_lines = file_insert_flask_import_name_into_lines(
+        lines=lines,
+        missing_method="redirect",
+    )
+
+    expected_outcome = [
+        "from flask import render_template, redirect",
+        "",
+        "print('hello')",
+    ]
+    assert new_lines == expected_outcome
+
+
+def test_file_insert_flask_import_name_into_lines_inserts_full_import_when_no_flask_import_exists():
+    lines = ["import os", "", "print('hello')"]
+
+    new_lines = file_insert_flask_import_name_into_lines(
+        lines=lines,
+        missing_method="redirect",
+    )
+
+    expected_outcome = [
+        "import os",
+        "from flask import redirect",
+        "",
+        "print('hello')",
+    ]
+    assert new_lines == expected_outcome
 
 def test_file_is_project_root_true(tmp_path, monkeypatch):
     app_directory = tmp_path / "app"

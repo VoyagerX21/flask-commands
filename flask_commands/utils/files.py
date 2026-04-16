@@ -1,3 +1,4 @@
+import re
 import os
 import click
 from typing import Dict, Optional
@@ -68,6 +69,40 @@ def file_copy_templates(project_path: str, include_db: bool, replacements: Optio
                     content = content.replace(key, value)
 
             file_write_file(destination_path, content.splitlines())
+
+def file_insert_flask_import_name_into_lines(
+        lines: list[str],
+        missing_method: str) -> list[str]:
+    """
+    Ensure `missing_method` exists in a `from flask import ...` line.
+
+    If a Flask import line already exists, append the missing name to that line.
+    Otherwise insert a new `from flask import <missing_method>` line using the
+    normal import insertion logic.
+    """
+    flask_import_pattern = re.compile(r"^from\s+flask\s+import\s+(.+)$")
+
+    for index, line in enumerate(lines):
+        match = flask_import_pattern.match(line.strip())
+        if not match:
+            continue
+
+        existing_names = [
+            name.strip()
+            for name in match.group(1).split(",")
+            if name.strip()
+        ]
+
+        if missing_method not in existing_names:
+            existing_names.append(missing_method)
+
+        lines[index] = f"from flask import {', '.join(existing_names)}"
+        return lines
+
+    return file_insert_import_into_lines(
+        lines,
+        f"from flask import {missing_method}"
+    )
 
 def file_insert_import_into_lines(lines, import_statement) -> list:
     """

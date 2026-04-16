@@ -9,10 +9,10 @@ from flask_commands.utils.scaffold import filter_falsy
 from .files import (
     file_append_file,
     file_write_file,
+    file_insert_flask_import_name_into_lines,
     file_insert_import_into_lines )
 from .naming import camel_to_snake, pluralize, singularize
 from .routes import(
-    route_generate_route_visit_example,
     route_parse_route_name_for_params_and_types,
     route_http_method_for_action,
     route_generate_parameter_reference
@@ -113,16 +113,24 @@ def controller_add_method(
         if is_redirect:
             import_redirect_pattern = r"from\s+flask\s+import\s+.*\bredirect\b"
             import_url_for_pattern = r"from\s+flask\s+import\s+.*\burl_for\b"
-            if not re.search(import_redirect_pattern, source) or \
-                    not re.search(import_url_for_pattern, source):
-                lines =file_insert_import_into_lines(
-                    lines, "from flask import redirect, url_for")
+            import_response_return_value_pattern = (
+                r"from\s+flask\.typing\s+import\s+.*\bResponseReturnValue\b"
+            )
+            if not re.search(import_redirect_pattern, source):
+                lines = file_insert_flask_import_name_into_lines(
+                    lines, "redirect")
+            if not re.search(import_url_for_pattern, source):
+                lines = file_insert_flask_import_name_into_lines(
+                    lines, "url_for")
+            if not re.search(import_response_return_value_pattern, source):
+                lines = file_insert_import_into_lines(
+                    lines, "from flask.typing import ResponseReturnValue")
 
         else:
             import_render_template_pattern = r"from\s+flask\s+import\s+.*\brender_template\b"
             if not re.search(import_render_template_pattern, source):
-                lines =file_insert_import_into_lines(
-                    lines, "from flask import render_template")
+                lines = file_insert_flask_import_name_into_lines(
+                    lines, "render_template")
 
 
         insert_index = None
@@ -178,10 +186,12 @@ def controller_add_method(
             return_line = \
                 f"        return render_template('{relative_view_file_path}')"
 
+        return_type = "ResponseReturnValue" if is_redirect else "str"
+
         method_block = [
             "",
             "    @staticmethod",
-            f"    def {action}({method_parameters}) -> str:",
+            f"    def {action}({method_parameters}) -> {return_type}:",
             return_line
         ]
 
@@ -395,14 +405,18 @@ def controller_make_file(
     contents = []
     if action:
         if is_redirect:
-            contents.extend(["from flask import redirect, url_for", ""])
+            contents.extend([
+                "from flask import redirect, url_for",
+                "from flask.typing import ResponseReturnValue",
+                ""])
         else:
             contents.extend(["from flask import render_template", ""])
     contents.append(f"class {controller_name}:")
     if action:
+        return_type = "ResponseReturnValue" if is_redirect else "str"
         contents.extend([
-            "    @staticmethod",
-            f"    def {action}({parameters_with_types_joined}) -> str:",
+            f"    @staticmethod",
+            f"    def {action}({parameters_with_types_joined}) -> {return_type}:",
         ])
         if is_redirect:
             parameter_reference = route_generate_parameter_reference(parameters)

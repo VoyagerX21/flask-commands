@@ -499,8 +499,8 @@ def test_generate_wiring_result_post_skips_view(project):
 
     observed_controller_content = post_controller_file.read_text(encoding="utf-8")
     expected_controller_content = (
-        "from flask import render_template\n"
-        "from flask import redirect, url_for\n"
+        "from flask import render_template, redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class PostController:\n"
         "    @staticmethod\n"
@@ -508,7 +508,7 @@ def test_generate_wiring_result_post_skips_view(project):
         "        return render_template('posts/index.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def store() -> str:\n"
+        "    def store() -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.index'))"
     )
 

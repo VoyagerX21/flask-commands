@@ -464,8 +464,8 @@ def test_make_controller_with_crud(project):
 
     # Check the contents of the new controller file
     expected_contents = (
-        "from flask import render_template\n"
-        "from flask import redirect, url_for\n"
+        "from flask import render_template, redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class CommentController:\n"
         "\n"
@@ -482,7 +482,7 @@ def test_make_controller_with_crud(project):
         "        return render_template('comments/create.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def store() -> str:\n"
+        "    def store() -> ResponseReturnValue:\n"
         "        return redirect(url_for('comments.index'))\n"
         "\n"
         "    @staticmethod\n"
@@ -490,11 +490,11 @@ def test_make_controller_with_crud(project):
         "        return render_template('comments/edit.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def update(comment_id: int) -> str:\n"
+        "    def update(comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('comments.index'))\n"
         "\n"
         "    @staticmethod\n"
-        "    def destroy(comment_id: int) -> str:\n"
+        "    def destroy(comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('comments.index'))"
     )
     observed_content = comment_controller_file_path.read_text(encoding="utf-8")
@@ -573,8 +573,8 @@ def test_make_controller_with_crud_nested_relationship(project):
 
     # Check the contents of the new controller file
     expected_contents = (
-        "from flask import render_template\n"
-        "from flask import redirect, url_for\n"
+        "from flask import render_template, redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class PostCommentController:\n"
         "\n"
@@ -591,7 +591,7 @@ def test_make_controller_with_crud_nested_relationship(project):
         "        return render_template('posts/comments/create.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def store(post_id: int) -> str:\n"
+        "    def store(post_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.comments.index', post_id=post_id))\n"
         "\n"
         "    @staticmethod\n"
@@ -599,11 +599,11 @@ def test_make_controller_with_crud_nested_relationship(project):
         "        return render_template('posts/comments/edit.html')\n"
         "\n"
         "    @staticmethod\n"
-        "    def update(post_id: int, comment_id: int) -> str:\n"
+        "    def update(post_id: int, comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.comments.index', post_id=post_id))\n"
         "\n"
         "    @staticmethod\n"
-        "    def destroy(post_id: int, comment_id: int) -> str:\n"
+        "    def destroy(post_id: int, comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.comments.index', post_id=post_id))")
     content = post_comment_controller_file_path.read_text(encoding="utf-8")
     assert content == expected_contents

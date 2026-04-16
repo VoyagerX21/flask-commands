@@ -257,11 +257,12 @@ def test_controller_add_method_inserts_redirect_imports(controller_project):
 
     expected_source = (
         "from flask import redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class PostController:\n"
         "\n"
         "    @staticmethod\n"
-        "    def store() -> str:\n"
+        "    def store() -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.index'))"
     )
 
@@ -297,13 +298,14 @@ def test_controller_add_method_redirect_return_line_uses_nested_param_reference(
 
     expected_source = (
         "from flask import redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class PostCommentController:\n"
         "    def helper(self):\n"
         "        pass\n"
         "\n"
         "    @staticmethod\n"
-        "    def update(post_id: int, comment_id: int) -> str:\n"
+        "    def update(post_id: int, comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.comments.index', post_id=post_id))"
     )
 
@@ -684,10 +686,11 @@ def test_controller_make_file_with_a_post(controller_project):
 
     expected_controller_content = (
         "from flask import redirect, url_for\n"
+        "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class PostController:\n"
         "    @staticmethod\n"
-        "    def store() -> str:\n"
+        "    def store() -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.index'))\n"
     )
 

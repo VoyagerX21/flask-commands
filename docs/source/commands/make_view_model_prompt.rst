@@ -255,9 +255,8 @@ Use ``-m`` when:
 - you want Flask-Commands to generate the model as part of the command flow
 - you do not want to repeat yourself more than necessary
 
-And remember, these do not have to be isolated choices. You can mix them
-together if that gives Flask-Commands the exact information you want it to
-use.
+Also not you can mix together the ``--route`` with ``--model`` or ``-m`` if 
+that gives you want you want when wiring up your view file with Flask-Commands.
 
 A simple way to think about it is:
 
@@ -265,8 +264,8 @@ A simple way to think about it is:
 - ``--model`` controls the model name directly
 - ``-m`` tells Flask-Commands to generate the model as part of the command flow
 
-One Small but Important Note
-----------------------------
+No view file for POST actions
+-----------------------------
 
 .. youtube_embed:: get-templates-vs-post-actions
 
@@ -281,17 +280,32 @@ That means the actions:
 
 produce view templates.
 
-However, the ``POST`` actions::
+However, the ``POST`` actions:
 
 - ``store``
 - ``update``
 - ``destroy``
 
-wire controller and route behavior without creating a template file.
+wire controller and route behavior without creating a template file.  Typically,
+what happens is after a ``POST`` action the browser redirects back to the ``index``
+page.  
 
-That is worth saying out loud because otherwise it can be a little surprising
-the first time you scaffold a RESTful action and do not see a new template
-appear.
+In normal programming speak this goes something like this: I see the page to 
+``create`` a recipe then i press the save button which does a ``POST`` action 
+``store`` the new recipe in my database and then the browser redirects me to 
+``index`` where i can see all the recipes which gives me a visual showing the 
+new recipe i just created.  This is the 
+
+.. centered:: **Get -> Post -> Redirect**
+
+concept we method in Core Ideas.
+
+This means you will not see a template generate when you do something like this:
+
+.. code-block:: bash
+
+   flask make:view recipes.store -rcm
+
 
 Why This Matters
 ----------------
