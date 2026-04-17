@@ -150,6 +150,41 @@
       "description": "Learn what each flag is responsible for so you can be more explicit about whether you are wiring routes, generating a model, or both.",
       "video_id": "nrFk9fAaiII"
     },
+    "model-prompts-final-comment": {
+      "title": "Model Prompts Final Comment",
+      "description": "My hope for how make view should work",
+      "video_id": "nrFk9fAaiII"
+    },
+    "get-actions-render-pages": {
+      "title": "Get Actions Render Pages",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "post-actions-change-state": {
+      "title": "Post Actions Change State",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "the-browser-flow": {
+      "title": "The Browser Flow",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "a-real-example-with-recipes-create-and-recipes-store": {
+      "title": "A Real Example With Recipes Create And Recipe Store",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "no-template-for-post-actions": {
+      "title": "No Template For Post Actions",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "what-get-vs-post-means-when-using-make-view": {
+      "title": "What Get vs Post Means WHen Using Make View",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },                    
     "get-templates-vs-post-actions": {
       "title": "GET templates vs POST actions",
       "description": "Learn why some actions produce templates and others do not, and how that distinction keeps the generated files honest to HTTP behavior.",

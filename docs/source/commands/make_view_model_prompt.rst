@@ -264,62 +264,22 @@ A simple way to think about it is:
 - ``--model`` controls the model name directly
 - ``-m`` tells Flask-Commands to generate the model as part of the command flow
 
-No view file for POST actions
------------------------------
+Final Comment
+-------------
 
-.. youtube_embed:: get-templates-vs-post-actions
+.. youtube_embed:: model-prompts-final-comment
 
-In RESTful actions, templates are generated for ``GET`` actions.
+The goal of this section is not to avoid or not avoid a prompt.  Instead,
+I wanted to give you a tool that allowed you to make a view which included
+all the bells and whistle 🛎️ you need to properly wire up what you need your
+way so you could get back to the more interesting part of your application,
+your application. Hopefully after this section with ``make:view``
 
-That means the actions:
-
-- ``index``
-- ``show``
-- ``create``
-- ``edit``
-
-produce view templates.
-
-However, the ``POST`` actions:
-
-- ``store``
-- ``update``
-- ``destroy``
-
-wire controller and route behavior without creating a template file.  Typically,
-what happens is after a ``POST`` action the browser redirects back to the ``index``
-page.  
-
-In normal programming speak this goes something like this: I see the page to 
-``create`` a recipe then i press the save button which does a ``POST`` action 
-``store`` the new recipe in my database and then the browser redirects me to 
-``index`` where i can see all the recipes which gives me a visual showing the 
-new recipe i just created.  This is the 
-
-.. centered:: **Get -> Post -> Redirect**
-
-concept we method in Core Ideas.
-
-This means you will not see a template generate when you do something like this:
-
-.. code-block:: bash
-
-   flask make:view recipes.store -rcm
-
-
-Why This Matters
-----------------
-
-.. youtube_embed:: why-the-smarter-behavior-matters
-
-All of this smarter behavior matters because it makes ``make:view`` more
-forgiving without making it fuzzy.
-
-You can type naturally.
-You can be explicit when you want.
-You can let the package help when the structure is obvious.
-And when there is a meaningful decision to make, Flask-Commands can stop and
-ask instead of charging ahead and leaving you with cleanup work later.
+- You can feel you can type naturally.
+- You can be explicit about how you want your view wired to your back end.
+- You can let the package help when the structure is obvious.
+- You are prompt aware, and ready for Flask-Commands to ask about database 
+  sturcture so you are not left with a lot of cleanup 🧹 work later.
 
 That is really the sweet spot I wanted for a command like this:
 
@@ -327,5 +287,3 @@ That is really the sweet spot I wanted for a command like this:
 - smart, but not mysterious
 - willing to do some work for you, but still honest about what is happening
 
-Now that the command behavior makes sense, let’s use it to build a real
-resource.
