@@ -1,10 +1,9 @@
-GET vs POST for RESTful Actions
-===============================
+GET vs POST for RESTful Actions with make:view
+==============================================
 
-Now that we have talked through prompts, routes, models, and how
-``flask make:view`` tries to help when the structure is a little unclear, we
-need to stop and talk more about RESTFul actions and how the actions themselve 
-can be partictioned into two distinct groups.
+Now that we have built a simple resource with ``index`` and ``show``, we can 
+step we step back and look at the other RESTful patterns and how the actions 
+themselve can be partictioned into two distinct groups.
 
 - Some actions exist to show a page in the browser.
 - Other actions exist to make data changes, and then send the browser elsewhere.
@@ -237,9 +236,10 @@ Consequently, while ``store`` is closely tied to ``create``, its job is not to
 render a page, but to process the submitted data and redirect the browser to
 the next page.
 
-Once you start thinking in those terms, the generated output from 
-Flask-Commands for RESTful action feels less mysterious and more
+Once you start thinking in those terms, the generated output from
+Flask-Commands for RESTful actions feels less mysterious and more
 predictable.
 
-Now that the command behavior makes sense, let’s use it to build a real
-resource.
+Now that we have a basic resource flow, the next natural step is to ask how
+we can build on what we already have using that same pattern. That is where
+the concept of **nested resources** enters the scene.

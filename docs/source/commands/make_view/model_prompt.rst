@@ -287,3 +287,11 @@ That is really the sweet spot I wanted for a command like this:
 - smart, but not mysterious
 - willing to do some work for you, but still honest about what is happening
 
+As you can see, there are several ways to avoid the prompt, but they all follow
+the same idea: Flask-Commands only asks for more input when the structure is
+still ambiguous.
+
+Now let’s put that into practice by building a real resource. We will start
+with ``recipes.index``, because it is one of the simplest ways to see the
+route, controller, view, and model come together in a single command.
+

@@ -1,32 +1,31 @@
 Nested Resources with make:view
 ===============================
 
-This is where the package really starts to shine ☀️
+Now that we have built a simple resource and looked at how RESTful actions
+work, the next step is to build on that structure with nested resources.
 
-Up to this point we have built a simple resource with ``recipes.index`` and
-``recipes.show``. That already gives us something real. But now we get to the
-part that makes Flask-Commands feel especially useful: nested resources.
+If you are newer to web development, do not let the phrase “nested
+resources” scare you off. All it means is that one object belongs to another 
+object.
 
-And if you are newer to web development, do not let the phrase “nested
-resources” scare you off. All it really means is this:
 
-- one thing belongs to another thing
+In our cooking app let's add comments and images so we have:
 
-In our cooking app:
+- a comment belonging to a recipe
+- an image belonging to a comment
 
-- a comment belongs to a recipe
-- an image can belong to a comment
+Nesting like this ``Recipe -> Comment -> Image`` is the core idea.
 
-That is it. That is the whole big idea.
+In URL terms, nesting means the child depends on the parent instead of 
+standing alone.
 
-A nested URL usually means the child depends on the parent, not that the child
-stands alone.
+One of the feature I was unwilling to compromise on when building 
+Flask-Commands was making the folder structure, route structure, controller 
+structure, and endpoint naming all reflect their relationships. That way, when 
+you come back to the code six months later, you can quickly see how the 
+data structures relate without digging through the project (or 
+having an AI 🤖 dig through your files to answer how to objects are related). 
 
-The nice part is that Flask-Commands lets the folder structure, route
-structure, controller structure, and endpoint naming all tell the truth about
-those relationships. So when you come back to the code six months later, you
-can quickly see how the data structures relate without guessing. That is one
-of the things I was unwilling to compromise on while building this package.
 
 Build ``recipes.comments.index``
 --------------------------------
@@ -74,38 +73,37 @@ The key part of the story is that the ``comments`` blueprint gets registered
 
 - ``app/routes/recipes/__init__.py``
 
-So weird 🤪 who would have thought to register a blueprint in another
-blueprint!!!!
-
-That is one of the cool things I love about Flask. It is not so opinionated
-that it gets in your way, which gives you the freedom to try structures like
-this.
+When I saw this the first time I thought "this is weird 🤪, who would have 
+thought to register a blueprint in another blueprint!!!!"  But is one of the 
+cool things I love about Flask. Flask is not so opinionated that it gets in your 
+way, which gives you the freedom to try different structures.
 
 Ok, you’re saying, that’s great but why would I do this?
 
 Because by registering the ``comments`` blueprint inside the ``recipes``
-blueprint, we get to use the dotted naming convention when referencing a route
-like:
+blueprint, we are able to use the dotted naming convention when referencing 
+a route:
 
 .. code-block:: python
 
    url_for('recipes.comments.index', recipe_id=1)
 
-And that is a big deal.
+For me this was a big deal because it mirrors how the ORM SQLAlchemy works.  If
+we have a recipe say recipe with id one then to get all the comments we would 
+do ``recipe.comments``.  So now the route name, the folders, the controller 
+name sturctures all follow a similar pattern to the relationship.  
 
-Now the route name, the folders, the controller name, and the relationship
-itself are all telling the same story. Comments belong to recipes, so the
-application reads that way too.
+In our example, comments belong to recipes. and you can see this story in 
+several location:
 
-That structure gives you:
-
+- ``app/models/recipe.py``
+- ``app/models/comment.py``
 - ``app/templates/recipes/comments/index.html``
 - ``app/controllers/recipe_comment_controller.py``
 - ``app/routes/recipes/comments/``
-- ``app/models/comment.py``
 
-That is a lot to get from one command, and more importantly, it is structure
-that reads honestly.
+That structure a lot to recieve out of one command, and more importantly, it 
+is structure that reads honestly.
 
 Add ``recipes.comments.show``
 -----------------------------

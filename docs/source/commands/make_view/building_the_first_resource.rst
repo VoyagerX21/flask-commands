@@ -1,13 +1,15 @@
-Building the First Resource
-===========================
+Building the First Resource with make:view
+==========================================
 
-Now we are ready to build something that feels like a real part of an
-application. This is where the command starts earning its keep.
+Now that we have looked at prompts and generator flags, we are ready to build 
+something that feels like a real part of an application. 
+
+We will start with ``recipes.index`` because it is one of the clearest ways to
+see how Flask-Commands can scaffold a resource instead of just a template.
 
 We are still going to keep the templates intentionally plain. The point here
-is not to build a pretty website. The point is to build a clean data structure
-quickly and tie together the route, view, controller, and model without doing
-all the wiring by hand.
+is not to build a pretty website. The point is to see how the route,
+controller, view, and model come together without wiring each piece by hand.
 
 Build ``recipes.index``
 -----------------------
@@ -190,5 +192,11 @@ That means:
 
 That is a big step.
 
-Once ``recipes`` exists, the natural next question is what belongs under a
-recipe.
+With ``recipes.index`` and ``recipes.show`` in place, you have now seen the
+basic shape of a resource and two of its page-rendering actions.
+
+That naturally leads to the next question: why do some RESTful actions generate
+templates while others do not?
+
+To answer that, we need to look at the difference between ``GET`` actions that
+render pages and ``POST`` actions that process data and redirect the browser.

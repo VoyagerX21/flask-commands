@@ -28,8 +28,8 @@ Everything in these sections builds on itself one step at a time.
    :maxdepth: 1
    :hidden:
 
-   The Basics <make_view_basics>
-   Model Prompt <make_view_model_prompt>
-   GET vs POST for RESTful Actions <make_view_get_vs_post_for_restful_actions>
-   Building the First Resource <building_the_first_resource>
-   Nested Resources <nested_resources_with_make_view>
+   The Basics <make_view/the_basics>
+   Model Prompt <make_view/model_prompt>
+   Building the First Resource <make_view/building_the_first_resource>
+   GET vs POST for RESTful Actions <make_view/get_vs_post_for_restful_actions>
+   Nested Resources <make_view/nested_resources>
