@@ -6,7 +6,7 @@ application. This is where the command starts earning its keep.
 
 We are still going to keep the templates intentionally plain. The point here
 is not to build a pretty website. The point is to build a clean data structure
-quickly and tie together the view, controller, route, and model without doing
+quickly and tie together the route, view, controller, and model without doing
 all the wiring by hand.
 
 Build ``recipes.index``
@@ -33,7 +33,8 @@ That one command creates and wires quite a bit:
 That is where the command starts to shine ✨
 
 Instead of making one file and then wiring the rest by hand, you get a real
-working slice of the application structure in one shot.
+working slice of the application structure in one compact command that is easy
+to remember.
 
 Understand What ``-rcm`` Created
 --------------------------------
@@ -63,19 +64,19 @@ you should expect to see structure like:
 and the related registration updates needed to connect those pieces into the
 app.
 
-This is one of the reasons I like teaching with ``recipes.index`` instead of
-jumping straight into some giant nested example. It lets you see the whole
-basic flow clearly:
+If you are new to RESTful naming, think of ``index`` as the page that list
+all the instances of a single object.  This pages is a great place to start 
+when building a new object because it keeps the focus on the core pieces 
+working together:
 
-- the browser needs a route
-- the route calls a controller
-- the controller renders a view
-- the view is often tied to a model
+- the route handles the URL namespace for requesting this object
+- the controller is the logic that connects the model to the view
+  - It gets all the instances from the model (the data)
+  - It sends that data to the view
+- the view renders the response to the user
 
-That is the resource shape in miniature.
-
-If you are new to RESTful naming, think of ``index`` as the list page and
-``show`` as the detail page.
+Now that we have seen how the resource fits together, let’s look at building
+the ``show`` page, a detail view for a single recipe.
 
 Add ``recipes.show``
 --------------------

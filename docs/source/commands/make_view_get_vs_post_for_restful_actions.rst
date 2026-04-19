@@ -14,12 +14,11 @@ render a page, it makes sense to generate a template.  However, if the action
 is meant to process a data change, then generating a template file would 
 actually be the wrong thing to create.
 
-In this chapter is really about understanding why:
+In this chapter we look at why:
 
 - ``index``, ``show``, ``create``, and ``edit`` generate view templates
-- ``store``, ``update``, and ``destroy`` do not
-- a missing template is not always a missing file
-- ``flask make:view`` is following the normal browser flow, not skipping work
+- while ``store``, ``update``, and ``destroy`` do not generate view templates
+- how ``flask make:view`` follows the traditional browser flow
 
 Once this clicks, a lot of the generated output starts to feel much more
 predictable.
@@ -75,8 +74,8 @@ That means:
 are not really page-rendering actions.
 
 These actions are usually triggered by a form submission or some other user
-interaction that application state changes. They create something, update
-something, or delete something.
+interaction that application state changes. They create, update, or delete some
+object in your database.
 
 Because of that, Flask-Commands does not generate a template file for these
 actions. The action is not supposed to display a page directly. It is supposed
@@ -105,14 +104,14 @@ I always think of the normal browser lifecycle like this:
 
 .. centered:: **Get -> Post -> Redirect**
 
-You first ``GET`` a page so the browser has something to show.
+First you ``GET`` a page so the browser has something to show.
 
 Then you ``POST`` data back to the server when the user submits a form.
 
 When the ``POST`` is finish it redirected to another page so the user can see 
 the result.
 
-That is why a ``create`` page and a ``store`` action belong together even
+That is why a ``create`` action and a ``store`` action belong together even
 though they do not generate the same kinds of files.
 
 - ``create`` shows the form
@@ -141,8 +140,8 @@ That is a ``GET`` action, so it makes sense to have a template such as:
 
 That page contains the form the user fills out.
 
-Then the user press the save button which submits the form.  The some is
-submitted to a ``POST`` route you application used to process data:
+Then the user press the save button which submits the form.  The submission is
+sent to a ``POST`` route where you application processes the data:
 
 .. code-block:: text
 
@@ -226,12 +225,21 @@ In our example above these two commands are doing different kinds of work:
    flask make:view recipes.create -rcm
    flask make:view recipes.store -rcm
 
-The first one scaffolds a page you can see.
 
-The second one scaffolds behavior you can use to process incoming data.
+The ``create`` action scaffolds a page the browser can display, so it makes
+sense for Flask-Commands to generate a template for it.
 
-Once you start thinking in those terms, the output from Flask-Commands feels a
-lot more honest and a lot less mysterious.
+The ``store`` action scaffolds the behavior that handles incoming data, so it
+does not need a template of its own.
+
+
+Consequently, while ``store`` is closely tied to ``create``, its job is not to
+render a page, but to process the submitted data and redirect the browser to
+the next page.
+
+Once you start thinking in those terms, the generated output from 
+Flask-Commands for RESTful action feels less mysterious and more
+predictable.
 
 Now that the command behavior makes sense, let’s use it to build a real
 resource.
