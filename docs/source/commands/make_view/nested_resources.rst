@@ -14,9 +14,9 @@ In our cooking app let's add comments and images so we have:
 - a comment belonging to a recipe
 - an image belonging to a comment
 
-Nesting like this ``Recipe -> Comment -> Image`` is the core idea.
+Nesting like this ``Recipe -> Comment -> Image`` is the idea we are after.
 
-In URL terms, nesting means the child depends on the parent instead of 
+In URL terms, nesting means the child's URL depends on the parent instead of 
 standing alone.
 
 One of the feature I was unwilling to compromise on when building 
@@ -74,13 +74,13 @@ The key part of the story is that the ``comments`` blueprint gets registered
 - ``app/routes/recipes/__init__.py``
 
 When I saw this the first time I thought "this is weird 🤪, who would have 
-thought to register a blueprint in another blueprint!!!!"  But is one of the 
-cool things I love about Flask. Flask is not so opinionated that it gets in your 
-way, which gives you the freedom to try different structures.
+thought to register a blueprint in another blueprint!!!!"  But this is one of 
+the cool things I love about Flask. Flask is not so opinionated that it gets 
+in your way, which gives you the freedom to try different structures.
 
 Ok, you’re saying, that’s great but why would I do this?
 
-Because by registering the ``comments`` blueprint inside the ``recipes``
+By registering the ``comments`` blueprint inside the ``recipes``
 blueprint, we are able to use the dotted naming convention when referencing 
 a route:
 
@@ -88,21 +88,23 @@ a route:
 
    url_for('recipes.comments.index', recipe_id=1)
 
-For me this was a big deal because it mirrors how the ORM SQLAlchemy works.  If
-we have a recipe say recipe with id one then to get all the comments we would 
-do ``recipe.comments``.  So now the route name, the folders, the controller 
-name sturctures all follow a similar pattern to the relationship.  
+For me, this was a big deal because it mirrors how SQLAlchemy works. If we
+have a recipe variable called ``recipe``, then to get all the comments for that
+recipe, we would write ``recipe.comments``.
 
-In our example, comments belong to recipes. and you can see this story in 
-several location:
+Now the route name, the folders, and the controller naming all follow that same
+relationship in the data.
 
-- ``app/models/recipe.py``
-- ``app/models/comment.py``
-- ``app/templates/recipes/comments/index.html``
-- ``app/controllers/recipe_comment_controller.py``
-- ``app/routes/recipes/comments/``
+What makes this so useful is that all of those pieces follow the same
+relationship. In our example, the story that comments belong to recipes is 
+seen in the structures that are built:
 
-That structure a lot to recieve out of one command, and more importantly, it 
+- ``app/models/comment.py`` (comment building block)
+- ``app/templates/recipes/comments/index.html`` (relationship recipes -> comments)
+- ``app/controllers/recipe_comment_controller.py`` (relationship recipes -> comments)
+- ``app/routes/recipes/comments/`` (relationship recipes -> comments)
+
+This is a lot of structure to get out of one command, and more importantly, it
 is structure that reads honestly.
 
 Add ``recipes.comments.show``
@@ -136,33 +138,6 @@ This is one of the nice patterns in the package. Once the resource exists,
 Flask-Commands keeps building on top of what is already there instead of
 making you recreate the same pieces over and over again.
 
-Why the Nested Structure Matters
---------------------------------
-
-.. youtube_embed:: why-the-nested-structure-matters
-
-This is the part I really care about.
-
-When the comments live under recipes in the route folders, template folders,
-and controller naming, the structure itself starts teaching you what belongs
-to what.
-
-That means when you come back later and see something like:
-
-- ``app/templates/recipes/comments/``
-- ``app/routes/recipes/comments/``
-- ``RecipeCommentController``
-
-you do not have to wonder:
-
-- “Do comments belong to recipes?”
-- “Is this a standalone resource?”
-- “How is this supposed to fit together?”
-
-The project structure already answers those questions for you.
-
-That kind of clarity is not flashy, but it saves real mental energy later.
-
 Go Three Levels Deep with Images
 --------------------------------
 
@@ -184,24 +159,25 @@ Or in plain English:
 - images belong to comments
 - comments belong to recipes
 
-So the command becomes:
+The command to build out the index page for images and set up the relationship 
+is what you would expect:
 
 .. code-block:: bash
 
    flask make:view recipes.comments.images.index -rcm
 
-Three levels, what? **Recipes -> Comments -> Images**. That hurts my brain
-just thinking about how we would wire all those parts together to work as we
-would expect. 🧐
+Our brains 🧠 definatly link like this, **Recipes -> Comments -> Images**. 
+However, it hurts my brain just thinking 🧐 about how we would wire all these
+parts together in a Flask application and not break something. 
 
 But here is the nice part: you do not have to wire all of that by hand.
 
 With this command, Flask-Commands builds a structure like:
 
-- ``app/templates/recipes/comments/images/index.html``
-- ``app/controllers/recipe_comment_image_controller.py``
-- ``app/routes/recipes/comments/images/``
-- ``app/models/image.py``
+- ``app/models/image.py`` (image building block)
+- ``app/templates/recipes/comments/images/index.html`` (relationship recipes -> comments -> images)
+- ``app/controllers/recipe_comment_image_controller.py`` (relationship recipes -> comments -> images)
+- ``app/routes/recipes/comments/images/`` (relationship recipes -> comments -> images)
 
 And the same nesting idea keeps working here too. In order to keep the dotted
 naming convention, the ``images`` blueprint gets registered inside
@@ -217,20 +193,14 @@ Flask-Commands the relationship structure with dots, throw in your generated
 flags of route ``-r``, controller ``-c``, and model ``-m``, and preso 🪄
 everything is built for you.
 
-You can keep going deeper if you want. Flask-Commands will support it. That
-said, as a rule of thumb for myself, I rarely go over three levels deep. Once
-things get deeper than that, the structure can start feeling harder to read
-even if it is technically correct.
+You can keep going deeper if you want. Flask-Commands will support as many
+levels deep as you want; however, as a rule of thumb for myself, I rarely go 
+over three levels deep. Once things get deeper than that, the structure 
+can start feeling harder to read even if it is technically correct.
 
-Understand Dotted Endpoint Naming
----------------------------------
-
-.. youtube_embed:: understand-dotted-endpoint-naming
-
-This is one of the parts of the package I was unwilling to compromise on.
-
-If the structure is nested in the application, I want it to read as nested in
-the endpoint naming too.
+This sturcture and naming is one of the parts of the package I was unwilling 
+to compromise on.  I always felt like if the structure is nested in the 
+application, then I want it to read as nested in the endpoint naming too.
 
 So with:
 
@@ -244,7 +214,7 @@ you get endpoint names like:
 
    url_for('recipes.comments.images.index', recipe_id=1, comment_id=2)
 
-I love that because the endpoint itself tells the truth about the
+I love ❤️ that because the endpoint itself tells the truth about the
 relationship.
 
 You do not have to guess:
@@ -253,11 +223,12 @@ You do not have to guess:
 - which blueprint is nested where
 - how the route hierarchy fits together
 
-The endpoint name already explains it.
+The endpoint name already answers all these questions.
 
-And for a beginner web developer, that is a big deal. Route names, controller
-names, and folder paths can all feel abstract at first. But when they all line
-up with the data relationship, the app becomes much easier to read.
+For a beginner web developer, that is a big deal. Route names, controller
+names, and folder paths can all feel abstract at first. However, when
+everything line up with the data structures, the app becomes much easier 
+manage and read.
 
 A Beginner-Friendly Way to Think About This
 -------------------------------------------
