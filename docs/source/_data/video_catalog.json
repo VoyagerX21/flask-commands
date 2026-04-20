@@ -235,11 +235,6 @@
       "description": "Watch the nesting go one level further so you can see how the package handles deeper relationships without hiding what is happening.",
       "video_id": "nrFk9fAaiII"
     },
-    "understand-dotted-endpoint-naming": {
-      "title": "Understand dotted endpoint naming",
-      "description": "Learn how endpoint names stay readable as the nesting grows and why that naming consistency matters for ``url_for`` and mental clarity.",
-      "video_id": "nrFk9fAaiII"
-    },
     "a-beginner-friendly-way-to-think-about-nested-resources": {
       "title": "A beginner-friendly way to think about nested resources",
       "description": "Learn a simpler mental model for nested resources so the pattern feels like honest hierarchy instead of advanced magic.",
@@ -331,7 +326,7 @@
         { "heading": "make:view The Basics", "doc": "commands/make_view/the_basics", "video_keys": ["create-a-simple-template-with-flask-make-view", "understand-the-mains-namespace", "wire-a-page-explicitly", "use-generator-flags-with-make-view", "use-mains-intentionally", "a-quick-peek-at-nested-views", "when-make-view-is-the-right-starting-point"] },
         { "heading": "make:view Model Prompt", "doc": "commands/make_view/model_prompt", "video_keys": ["normalize-input-before-scaffolding", "understand-missing-model-prompts", "avoid-prompts-with-flags", "choose-between-route-model-and-m", "get-templates-vs-post-actions", "why-the-smarter-behavior-matters"] },
         { "heading": "Building the First Resource", "doc": "commands/make_view/building_the_first_resource", "video_keys": ["build-recipes-index-as-the-first-resource", "understand-what-rcm-created", "add-recipes-show-to-the-resource", "why-recipes-show-matters", "keep-the-templates-intentionally-plain"] },
-        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images", "understand-dotted-endpoint-naming", "a-beginner-friendly-way-to-think-about-nested-resources"] },
+        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images", "a-beginner-friendly-way-to-think-about-nested-resources"] },
         { "heading": "make:controller Basics", "doc": "commands/make_controller_basics", "video_keys": ["create-a-simple-controller", "add-restful-actions-with-crud"] },
         { "heading": "make:controller and Models", "doc": "commands/make_controller_and_models", "video_keys": ["add-a-model-with-model-vs-m", "go-nested-with-make-controller-crud"] },
         { "heading": "make:controller Flat vs Nested", "doc": "commands/make_controller_flat_vs_nested", "video_keys": ["choose-flat-vs-nested-when-using-m"] },
@@ -356,7 +351,7 @@
         { "heading": "make:view The Basics", "doc": "commands/make_view/the_basics", "video_keys": ["create-a-simple-template-with-flask-make-view", "understand-the-mains-namespace", "wire-a-page-explicitly", "use-generator-flags-with-make-view", "use-mains-intentionally", "a-quick-peek-at-nested-views", "when-make-view-is-the-right-starting-point"] },
         { "heading": "make:view Model Prompt", "doc": "commands/make_view/model_prompt", "video_keys": ["normalize-input-before-scaffolding", "understand-missing-model-prompts", "avoid-prompts-with-flags", "choose-between-route-model-and-m", "get-templates-vs-post-actions", "why-the-smarter-behavior-matters"] },
         { "heading": "Building the First Resource", "doc": "commands/make_view/building_the_first_resource", "video_keys": ["build-recipes-index-as-the-first-resource", "understand-what-rcm-created", "add-recipes-show-to-the-resource", "why-recipes-show-matters", "keep-the-templates-intentionally-plain"] },
-        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images", "understand-dotted-endpoint-naming", "a-beginner-friendly-way-to-think-about-nested-resources"] }
+        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images",  "a-beginner-friendly-way-to-think-about-nested-resources"] }
       ]
     },
     "make_controller_videos": {
