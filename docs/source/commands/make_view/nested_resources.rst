@@ -194,13 +194,14 @@ flags of route ``-r``, controller ``-c``, and model ``-m``, and preso 🪄
 everything is built for you.
 
 You can keep going deeper if you want. Flask-Commands will support as many
-levels deep as you want; however, as a rule of thumb for myself, I rarely go 
+levels deep as you want; however, as a rule of thumb, I rarely go 
 over three levels deep. Once things get deeper than that, the structure 
-can start feeling harder to read even if it is technically correct.
+can start feeling hard to read even if it is technically correct.
 
-This sturcture and naming is one of the parts of the package I was unwilling 
-to compromise on.  I always felt like if the structure is nested in the 
-application, then I want it to read as nested in the endpoint naming too.
+This structure and naming is one of the parts of the package I was unwilling 
+to compromise on while developing Flask-Commands.  I always felt that if the 
+structure is nested in the application, then I want it to read as nested 
+in the endpoint naming too.
 
 So with:
 
@@ -208,14 +209,14 @@ So with:
 
    flask make:view recipes.comments.images.index -rcm
 
-you get endpoint names like:
+your endpoint names is of the same form:
 
 .. code-block:: python
 
    url_for('recipes.comments.images.index', recipe_id=1, comment_id=2)
 
-I love ❤️ that because the endpoint itself tells the truth about the
-relationship.
+I love ❤️ this, because it's easy to remember and the endpoint itself tells 
+the truth about the relationship structures.
 
 You do not have to guess:
 
@@ -225,52 +226,32 @@ You do not have to guess:
 
 The endpoint name already answers all these questions.
 
-For a beginner web developer, that is a big deal. Route names, controller
-names, and folder paths can all feel abstract at first. However, when
-everything line up with the data structures, the app becomes much easier 
-manage and read.
+For any developer, that is a big deal. Route names, controller
+names, and folder paths can end up as a hodgepodge mess if you let them. 
+However, when everything line up with the data structures, the app becomes 
+much more manageable to maintain.
 
-A Beginner-Friendly Way to Think About This
--------------------------------------------
 
-.. youtube_embed:: a-beginner-friendly-way-to-think-about-nested-resources
+Why Nesting Pays Off
+---------------------
 
-If you are still learning how web apps fit together, here is a simple way to
-think about what is happening.
-
-For a nested page like:
-
-.. code-block:: text
-
-   recipes.comments.index
-
-the pieces line up like this:
-
-- route: the browser address for comments under a recipe
-- controller: the Python logic for those comments
-- view: the HTML template for those comments
-- model: the data structure for those comments
-
-So the relationship is not only living in one place. It is living across the
-route, controller, view, and model all at the same time.
-
-That is exactly why this structure feels so good when it is done well. The
-whole app starts telling the same story.
-
-Wrap-Up
--------
+.. youtube_embed:: why-nesting-pays-off
 
 Nested resources are where dot notation really starts paying dividends 💰
 
-With commands like:
+With just these three commands:
 
 .. code-block:: bash
 
+   flask make:view recipes.index -rcm
    flask make:view recipes.comments.index -rcm
-   flask make:view recipes.comments.show -rc
    flask make:view recipes.comments.images.index -rcm
 
-Flask-Commands can build relationship-aware structure across:
+You are able to bring to life a surprising amount of relationship-aware 
+structure in just a short amount of time.
+
+From these commands, your Flask application quickly contains a mature
+level of structure in the following areas:
 
 - templates
 - controllers
@@ -278,8 +259,19 @@ Flask-Commands can build relationship-aware structure across:
 - models
 - endpoint names
 
-That is a big part of what makes the package useful. The structure on disk
-starts matching the structure in your head.
+As we have shown above same idea does not stop at ``index``. You can use the
+same thing for ``show`` and for the other five RESTful actions. That is where 
+the structure really starts to scale, because the naming and relationships 
+keeps lining up as your app grows.  Keeping your application tidy, readable,
+and more importantly maintainable.
 
-And once that starts happening, the app no longer feels like a few
-disconnected files. It starts to feel like a real application shape.
+At this point I thought great but what if I already know that I want all
+seven RESTful actions.  Are you telling me that I have to type in seven
+different commands!  I thought this was going to save me time?
+
+Please don't stress out 😬.  If you find yourself generating 
+RESTful actions one at a time, the natural next question is: can 
+Flask-Commands build all seven actions in one command?
+
+I'm happy to say, yes 👏 and that is exactly where our next topic will take us
+when we learn a new command ``flask make:controller``.

@@ -170,8 +170,10 @@ lesson, which is how the data structure and application layers fit together.
 Flask-Commands is here to make your life easier when building structure. It is
 not here to win a beauty pageant 💃
 
-Wrap-Up
--------
+With Two Commands You Have Something To Show
+--------------------------------------------
+
+.. youtube_embed:: with-two-commands-you-have-something-to-show
 
 With these two commands:
 

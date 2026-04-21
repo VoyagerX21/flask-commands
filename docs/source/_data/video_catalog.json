@@ -220,6 +220,11 @@
       "description": "Learn why the docs keep the early templates visually simple so the real lesson stays on data shape, routing, and structure.",
       "video_id": "nrFk9fAaiII"
     },
+    "with-two-commands-you-have-something-to-show": {
+      "title": "With Two Commands You Have Something To Show",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
     "build-recipes-comments-index": {
       "title": "Build recipes.comments.index",
       "description": "Watch the first nested resource step appear under a parent so you can see how truthful dotted naming turns into working nested structure.",
@@ -234,12 +239,17 @@
       "title": "Go three levels deep with images",
       "description": "Watch the nesting go one level further so you can see how the package handles deeper relationships without hiding what is happening.",
       "video_id": "nrFk9fAaiII"
-    },
-    "a-beginner-friendly-way-to-think-about-nested-resources": {
-      "title": "A beginner-friendly way to think about nested resources",
-      "description": "Learn a simpler mental model for nested resources so the pattern feels like honest hierarchy instead of advanced magic.",
+    },    
+    "why-nesting-pays-off": {
+      "title": "Why Nesting Pays Off",
+      "description": "Add a description",
       "video_id": "nrFk9fAaiII"
-    },
+    },    
+    "intro-to-flask-make-controller": {
+      "title": "Intro To Flask Make Controller",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },    
     "create-a-simple-controller": {
       "title": "Create a simple controller",
       "description": "Learn how to start with the controller layer directly when the behavior feels clearer than the page or model structure at the beginning.",
@@ -263,6 +273,11 @@
     "choose-flat-vs-nested-when-using-m": {
       "title": "Choose flat vs nested when using -m",
       "description": "Learn what the structure choice means inside the controller-first workflow so you can pick the layout that matches your app instead of accepting a default blindly.",
+      "video_id": "nrFk9fAaiII"
+    },
+    "intro-to-flask-make-model": {
+      "title": "Intro To Flask Make Model",
+      "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },
     "make-a-basic-model": {
@@ -326,7 +341,7 @@
         { "heading": "make:view The Basics", "doc": "commands/make_view/the_basics", "video_keys": ["create-a-simple-template-with-flask-make-view", "understand-the-mains-namespace", "wire-a-page-explicitly", "use-generator-flags-with-make-view", "use-mains-intentionally", "a-quick-peek-at-nested-views", "when-make-view-is-the-right-starting-point"] },
         { "heading": "make:view Model Prompt", "doc": "commands/make_view/model_prompt", "video_keys": ["normalize-input-before-scaffolding", "understand-missing-model-prompts", "avoid-prompts-with-flags", "choose-between-route-model-and-m", "get-templates-vs-post-actions", "why-the-smarter-behavior-matters"] },
         { "heading": "Building the First Resource", "doc": "commands/make_view/building_the_first_resource", "video_keys": ["build-recipes-index-as-the-first-resource", "understand-what-rcm-created", "add-recipes-show-to-the-resource", "why-recipes-show-matters", "keep-the-templates-intentionally-plain"] },
-        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images", "a-beginner-friendly-way-to-think-about-nested-resources"] },
+        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images"] },
         { "heading": "make:controller Basics", "doc": "commands/make_controller_basics", "video_keys": ["create-a-simple-controller", "add-restful-actions-with-crud"] },
         { "heading": "make:controller and Models", "doc": "commands/make_controller_and_models", "video_keys": ["add-a-model-with-model-vs-m", "go-nested-with-make-controller-crud"] },
         { "heading": "make:controller Flat vs Nested", "doc": "commands/make_controller_flat_vs_nested", "video_keys": ["choose-flat-vs-nested-when-using-m"] },
@@ -351,7 +366,7 @@
         { "heading": "make:view The Basics", "doc": "commands/make_view/the_basics", "video_keys": ["create-a-simple-template-with-flask-make-view", "understand-the-mains-namespace", "wire-a-page-explicitly", "use-generator-flags-with-make-view", "use-mains-intentionally", "a-quick-peek-at-nested-views", "when-make-view-is-the-right-starting-point"] },
         { "heading": "make:view Model Prompt", "doc": "commands/make_view/model_prompt", "video_keys": ["normalize-input-before-scaffolding", "understand-missing-model-prompts", "avoid-prompts-with-flags", "choose-between-route-model-and-m", "get-templates-vs-post-actions", "why-the-smarter-behavior-matters"] },
         { "heading": "Building the First Resource", "doc": "commands/make_view/building_the_first_resource", "video_keys": ["build-recipes-index-as-the-first-resource", "understand-what-rcm-created", "add-recipes-show-to-the-resource", "why-recipes-show-matters", "keep-the-templates-intentionally-plain"] },
-        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images",  "a-beginner-friendly-way-to-think-about-nested-resources"] }
+        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images"] }
       ]
     },
     "make_controller_videos": {

@@ -16,12 +16,8 @@ your friend.
    starting_a_project
    commands/core_ideas
    commands/make_view
-   commands/make_controller_basics
-   commands/make_controller_and_models
-   commands/make_controller_flat_vs_nested
-   commands/make_model_basics
-   commands/make_model_crud
-   commands/make_model_flat_vs_nested
+   commands/make_controller
+   commands/make_model
    commands/flat_vs_nested
    commands/cheat_sheet
    release_notes

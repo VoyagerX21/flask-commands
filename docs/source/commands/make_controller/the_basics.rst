@@ -1,5 +1,5 @@
-make:controller Basics
-======================
+The Basics of make:controller
+=============================
 
 There are times when the controller is the best place to begin. Maybe you
 already know the behavior your resource needs and just want the structure on
@@ -33,7 +33,11 @@ And the controller starts out very simple:
        pass
 
 If you are following this documentation from the beginning, you will probably
-get a warning that ``RecipeController`` already exists. It does, and that is
+be underwelmed because you have already generate something much more structured 
+with ``flask make:view`` and you are recieving  a warning in the terminal 
+saying that ``RecipeController`` already exists. 
+
+It does, and that is
 fine. This simple example is really here so you can see the baseline before we
 start turning on the more interesting flags.
 
