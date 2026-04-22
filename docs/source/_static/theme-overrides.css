@@ -124,3 +124,7 @@ a.reference.external {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+.terminal-warning pre {
+  color: #d6b04d !important;
+}

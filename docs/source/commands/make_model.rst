@@ -1,7 +1,7 @@
 flask make:model
 ================
 
-.. youtube_embed:: into-to-flask-make-model
+.. youtube_embed:: intro-to-flask-make-model
 
 ``flask make:model`` is the quickest way to scaffold a model when the data is
 the first part of the application you know for sure.

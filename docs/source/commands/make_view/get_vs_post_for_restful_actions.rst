@@ -177,6 +177,7 @@ So even though ``create`` and ``store`` are tightly connected, only one of them
 exists to render a visible page. The other exists to process data and redirect
 the browser to the next useful page.
 
+.. _no-template-for-post-actions:
 
 No Template for POST Actions
 ----------------------------
