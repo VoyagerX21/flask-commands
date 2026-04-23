@@ -265,8 +265,8 @@
       "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },
-    "add-a-model-with-model-vs-m": {
-      "title": "Add a model with --model vs -m",
+    "add-a-model-with-model-or-m": {
+      "title": "Add a model with --model or -m",
       "description": "Learn the difference between the explicit long flag and the shorthand model-generation path so the command does exactly what you intend.",
       "video_id": "nrFk9fAaiII"
     },
@@ -348,7 +348,7 @@
         { "heading": "Building the First Resource", "doc": "commands/make_view/building_the_first_resource", "video_keys": ["build-recipes-index-as-the-first-resource", "understand-what-rcm-created", "add-recipes-show-to-the-resource", "why-recipes-show-matters", "keep-the-templates-intentionally-plain"] },
         { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images"] },
         { "heading": "make:controller Basics", "doc": "commands/make_controller/the_basics", "video_keys": ["create-a-simple-controller", "add-restful-actions-with-crud"] },
-        { "heading": "make:controller and Models", "doc": "commands/make_controller/controllers_and_models", "video_keys": ["add-a-model-with-model-vs-m", "go-nested-with-make-controller-crud"] },
+        { "heading": "make:controller and Models", "doc": "commands/make_controller/controllers_and_models", "video_keys": ["add-a-model-with-model-or-m", "go-nested-with-make-controller-crud"] },
         { "heading": "make:controller Flat vs Nested", "doc": "commands/make_controller/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-when-using-m"] },
         { "heading": "make:model Basics", "doc": "commands/make_model/the_basics", "video_keys": ["make-a-basic-model", "what-the-model-includes", "edit-the-model-and-migrate-the-database"] },
         { "heading": "make:model --crud", "doc": "commands/make_model/crud", "video_keys": ["build-a-resource-with-make-model-crud"] },
@@ -377,7 +377,7 @@
     "make_controller_videos": {
       "groups": [
         { "heading": "make:controller Basics", "doc": "commands/make_controller/the_basics", "video_keys": ["create-a-simple-controller", "add-restful-actions-with-crud"] },
-        { "heading": "make:controller and Models", "doc": "commands/make_controller/controllers_and_models", "video_keys": ["add-a-model-with-model-vs-m", "go-nested-with-make-controller-crud"] },
+        { "heading": "make:controller and Models", "doc": "commands/make_controller/controllers_and_models", "video_keys": ["add-a-model-with-model-or-m", "go-nested-with-make-controller-crud"] },
         { "heading": "make:controller Flat vs Nested", "doc": "commands/make_controller/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-when-using-m"] }
       ]
     },

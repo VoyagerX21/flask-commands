@@ -1,26 +1,26 @@
-make:controller and Models
-==========================
+Controllers and Models with make:controller
+===========================================
 
 Controllers usually exist because some kind of data needs to be shown,
 updated, or organized. That is why ``flask make:controller`` does not stop at
-controller files.
+controller files and view.
 
-Add a Model with ``--model`` vs ``-m``
+Add a Model with ``--model`` or ``-m``
 --------------------------------------
 
-.. youtube_embed:: add-a-model-with-model-vs-m
+.. youtube_embed:: add-a-model-with-model-or-m
 
-Often a controller is tied to a model. Flask-Commands gives you two ways to
-handle that.
+Often a controller is tied to a model. Flask-Commands gives you two ways method
+to handle this connection.
 
-You can explicitly name the model:
+The most direct method is to explicitly name the model using ``--model``:
 
 .. code-block:: bash
 
    flask make:controller IngredientController --model Ingredient
 
-or you can let Flask-Commands generate the model name from the controller
-name:
+Alternatively, you can let Flask-Commands generate the model name 
+for your from the controller name using the flag ``-m``:
 
 .. code-block:: bash
 
@@ -83,5 +83,6 @@ And instead of a flat endpoint name, you get:
 
 That saves real mental energy later.
 
+Now we need to nest, build out all RESTful action, and generate a model with.
 Now that the model naming is clear, we can look at the more interesting case:
 when one controller name can describe more than one valid structure.
