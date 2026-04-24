@@ -291,8 +291,8 @@ class CrudResult:
             were updated.
         action_results (list[ActionResult]): Action-level results for generated
             CRUD actions.
-        message_updates (list[str]): Extra message blocks produced during CRUD
-            preparation, such as fallback model creation.
+        message_updates (list[str]): Extra command-level message blocks produced
+            during CRUD preparation or wiring.
         warning_updates (list[str]): Warning/error messages collected during
             CRUD wiring.
 

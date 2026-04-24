@@ -71,11 +71,11 @@ So instead of a flat route like:
 
 - ``/ingredients``
 
-you get the nested route shape:
+you end up with a nested route shape:
 
 - ``/recipes/<int:recipe_id>/ingredients``
 
-And instead of a flat endpoint name, you get:
+And instead of a flat endpoint name, you preserve the nesting with:
 
 .. code-block:: python
 

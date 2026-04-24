@@ -62,7 +62,7 @@ start adding the more interesting structure on top of it with flags.
 
 If you have been following this documentation from the beginning, you already 
 created ``RecipeController`` earlier while working with ``flask make:view``. 
-Because of this you are receiving  a warning in the terminal saying that 
+Because of this you are receiving a warning in the terminal saying that 
 ``RecipeController`` already exists.
 
 .. rst-class:: terminal-warning
@@ -73,7 +73,8 @@ Because of this you are receiving  a warning in the terminal saying that
        - Controller File for RecipeController already exists
        - No changes were made
 
-Don't be alarmed it you see this, this is **not a problem**.  It just means Flask-Commands is protecting the file that already exists instead
+Don't be alarmed it you see this, it's **not a problem**.  This warning 
+means Flask-Commands is protecting the file that already exists instead
 of overwriting it. 
 
 
@@ -87,20 +88,26 @@ Life is all about the options, and ``--crud`` is a very handy option.
 This flag injects the seven RESTful actions into the controller file, creates
 matching routes, and wires up templates for the ``GET`` actions.
 
-Suppose our cooking app needs an ``Ingredient`` resource:
+Let's revisit the need to build the full ``Recipe`` resource in our cooking 
+app.  
+
+If you are following along from the beginning, ``RecipeController`` already
+exists. In order to avoid the the controller-already-exists warning from above
+I recommand spinning up a fresh project so you can see the full ``--crud`` 
+output from start to finish.
 
 .. code-block:: bash
 
-   flask make:controller IngredientController --crud
+   flask make:controller RecipeController --crud
 
 With the ``--crud`` flag you get:
 
-- ``app/controllers/ingredient_controller.py`` with seven RESTful methods
+- ``app/controllers/recipe_controller.py`` with seven RESTful methods
 - controller registration in ``app/controllers/__init__.py``
-- a routes folder under ``app/routes/ingredients/``
-- RESTful routes inside ``app/routes/ingredients/routes.py``
+- a routes folder under ``app/routes/recipes/``
+- RESTful routes inside ``app/routes/recipes/routes.py``
 - blueprint registration in ``app/__init__.py``
-- four templates under ``app/templates/ingredients/``:
+- four templates under ``app/templates/recipes/``:
   ``index``, ``show``, ``create``, and ``edit``
 
 Templates are only created for the ``GET`` actions. The ``POST`` actions
@@ -110,10 +117,13 @@ on why ``POST`` routes do not need templates please check out why ``POST``
 actions do not generate templates in the section
 :ref:`No Template for POST Actions <no-template-for-post-actions>`.
 
-
 That is one of the nice things about this command. You can start at the
 controller layer and receive a ton of the surrounding structure built for
 you.
+
+Notice that this list does not include a model. The ``--crud`` flag builds the
+RESTful controller, routes, and templates. If you want the command to create a
+model too, use ``--model`` or ``-m``. We will look at that in the next chapter.
 
 Why ``--crud`` Feels Like a Big Deal
 ------------------------------------
@@ -141,13 +151,13 @@ would have had to type the seven below commands to end up with the same result.
 
 .. code-block:: bash
 
-   flask make:view ingredients.index -rc
-   flask make:view ingredients.show -rc
-   flask make:view ingredients.create -rc
-   flask make:view ingredients.store -rc
-   flask make:view ingredients.edit -rc
-   flask make:view ingredients.update -rc
-   flask make:view ingredients.destroy -rc
+   flask make:view recipes.index -rc
+   flask make:view recipes.show -rc
+   flask make:view recipes.create -rc
+   flask make:view recipes.store -rc
+   flask make:view recipes.edit -rc
+   flask make:view recipes.update -rc
+   flask make:view recipes.destroy -rc
 
 Please don't put yourself through this, you are likely to miss one! You now have 
 the tools to either produce just a few of the RESTful actions or you can 
@@ -158,7 +168,7 @@ command ``flask make:controller`` with the ``--crud`` flag.
 
 .. code-block:: bash
 
-   flask make:controller IngredientController --crud
+   flask make:controller RecipeController --crud
 
 In these cases you are going to feel like you have real superpowers 🦸‍♀️.
 

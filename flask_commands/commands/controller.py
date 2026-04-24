@@ -70,8 +70,8 @@ def make_controller(
     Notes:
     - If the target controller file already exists, the command exits early
       without making changes.
-    - CRUD wiring may create an additional fallback model when the final
-      resource segment is not a registered model.
+    - CRUD wiring treats the last segment as a resource even if it is not a 
+      registered model.
     """
 
     if not file_is_project_root():

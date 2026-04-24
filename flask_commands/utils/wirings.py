@@ -15,9 +15,9 @@ from flask_commands.utils.controllers import (
     controller_make_file
 )
 from flask_commands.utils.models import (
-    model_generate_model_name_from_dotted_path_with_action, 
+    # model_generate_model_name_from_dotted_path_with_action, 
     model_get_registered_models, 
-    model_make_file, 
+    # model_make_file, 
     model_model_names_to_snake_case_names
 )
 from flask_commands.utils.naming import camel_to_snake, singularize
@@ -51,9 +51,9 @@ def wiring_generate_crud_result(
 
     Workflow:
     1. Analyze `relative_path` and its segments.
-    2. If the last segment is not a registered model, generate a fallback model
-       and record its message in `CrudResult.message_updates`.
-    3. Recompute registered model segments for route generation.
+    2. Detect registered model-backed path segments. 
+    3. Treat the final path segment as the RESTful resource segment even when
+       it is not a registered model.
     4. Use `wiring_generate_wiring_result()` for each CRUD action.
     5. Aggregate:
        - controller method additions and existing methods
@@ -96,7 +96,6 @@ def wiring_generate_crud_result(
 
     restful_actions = ['index', 'show', 'create', 'store', 'edit', 'update', 'destroy']
 
-    message_updates: list[str] = []
     is_successful: bool = True
 
     relative_path_segments = [
@@ -105,31 +104,14 @@ def wiring_generate_crud_result(
     registered_snake_models = model_model_names_to_snake_case_names(
         registered_models)
     
-    if relative_path_segments:
-        relative_path_last_segment = relative_path_segments[-1]
-        is_last_segment_a_model = \
-            singularize(relative_path_last_segment) \
-                in registered_snake_models
-
-        if not is_last_segment_a_model:
-            new_model_name = \
-                model_generate_model_name_from_dotted_path_with_action(
-                    f"{relative_path.replace('/', '.')}.index"
-                )
-            created_model, message = model_make_file(new_model_name)
-            message_updates.append(message)
-            is_successful = is_successful and created_model.is_successful
-            model_result.is_successful = \
-                model_result.is_successful and created_model.is_successful
-            model_result.created_models.append(created_model)
-
-            registered_models = model_get_registered_models()
-            registered_snake_models = model_model_names_to_snake_case_names(
-                registered_models)
-
     relative_path_segment_models = [
         segment for segment in relative_path_segments
         if singularize(segment) in registered_snake_models]
+    
+    if relative_path_segments:
+        relative_path_last_segment = relative_path_segments[-1]
+        if relative_path_last_segment not in relative_path_segment_models:
+            relative_path_segment_models.append(relative_path_last_segment)
 
     crud_result = CrudResult(
         controller_result=controller_result,
@@ -137,7 +119,7 @@ def wiring_generate_crud_result(
         is_successful=is_successful,
         route_result=None,
         action_results=[],
-        message_updates=message_updates,
+        message_updates=[],
         warning_updates=[]
     )
 

@@ -500,12 +500,11 @@ def test_make_controller_with_crud(project):
     observed_content = comment_controller_file_path.read_text(encoding="utf-8")
     assert observed_content == expected_contents
 
-    # Check that the model file was created and registered
-    assert (project / "app" / "models" / "comment.py").exists()
+    assert not (project / "app" / "models" / "comment.py").exists()
+
     models_init_file_path = project / "app" / "models" / "__init__.py"
     models_init_contents = models_init_file_path.read_text(encoding="utf-8")
-
-    assert "from .comment import Comment" in models_init_contents
+    assert "from .comment import Comment" not in models_init_contents
 
 
     # Check the contents of the new routes
