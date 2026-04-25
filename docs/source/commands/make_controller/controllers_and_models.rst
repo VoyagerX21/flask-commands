@@ -2,8 +2,15 @@ Controllers and Models with make:controller
 ===========================================
 
 Controllers usually exist because some kind of data needs to be shown,
-updated, or organized. That is why ``flask make:controller`` does not stop at
-controller files and view.
+updated, or organized. 
+
+In the last chapter we introduced ``--crud`` which scaffold out a ton of 
+structure in our controller, routes, and templates.  If fact it kind of 
+treated the last segment like a data strcture.  However, it does not 
+actually make the model class.  You will need to be explicit 
+in or for Flask-Commands to make a model.  I did this by design, because when 
+you make the model you have options.  Let's dive into when the controller class
+should have an associated model and how that model should be generated.
 
 Add a Model with ``--model`` or ``-m``
 --------------------------------------
@@ -11,35 +18,60 @@ Add a Model with ``--model`` or ``-m``
 .. youtube_embed:: add-a-model-with-model-or-m
 
 Often a controller is tied to a model. Flask-Commands gives you two ways method
-to handle this connection.
+to handle this connection.  
+
+
+.. admonition:: Before you run this
+
+   If you have been following the tutorial from the beginning, you will already
+   have a ``RecipeController`` and a ``Recipe`` model in your project.
+
+   My suggestion would be to spin up a fresh app with something like
+   ``flask new example_two`` so you can see the creation output from start to
+   finish.
+
 
 The most direct method is to explicitly name the model using ``--model``:
 
 .. code-block:: bash
 
-   flask make:controller IngredientController --model Ingredient
+   flask make:controller RecipeController --model Recipe
 
 Alternatively, you can let Flask-Commands generate the model name 
-for your from the controller name using the flag ``-m``:
+for you from the controller name using the flag ``-m``:
 
 .. code-block:: bash
 
-   flask make:controller IngredientController -m
+   flask make:controller RecipeController -m
 
 These two commands produce the same general result:
 
-- a plain ``IngredientController``
-- an ``Ingredient`` model
+- a plain ``RecipeController``
+- an ``Recipe`` model
 
-The difference is how the model name is chosen.
+The important difference is who chooses the model name.
 
-Use ``--model`` when you want to state the model name directly.
+With ``--model Recipe``, you choose the exact model name.  You could have called
+it anything you want if you prefer plural model name this is your opportunity 
+to make your model plurla with ``--model Recipes``.
 
-Use ``-m`` or ``--generate-model`` when you want Flask-Commands to infer the
-model name from the controller name.
+On the other hand, with ``-m`` or ``--generate-model``, Flask-Commands reads 
+the controller name and generates the model name as the prior segment before 
+the word controller.  
 
-That may sound like a small distinction, but it becomes much more useful once
-you start working with nested structures.
+The generation for a single word before ``Controller`` like ``RecipeController`` is
+straight forward; however, when there are nested relationship producing multiple
+words before ``Controller`` like ``REcipeIngredientController`` the story is more
+interesting. 
+
+Naming Nested Controllers by the Relationship
+---------------------------------------------
+
+.. youtube_embed:: naming-nested-controllers-by-the-relationship
+
+Let's say our cooking app needs a new data structure, we are tired of 
+making ``Recipe`` over and over again 🤪.  A Recipe has Ingredients so we need
+the relationship **Recipe -> Ingredient**.
 
 Go Nested with ``--crud``
 -------------------------
