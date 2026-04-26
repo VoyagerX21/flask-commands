@@ -96,7 +96,12 @@ app.
    If you are following along from the beginning, ``RecipeController`` already
    exists. In order to avoid the the controller-already-exists warning from 
    above I recommand spinning up a fresh project, something like 
-   ``flask new example_one``, so you can see the full ``--crud``  output from 
+
+   .. code-block:: bash
+
+      flask new example_controller_with_crud
+   
+   so you can see the full ``--crud``  output from 
    start to finish.
 
 .. code-block:: bash

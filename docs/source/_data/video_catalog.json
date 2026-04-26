@@ -270,6 +270,16 @@
       "description": "Learn the difference between the explicit long flag and the shorthand model-generation path so the command does exactly what you intend.",
       "video_id": "nrFk9fAaiII"
     },
+    "naming-nested-controllers-by-the-relationship": {
+      "title": "Naming Nested Controllers by the Relationship",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "understand-namespaces": {
+      "title": "Understand Namespaces",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
     "go-nested-with-make-controller-crud": {
       "title": "Go nested with make:controller --crud",
       "description": "Learn how the controller-first workflow behaves when the resource is nested and how that changes the generated routes, files, and prompts.",
