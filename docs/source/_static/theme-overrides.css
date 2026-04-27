@@ -129,3 +129,28 @@ a.reference.external {
   color: #d6b04d !important;
 }
 
+@media (max-width: 959.98px) {
+  #pst-primary-sidebar-modal .sidebar-header-items__end ul.bd-navbar-elements.navbar-nav {
+    flex-direction: row !important;
+    gap: 0.125rem;
+  }
+
+  #pst-primary-sidebar-modal .sidebar-header-items__end .bd-navbar-elements .nav-link {
+    min-height: 2rem;
+    padding: 0.35rem 0.65rem !important;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.2;
+  }
+
+  #pst-primary-sidebar-modal .toctree-toggle {
+    right: 0.5rem;
+  }
+
+  #pst-page-navigation-heading-2 {
+    margin-bottom: 1rem;
+    padding-bottom: 0.85rem;
+    border-bottom: 1px solid var(--pst-color-border);
+  }
+}
+

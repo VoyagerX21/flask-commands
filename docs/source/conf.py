@@ -136,3 +136,27 @@ document.head.appendChild(style);
 """,
         priority=700,
     )
+    
+    app.add_js_file(
+        None,
+        body="""
+(() => {
+  function closeDesktopSidebars() {
+    const primary = document.getElementById("pst-primary-sidebar-modal");
+    const secondary = document.getElementById("pst-secondary-sidebar-modal");
+
+    if (window.matchMedia("(min-width: 960px)").matches && primary?.open) {
+      primary.close();
+    }
+
+    if (window.matchMedia("(min-width: 1200px)").matches && secondary?.open) {
+      secondary.close();
+    }
+  }
+
+  window.addEventListener("resize", closeDesktopSidebars);
+  window.addEventListener("DOMContentLoaded", closeDesktopSidebars);
+})();
+""",
+        priority=700,
+    )
