@@ -108,8 +108,10 @@ a.reference.external {
   max-width: 50rem;
 }
 
-/* Show logo at top of content on small screens when sidebar collapses */
-
+/* Give left navigation dropdown arrows a little more breathing room */
+.bd-sidebar-primary .toctree-toggle {
+  right: 0.5rem !important;
+}
 
 /* list itms on mobel */
 @media (max-width: 940px) {
@@ -143,14 +145,12 @@ a.reference.external {
     line-height: 1.2;
   }
 
-  #pst-primary-sidebar-modal .toctree-toggle {
-    right: 0.5rem;
-  }
-
   #pst-page-navigation-heading-2 {
     margin-bottom: 1rem;
     padding-bottom: 0.85rem;
     border-bottom: 1px solid var(--pst-color-border);
   }
 }
+
+
 
