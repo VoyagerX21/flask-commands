@@ -270,18 +270,43 @@
       "description": "Learn the difference between the explicit long flag and the shorthand model-generation path so the command does exactly what you intend.",
       "video_id": "nrFk9fAaiII"
     },
+    "name-the-model-directly": {
+      "title": "Name the Model Directly",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "generate-the-model-name": {
+      "title": "Generate the Model Name",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "why-both-options-matter": {
+      "title": "Why Both Options Matter",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
     "generating-a-restful-controller-with-a-model": {
       "title": "Generating a RESTful Controller with a Model",
       "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },
-    "naming-nested-controllers-by-the-relationship": {
-      "title": "Naming Nested Controllers by the Relationship",
+    "the-naming-problem": {
+      "title": "The Naming Problem",
       "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },
-    "understand-namespaces": {
+    "single-data-structures-that-are-multiple-words": {
+      "title": "Single Data Structures that are Multiple Words",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "when-to-namespaces": {
       "title": "Understand Namespaces",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "naming-nested-controllers-by-the-relationship": {
+      "title": "Naming Nested Controllers by the Relationship",
       "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },

@@ -13,13 +13,14 @@ it does not generate data structure for us, creating a model is a separate
 choice.
 
 That is by design.  To have Flask-Commands generate the model class you will 
-need to explicit tell Flask-Commands that you want a model.  There is lots 
-going on in a mature application and Flask-Commands is there to help in all the 
-cases: you need a new model, you already have the model, you only want a 
-namespace and not a model.
+need to explicitly tell Flask-Commands that you want a model.  This is because
+in most mature applications there are a lot of custom designs and I wanted 
+Flask-Commands to be helpful in all the cases: if you need a new model, if you 
+already have the model but need more structure, if you only want a namespace 
+instead of a model, or if you want some combininate of theses.
 
-This chapter is about those naming rules and how to choose the command that 
-tells the right story for your current situation.
+In this chapter we will delve into these naming rules and how to choose the 
+command that tells the right story for your current situation.
 
 Add a Model with ``--model`` or ``-m``
 --------------------------------------
@@ -32,11 +33,11 @@ to handle this connection.
 
 .. admonition:: Before you run this
 
-   If you are following the tutorial from the beginning, you already
+   If you have followed the tutorial from the beginning, you already
    have a ``RecipeController`` and a ``Recipe`` model in your project.
 
-   To avoid warnings and see the cration output from start to finish spin 
-   up a fresh app with something like
+   To avoid warnings and to see the creation output from start to finish please
+   spin up a fresh app with something like
 
    .. code-block:: bash
 
@@ -45,6 +46,8 @@ to handle this connection.
 Name the Model Directly
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+.. youtube_embed:: name-the-model-directly
+
 The most direct method is to explicitly name the model using ``--model``:
 
 .. code-block:: bash
@@ -52,11 +55,13 @@ The most direct method is to explicitly name the model using ``--model``:
    flask make:controller RecipeController --model Recipe
 
 With ``--model Recipe``, you choose the exact model name. Flask-Commands does
-not do any model-name generation from the controller name. It uses the model
-name you gave it.
+not do any model-name generation from the controller name. Instead, 
+Flask-Commands uses the exact model name you provided.
 
 Generate the Model Name
 ^^^^^^^^^^^^^^^^^^^^^^^
+
+.. youtube_embed:: name-the-model-directly
 
 Alternatively, you can let Flask-Commands generate the model name 
 for you from the controller name using the flag ``-m``:
@@ -65,9 +70,10 @@ for you from the controller name using the flag ``-m``:
 
    flask make:controller RecipeController -m
 
-Flask-Commands looks at the prior segment to Controller and make a model with 
-that segment.  So with ``RecipeController`` the ``-m`` flag will generate a 
-``Recipe`` model because that is the part before ``Controller``.
+Flask-Commands has a generating name rule that we will disucess more.  In this
+example, Flask-Commands looks at the prior segment to Controller and makes a 
+model with that segment.  So with ``RecipeController`` the ``-m`` flag will 
+generate a ``Recipe`` model because that is the part before ``Controller``.
 
 
 These two commands produce the same general result:
@@ -77,25 +83,28 @@ These two commands produce the same general result:
 
 The important difference is who chooses the model name.
 
-With ``--model Recipe``, you choose the exact model name.  This option allows
-you to call the model anything you want.  If you prefer plural model name 
-then this is your opportunity to make your model plural with 
-``--model Recipes``.
+With ``--model Recipe``, you choose the exact model name.  This option puts
+you in the driver seat 🚗, you can you to call the model anything you want.  
+If you prefer plural model name then this is your opportunity to make your 
+model plural with ``--model Recipes``.
 
 On the other hand, with ``-m`` or ``--generate-model``, Flask-Commands reads 
 the controller name and generates the model name following the rule:
  
- The last segment before ``Controller`` becomes the data structure.  Any
- earlier segments only become parent resources with route parameters when 
- Flask-Commands recognizes them as registered models. 
+ The last segment before ``Controller`` becomes the data structure. 
+
+We will add on to this rule when we discuss added in the ``--crud`` option.  
+But first lets expand on the difference in more complex examples. 
 
 Why Both Options Matter
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+.. youtube_embed:: why-both-options-matter
+
 It is tempting to think, “Great, If both options generate the same thing I'm 
 going to use the shorter ``-m`` all the time.”
 
-For one word names that need to be data structures, that works beautifully.
+For one word data structure names this logic works beautifully.
 
 But your application will need more complexity with names like:
 
@@ -107,10 +116,14 @@ Those names carry more meaning. Sometimes multiple words describe one data
 structure. Sometimes a leading word is a namespace. Sometimes the name describes
 a parent-child relationship.
 
-Having flexability like this is where ``--model`` gives us some speical powers 
-to make more descriptive data structures.  Before that let's revisit up our 
-``Recipe`` resource one more time and end it with a bang 💥 building everything 
-thus far with a single command.
+Having flexability like this is where ``--model`` gives us some spiecal powers 
+to make more descriptive data structures.  In the above example we only built
+a plain Controller class with a ``pass``.  Admidatly that is pretty weak so 
+lets tie in our RESTful superpowers to scaffold out a logic filled controller 
+class and see how ``--model`` and ``-m`` can help us address all the above 
+cases.  We will start by revisiting our old friend the ``Recipe`` resource 
+one more time and end it with a bang 💥 building everything thus far with a 
+single command.
 
 
 Generating a RESTful Controller with a Model
@@ -123,28 +136,28 @@ command!
 
 .. admonition:: Before you run this
 
-   If you are following the tutorial from the beginning, you already
+   If you have followed the tutorial from the beginning, you already
    have a ``RecipeController`` and a ``Recipe`` model in your project.
 
-   To avoid warning and see the cration output from start to finish spin 
-   up a fresh app with something like
+   To avoid warnings and to see the creation output from start to finish please
+   spin up a fresh app with something like
 
    .. code-block:: bash
 
       flask new example_controller_with_crud_and_model
    
 
-We now have the full story on how to generate a new data structure and include 
-all seven RESTful routes all in one command.  We just need to combine the two 
-options ``--crud`` and ``-m``.
+We now have the full story on how to generate a new data structure (``-m``) 
+and include all seven RESTful routes (``--crud``) all in one command.  We 
+just need to combine the two options to see what happens:
 
 .. code-block:: bash
 
    flask make:controller RecipeController --crud -m
 
-This one command scaffolds everything that the docs have discussed up to this
-point. If you have been following along, take a moment to soak it all in. With
-one command you have:
+This one command scaffolds everything that the docs have discussed so far. 
+If you have been following along, take a moment to soak in what just happened. 
+With one command you have:
 
 - a ``RecipeController`` class
 - seven RESTful controller methods
@@ -153,40 +166,110 @@ one command you have:
 - a ``Recipe`` model
 - model registration in ``app/models/__init__.py``
 
-That is the full flat-resource story.
+That is the full flat-resource story 🥳.
 
 When the controller name is one level and there is not parent relationship or 
 namespaceing, like ``RecipeController``, Flask-Commands
 can generate the model name without drama 🎭. ``RecipeController`` points to a
 ``Recipe`` model, and the routes point to the ``recipes`` resource.
 
-Often there is more structure involved. A recipe has ingredients. A user has 
-posts. A project has tasks. A user model need to set behind an admin for 
-security.  This is where controller names start carrying 
-more meaning, and understanding a naming convention is where we turn our 
-attention to next.
+The Naming Problem
+^^^^^^^^^^^^^^^^^^
+
+.. youtube_embed:: the-naming-problem
+
+Often there is more structure involved.
+
+A recipe has ingredients. A user has posts. A project has tasks. A user model
+may need to sit behind an admin section for security.
+
+That is where controller names start carrying more information.
+
+In the rest of this chapter we will turn our attention to understanding the 
+naming convention so we can separate the following three ideas 💡:
+
+- one data structure with a multi-word name
+- a namespace that organizes part of the app
+- a nested resource relationship
+
 
 Single Data Structures that are Multiple Words
 ----------------------------------------------
 
-Not everything can be described with a single word like ``Recipe`` sometimes 
-you need multiple words to describe your single data structure like ``Shopping List``.
+.. youtube_embed:: single-data-structures-that-are-multiple-words
 
-In these cases you will have to use ``--model`` and explicity tell 
+Not everything can be described with a single word like ``Recipe``.  Sometimes 
+you need multiple words to describe your single data structure like: 
+
+.. centered:: ``ShoppingList``
+
+A ``ShoppingList`` is not a ``Shopping`` parent with a ``List`` child. It is one
+model with a two-word name.
+
+ When multiple words describe one data structure, use ``--model``
+
+In these cases you will have to use ``--model`` and explicitly tell 
 Flask-Commands that you want a model with multiple words; otherwise, 
 Flask-Commands will generate a model for you but only with the prior segment to 
 Controller, in this case ``List`` so if you want the two word model ``ShoppingList``
-you will have to tell Flask-Commands with the --model option.  
+you will have to tell Flask-Commands with the ``--model`` option.  
 
 .. code-block:: bash
    
    flask make:controller ShoppingListController --crud --model ShoppingList
 
+This command keeps ``ShoppingList`` together as one resource everywhere
+Flask-Commands generates code.
 
-Understand Namespaces
----------------------
+It does **not** create a nested ``shopping/list`` structure. Instead, the two
+words are converted into the naming style each part of the app expects:
 
-.. youtube_embed:: understand-namespaces
+- model class: ``ShoppingList``
+- model file: ``app/models/shopping_list.py``
+- controller class: ``ShoppingListController``
+- controller file: ``app/controllers/shopping_list_controller.py``
+- route package: ``app/routes/shopping_lists``
+- URL path: ``/shopping-lists``
+- route parameter: ``shopping_list_id``
+
+For example, the generated ``show`` route uses one ``shopping_list_id``
+parameter:
+
+.. code-block:: python
+
+   @bp.route('/shopping-lists/<int:shopping_list_id>', methods=['GET'])
+   def show(shopping_list_id: int):
+       return ShoppingListController.show(shopping_list_id)
+
+And the controller method receives that same single resource id:
+
+.. code-block:: python
+
+   class ShoppingListController:
+       @staticmethod
+       def show(shopping_list_id: int) -> str:
+           return render_template(
+               "shopping_lists/show.html",
+               shopping_list_id=shopping_list_id
+           )
+
+That is the key idea: ``ShoppingList`` has multiple words, but it is still one
+data structure. The route is ``/shopping-lists/<int:shopping_list_id>``, not a
+nested route like ``/shopping/lists/<int:list_id>``.
+
+The same idea applies to other multi-word data structures like ``UserProfile``,
+``PasswordReset``, or ``MealPlan``. Each controller name has multiple words, but each one
+still describes a single data structure.  
+
+In the next setion we will look at the same when the first word is not part of 
+the model name at all. It is a namespace, like ``Admin``, that groups related 
+routes without creating an ``Admin`` model. 
+
+
+When To Namespace
+-----------------
+
+.. youtube_embed:: when-to-namespace
 
 
 There is one important rule before we generate the nested resource:
@@ -298,6 +381,10 @@ And instead of a flat endpoint name, you preserve the nesting with:
    url_for('recipes.ingredients.index', recipe_id=1)
 
 That saves real mental energy later.
+
+ The last segment before ``Controller`` becomes the data structure. Any
+ earlier segments only become parent resources with route parameters when 
+ Flask-Commands recognizes them as registered models. 
 
 Now we need to nest, build out all RESTful action, and generate a model with.
 Now that the model naming is clear, we can look at the more interesting case:
