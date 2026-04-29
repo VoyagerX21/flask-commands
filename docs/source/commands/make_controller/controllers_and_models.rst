@@ -271,37 +271,55 @@ When To Namespace
 
 .. youtube_embed:: when-to-namespace
 
+Not every leading word in a controller name should become a model, or is even
+part of a model like a multi-word model.  There are times when you just need 
+to keep thing nice and organized.  This is the idea behind namespacing.  
 
-There is one important rule before we generate the nested resource:
-Flask-Commands only treats a leading segment as a parent resource when that
-segment matches a registered model.
+A common example is ``Admin``. You want routes, controllers, and templates 
+that are specific to admimistrative users but you don't need an ``Admin`` 
+model in your database.  
 
-When I say **registered model**, I mean a model that exists in your application
-and is imported in ``app/models/__init__.py``.
+Every time you run ``flask new`` you get a new flask application that ships
+with a ``User`` model.  If figured everyone needed some data structure to start
+out with and ``User`` seems like a good one.  Let's use that model to create 
+routes that are specific to admin functions.  As usual we will just stub
+out the these routes.  The practical use here is that these are the routes 
+where certain users would have the ability to edit other users accounts.  
 
-If ``Recipe`` is registered, then Flask-Commands reads 
-``RecipeIngredientController`` as we described above:
+To do this you would type:
 
-- parent resource: ``Recipe``
-- child resource: ``Ingredient``
+.. code-block:: bash
 
-That is what lets Flask-Commands generate a nested route like:
+   flask make:controller AdminUserController --crud
 
-- ``/recipes/<int:recipe_id>/ingredients``
+Let's explain what's going on behind the scenes.  Flask-Commands take 
+``AdminUserController`` removed the ``Controller`` part, and breakes down 
+``AdminUser`` into two segments ``Admin`` and ``User`` based on the 
+capitalization.  Form there Flask-Commands recognizes that ``Admin`` is not 
+a registered model while ``User`` is a registered model.  When I say 
+**registered model**, I mean a model that exists in your application and is 
+imported in ``app/models/__init__.py``. 
 
-If ``Recipe`` is not registered, Flask-Commands treats ``Recipe`` as a
-namespace. Think of a namespace as a way of organizing content but it don't 
-need a data structure.  A great archetypal example is  ``admin``.  We might 
-need routes and views that are all hidden behind an admin structure; however,
-admin is not a data structure in our database.  
+Because ``Admin`` is not a registered model when flask command builds out the
+route urls it will not include the parameter ``<int:admin_id>``.  Conversly, 
+because ``User`` is a registered model when flask command builds out the 
+route urls it will include the parameter ``<int:user_id>``.  Consequently, 
+your route patters will look like this:
 
-Going back to our example, if ``Recipes`` was not a registered model then we 
-would not end up with ``recipe_id`` as a route parameter.
+- ``/admin/users/<int:user_id>``
 
-- ``/recipes/ingredients``
+Often this is the structure you are looking for, not a double word like 
 
-This distinction matters because ``recipes`` can only become a parent resource
-when Flask-Commands knows that ``Recipe`` is a model.
+- ``/admin-users/<int:admin_user_id>`` 
+
+or a nested resource like 
+
+- ``/admin/<int:admin_id>/users/<int:user_id>``
+
+Instead, namespaces are used for organization and this is exactly what 
+Flask-Commands givens you when the leading segment is not a registered model.  
+Without further ado let's now look closely at the last url pattern listed above
+which is a nested resources.  
 
 
 Naming Nested Controllers by the Relationship
@@ -313,12 +331,18 @@ Let's say our cooking app needs a new data structure, ``Ingredient``.  For
 those following along I can hear the shouts of hurray 🥳 as everyone is glad I 
 didn't say ``Recipe`` again 🤪. 
 
-A Recipe has Ingredients so we need the relationship:
+While we want an ``Ingredient`` data structure we don't want a random resource
+floating around by itself.  Future you will not like the random floating resource.
+Instead we need the new data structure ``Ingredient`` to connect to the 
+current ``Recipe`` data structure.  In other words, our application the ability 
+for recipes to have ingredients.
+
+To show this relationship in diagram form one often writes:
 
 .. centered:: **Recipe -> Ingredient**.
 
-This is where nesting comes into play and naming is very import.  A nested 
-controller name should read from parent to child.
+This is where nesting comes into play.  A nested controller name should read 
+from parent to child.
 
 ``RecipeIngredientController`` means:
 
@@ -326,10 +350,23 @@ controller name should read from parent to child.
 - ``Ingredient`` is the child data structure
 - ``Controller`` tells Flask-Commands this is a controller class
 
+The important rule here is:
+
+ Flask-Commands treats a leading segment as a parent resource when that 
+ segment matches a registered model.
+
+Because ``Recipe`` is registered, Flask-Commands reads 
+``RecipeIngredientController`` as we described above:
+
+- parent resource: ``Recipe``
+- child resource: ``Ingredient``
+
+That is what lets Flask-Commands generate nested route like:
+
+- ``/recipes/<int:recipe_id>/ingredients``
+
 That naming gives Flask-Commands enough structure to build folders, routes,
 templates, and endpoint names that tell the same story.
-
-For example, the controller name points toward structure like:
 
 - ``app/controllers/recipe_ingredient_controller.py``
 - ``app/routes/recipes/ingredients/``
@@ -339,53 +376,52 @@ For example, the controller name points toward structure like:
 The controller name is doing more than naming a Python class. It is describing
 how the resource belongs in the application.
 
+
 Go Nested with ``--crud``
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. youtube_embed:: go-nested-with-make-controller-crud
 
-After a lot of build up let’s go back and build the nested relationship we
-discussed above **Recipe -> Ingredient**.
+After a lot of build up let's now build the nested relationship we
+just discussed **Recipe -> Ingredient**.
 
-If you are following along you should already have a  That means we want a nested controller:
+If you are following along you should already have a ``Recipe`` model.  This 
+is really the important part because without ``Recipe`` as a registered model
+Flask-Commands will treat ``Recipe`` as a namespace.  But when ``Recipe`` is 
+a model and we type:
 
 .. code-block:: bash
 
    flask make:controller RecipeIngredientController --crud
 
-With this one change, you get a lot of structural benefits:
+We end up with a nested resources.  Notice that we did not include the ``-m`` 
+or ``--model`` options, instead we use ``--crud``. 
 
-- ``app/controllers/recipe_ingredient_controller.py``
-- nested routes under ``app/routes/recipes/ingredients/``
-- templates under ``app/templates/recipes/ingredients/``
-- nested endpoint names like ``recipes.ingredients.index``
+Because ``Recipe`` is a registered model and we added the ``--crud`` option, 
+our last segment ``Ingredient`` is treated like a RESTful resource but it 
+doesn't register the model for you.  
 
-That last part matters a lot to me.
+In this case, Flask-Commands has enough information to build the nested route 
+resource shape like:
 
-If ingredients belong to recipes, I want the route names, folder structure,
-and controller name to read that way too. The app should tell the truth about
-the relationship.
+- /recipes/<int:recipe_id>/ingredients (index route)
+- /recipes/<int:recipe_id>/ingredients/<int:ingredient_id> (show route)
 
-So instead of a flat route like:
-
-- ``/ingredients``
-
-you end up with a nested route shape:
-
-- ``/recipes/<int:recipe_id>/ingredients``
-
-And instead of a flat endpoint name, you preserve the nesting with:
+So instead of a flat endpoint name, you preserve the nesting and references to
+the routes include the recipe_id like this:
 
 .. code-block:: python
 
    url_for('recipes.ingredients.index', recipe_id=1)
 
-That saves real mental energy later.
+So, with ``Recipes`` as a registered model we end up with a lot of structures 
+that explain the relationship:
 
- The last segment before ``Controller`` becomes the data structure. Any
- earlier segments only become parent resources with route parameters when 
- Flask-Commands recognizes them as registered models. 
+- a ``RecipeIngredientContoller`` under ``app/controllers/recipe_ingredient_controller.py``
+- nested routes under ``app/routes/recipes/ingredients/``
+- templates under ``app/templates/recipes/ingredients/``
+- nested endpoint names like ``recipes.ingredients.index``
 
-Now we need to nest, build out all RESTful action, and generate a model with.
-Now that the model naming is clear, we can look at the more interesting case:
-when one controller name can describe more than one valid structure.
+Now that we understand how Flask-Commands generates nested controller structure,
+we can look at what happens when we add ``-m`` and ask Flask-Commands to
+generate the model too.
