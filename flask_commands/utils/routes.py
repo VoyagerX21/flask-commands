@@ -1,3 +1,4 @@
+import ast
 import re
 import os
 import click
@@ -15,8 +16,12 @@ from flask_commands.utils.data_types import (
     ScaffoldStatus
 )
 
-from .files import file_append_file, file_write_file
-from .naming import pluralize, singularize
+from .files import (
+    file_append_file, 
+    file_insert_import_into_lines, 
+    file_write_file)
+
+from .naming import singularize
 from .scaffold import (
     generate_restful_route,
     filter_falsy,
@@ -34,6 +39,7 @@ def route_add_method(
     This function is used when the route package already exists. It:
     - generates a route function for the requested action
     - validates that the route function does not already exist
+    - ensures the referenced controller is imported in `routes.py`
     - appends the handler to the existing `routes.py`
     - returns an action-level result plus a styled message
 
@@ -75,6 +81,8 @@ def route_add_method(
 
     Notes:
     - This function does not create route directories or register blueprints.
+    - If the controller import is missing, it is inserted before the route
+      handler is appended.
     - Existing route functions return status `WARNING` and do not modify files.
     """
 
@@ -102,7 +110,22 @@ def route_add_method(
                 is_successful=False
                 ), message
 
-        # 3) _append_route_method
+        # 3) _ensure_route_controller_import
+        is_successful, message = _apply_step_result(
+            updates,
+            _ensure_route_controller_import(route_file_path, controller_name),
+            "Could not update route controller import"
+        )
+        if not is_successful:
+            return _generate_action_result(
+                relative_path=relative_path,
+                action=action,
+                route_name=route_name,
+                route_status=ScaffoldStatus.WARNING,
+                is_successful=False
+            ), message
+        
+        # 4) _append_route_method
         is_successful, message = _apply_step_result(
             updates,
             _append_route_method(action, route_file_path, route_content),
@@ -782,6 +805,51 @@ def _apply_step_result(
     )
     return False, message
 
+def _ensure_route_controller_import(route_file_path: str, controller_name: str | None) -> tuple[bool, str]:
+    """
+    Ensure a route file imports the controller used by generated route handlers.
+
+    Existing route packages can be created before they receive concrete CRUD
+    handlers, especially as parent packages for nested resources. In that case,
+    `routes.py` may contain only the blueprint import. Before appending a new
+    route handler that calls `ControllerName.action(...)`, this helper checks
+    whether `ControllerName` is already imported from `app.controllers` and, if
+    missing, inserts the import into the file's import block.
+
+    Args:
+        route_file_path (str): Path to the existing `routes.py` file.
+        controller_name (str | None): Controller class referenced by the route
+            handler. Defaults to `MainController` when omitted.
+
+    Returns:
+        tuple[bool, str]:
+            - `True, ""` when the controller import already exists.
+            - `True, <message>` when the controller import was inserted.
+
+    Notes:
+        Controller import detection uses `_get_registered_route_controllers()`,
+        which parses the file with `ast`, so both single-line and multiline
+        `from app.controllers import ...` statements are recognized.
+    """
+    using_controller_name = controller_name if controller_name else "MainController"
+    registered_controllers = _get_registered_route_controllers(route_file_path)
+
+    if using_controller_name in registered_controllers:
+        return True, ""
+    
+    with open(route_file_path, "r", encoding="utf-8") as file:
+        source = file.read()
+
+    lines = file_insert_import_into_lines(
+        source.splitlines(),
+        f"from app.controllers import {using_controller_name}",
+    )
+
+    with open(route_file_path, "w", encoding="utf-8") as file:
+        file.write("\n".join(lines) + "\n")
+
+    return True, f"Imported {using_controller_name} in {route_file_path}"
+
 def _generate_action_result(
         relative_path: str,
         action: str,
@@ -1099,6 +1167,42 @@ def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
         registered_snake_models=tuple(registered_snake_models),
         generated_route_name=generated_route_name
     )
+
+def _get_registered_route_controllers(route_file_path: str) -> list[str]:
+    """
+    Return controller class names imported from `app.controllers` in a route file.
+
+    Supports both single-line imports:
+
+        from app.controllers import RecipeController
+
+    and multiline imports:
+
+        from app.controllers import (
+            PostController,
+            RecipeController,
+        )
+    """
+    try:
+        with open(route_file_path, "r", encoding="utf-8") as file:
+            route_content = file.read()
+    except FileNotFoundError:
+        return []
+    try:
+        tree = ast.parse(route_content, filename=route_file_path)
+    except SyntaxError:
+        return []
+    
+    controllers: set[str] = set()
+    for node in tree.body:
+        if not isinstance(node, ast.ImportFrom):
+            continue
+        if node.module != "app.controllers":
+            continue
+        for alias in node.names:
+            if alias.name and alias.name[0].isupper():
+                controllers.add(alias.name)
+    return sorted(controllers)
 
 def _register_blueprint_in_parent(
         relative_path: str,
