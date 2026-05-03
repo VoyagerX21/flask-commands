@@ -156,8 +156,8 @@ def make_controller(
                 click.echo(
                     "Detected multiple child like segments:\n" +
                     ", ".join(nested_model_names))
-                click.echo(f"1 (flatten resource model)  = {non_nested_model_name}")
-                click.echo(f"2 (generate the following models) = {', '.join(nested_model_names)}")
+                click.echo(f"1) (flatten resource model)  = {non_nested_model_name}")
+                click.echo(f"2) (generate the following models) = {', '.join(nested_model_names)}")
                 choice = click.prompt(
                     "Choose model structure (1/2, flat/nest):",
                     type=click.Choice(["1", "2", "flat", "nest"], case_sensitive=False),
