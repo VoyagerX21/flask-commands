@@ -18,7 +18,7 @@ from flask_commands.utils.data_types import (
 
 from .files import (
     file_append_file, 
-    file_insert_import_into_lines, 
+    file_prepend_import_to_lines, 
     file_write_file)
 
 from .naming import singularize
@@ -837,16 +837,22 @@ def _ensure_route_controller_import(route_file_path: str, controller_name: str |
     if using_controller_name in registered_controllers:
         return True, ""
     
-    with open(route_file_path, "r", encoding="utf-8") as file:
-        source = file.read()
+    try:
+        with open(route_file_path, "r", encoding="utf-8") as file:
+            source = file.read()
 
-    lines = file_insert_import_into_lines(
-        source.splitlines(),
-        f"from app.controllers import {using_controller_name}",
-    )
+        lines = file_prepend_import_to_lines(
+            source.splitlines(),
+            f"from app.controllers import {using_controller_name}",
+        )
 
-    with open(route_file_path, "w", encoding="utf-8") as file:
-        file.write("\n".join(lines) + "\n")
+        with open(route_file_path, "w", encoding="utf-8") as file:
+            file.write("\n".join(lines) + "\n")
+    except Exception as exception:
+        return False, (
+            f"Failed to import {using_controller_name} in "
+            f"{route_file_path}: {exception}"
+        )
 
     return True, f"Imported {using_controller_name} in {route_file_path}"
 

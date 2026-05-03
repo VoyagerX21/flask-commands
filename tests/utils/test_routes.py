@@ -10,9 +10,11 @@ from flask_commands.utils.routes import (
     route_http_method_for_action,
     route_write_directory_and_register_blueprint,
     route_parse_route_name_for_params_and_types,
+    _ensure_route_controller_import,
     _generate_minimal_route_routes,
     _generate_prompt_plan,
     _generate_route_spec,
+    _get_registered_route_controllers,
     _register_blueprint_in_parent,
     _register_top_level_blueprint_in_app,
     _write_parent_route_directory,
@@ -389,6 +391,80 @@ def test_route_add_method_root_relative_path_updates_mains_routes_file(project):
     assert "/landing" in message
     assert "url_for('mains.landing')" in message
 
+def test_route_add_method_adds_missing_controller_import(tmp_path, monkeypatch):
+    project_root = tmp_path
+    route_dir = project_root / "app" / "routes" / "recipes"
+    route_dir.mkdir(parents=True)
+
+    route_file = route_dir / "routes.py"
+    route_file.write_text(
+        "from app.routes.recipes import bp\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(project_root)
+
+    action_result, message = route_add_method(
+        relative_path="recipes",
+        action="index",
+        route_directory_path="app/routes/recipes",
+        route_name="/recipes",
+        controller_name="RecipeController",
+    )
+
+    assert action_result.is_successful is True
+    assert action_result.route_status == ScaffoldStatus.ADDED
+    assert route_file.read_text(encoding="utf-8") == (
+        "from app.controllers import RecipeController\n"
+        "from app.routes.recipes import bp\n"
+        "\n"
+        "@bp.route('/recipes', methods=['GET'])\n"
+        "def index():\n"
+        "    return RecipeController.index()\n"
+    )
+    assert "Imported RecipeController in app/routes/recipes/routes.py" in message
+
+def test_route_add_method_returns_warning_when_controller_import_insert_fails(
+        tmp_path,
+        monkeypatch):
+    def boom(*args, **kwargs):
+        raise RuntimeError("import insertion failed")
+
+    project_root = tmp_path
+    route_dir = project_root / "app" / "routes" / "recipes"
+    route_dir.mkdir(parents=True)
+
+    route_file = route_dir / "routes.py"
+    route_file.write_text(
+        "from app.routes.recipes import bp\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(project_root)
+    monkeypatch.setattr(
+        routes_module,
+        "file_prepend_import_to_lines",
+        boom,
+    )
+
+    action_result, message = route_add_method(
+        relative_path="recipes",
+        action="index",
+        route_directory_path="app/routes/recipes",
+        route_name="/recipes",
+        controller_name="RecipeController",
+    )
+
+    assert action_result.is_successful is False
+    assert action_result.route_status == ScaffoldStatus.WARNING
+    assert "Could not update route controller import" in message
+    assert "Failed to import RecipeController" in message
+    assert "import insertion failed" in message
+    assert route_file.read_text(encoding="utf-8") == (
+        "from app.routes.recipes import bp\n"
+    )
+
+
 def test_route_write_directory_returns_when_write_routes_step_fails(tmp_path, monkeypatch):
     project_root = tmp_path
     app_dir = project_root / "app"
@@ -472,7 +548,6 @@ def test_route_generate_route_name_non_restful_last_segment_not_model():
         relative_path_segments=["posts", "reports"],
         relative_path_segment_models=["posts"],
     ) == "/posts/<int:post_id>/reports/export-csv"
-
 
 def test_route_generate_route_name_empty_relative_path():
     assert route_generate_route_name(
@@ -861,7 +936,6 @@ def test_route_write_directory_and_register_blueprint_app_init_missing_return(tm
     assert "return app" in message
     assert "app/__init__.py" in message
 
-
 def test_route_write_directory_and_register_blueprint_route_already_exists(tmp_path, monkeypatch):
     project_root = tmp_path
     route_dir = project_root / "app" / "routes" / "users"
@@ -896,7 +970,6 @@ def test_route_write_directory_and_register_blueprint_route_already_exists(tmp_p
 
     assert "Failed to create route" in message
     assert "File exists" in message
-
 
 def test_route_write_directory_and_register_blueprint_exception(tmp_path, monkeypatch):
     def boom(*args, **kwargs):
@@ -1029,10 +1102,30 @@ def test_route_parse_route_name_for_params_and_types_str_param():
     assert params == ["post_slug"]
 
 # Private Function Test
+def test__ensure_route_controller_import_adds_missing_controller_import(tmp_path):
+    route_file = tmp_path / "routes.py"
+    route_file.write_text(
+        "from app.routes.recipes import bp\n",
+        encoding="utf-8",
+    )
+
+    is_successful, message = _ensure_route_controller_import(
+        str(route_file),
+        "RecipeController",
+    )
+
+    assert is_successful is True
+    assert f"Imported RecipeController in {route_file}" in message
+    assert route_file.read_text(encoding="utf-8") == (
+        "from app.controllers import RecipeController\n"
+        "from app.routes.recipes import bp\n"
+    )
+
 def test__generate_minimal_route_routes():
     assert _generate_minimal_route_routes("app/routes/users") == [
         "from app.routes.users import bp"
     ]
+
 def test__generate_prompt_plan_missing_model_index(model_builder):
     route_spec = _generate_route_spec("admin.reports.index")
     prompt_plan = _generate_prompt_plan(route_spec)
@@ -1201,6 +1294,39 @@ def test__generate_route_spec_admin_posts_show_when_admin_model_exists(model_bui
     assert spec.registered_snake_models == ("admin", "post")
     assert spec.generated_route_name == "/admin/<int:admin_id>/posts/<int:post_id>"
 
+def test__get_registered_route_controllers_reads_multiline_controller_imports(tmp_path):
+    route_file = tmp_path / "routes.py"
+    route_file.write_text(
+        "import os\n"
+        "from app.controllers import (\n"
+        "    PostController,\n"
+        "    RecipeController,\n"
+        "    helper_function,\n"
+        ")\n"
+        "from app.routes.recipes import bp\n",
+        encoding="utf-8",
+    )
+
+    assert _get_registered_route_controllers(str(route_file)) == [
+        "PostController",
+        "RecipeController",
+    ]
+
+def test__get_registered_route_controllers_returns_empty_for_missing_file(tmp_path):
+    route_file = tmp_path / "missing.py"
+
+    assert _get_registered_route_controllers(str(route_file)) == []
+
+def test__get_registered_route_controllers_returns_empty_for_invalid_python(tmp_path):
+    route_file = tmp_path / "routes.py"
+    route_file.write_text(
+        "from app.controllers import (\n"
+        "    RecipeController,\n",
+        encoding="utf-8",
+    )
+
+    assert routes_module._get_registered_route_controllers(str(route_file)) == []
+
 def test__register_top_level_blueprint_in_app_missing_app_init(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
@@ -1298,7 +1424,6 @@ def test__write_parent_route_directory_creates_scaffold(tmp_path, monkeypatch):
 
 def test__write_parent_routes_single_segment_returns_empty():
     assert _write_parent_routes("users") == (True, [])
-
 
 def test__write_parent_routes_creates_each_missing_parent_and_registers(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)

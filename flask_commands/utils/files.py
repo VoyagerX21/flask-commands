@@ -104,7 +104,7 @@ def file_insert_flask_import_name_into_lines(
         f"from flask import {missing_method}"
     )
 
-def file_insert_import_into_lines(lines, import_statement) -> list:
+def file_insert_import_into_lines(lines: list[str], import_statement: str) -> list[str]:
     """
     Inserts an import or from statement into a list of lines.  Places the
     statement after any existing import/from block, and adds a blank line
@@ -151,6 +151,9 @@ def file_is_project_root() -> bool:
     click.secho("    - Flask-Commands expects to find app/ and run.py in the current directory", fg="yellow")
     click.secho("    - No files were created or changed", fg="yellow")
     return False
+
+def file_prepend_import_to_lines(lines: list[str], import_statement: str) -> list[str]:
+    return [import_statement] + lines
 
 def file_write_file(file_path: str, contents: list[str]) -> None:
     """Writes the contents to the file_path for a new file.  Raises a File
