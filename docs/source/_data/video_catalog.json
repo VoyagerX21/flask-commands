@@ -315,9 +315,14 @@
       "description": "Learn how the controller-first workflow behaves when the resource is nested and how that changes the generated routes, files, and prompts.",
       "video_id": "nrFk9fAaiII"
     },
-    "choose-flat-vs-nested-when-using-m": {
-      "title": "Choose flat vs nested when using -m",
+    "flat-or-nest-with-the-m-option": {
+      "title": "Flat or Nest with the ``-m`` Option",
       "description": "Learn what the structure choice means inside the controller-first workflow so you can pick the layout that matches your app instead of accepting a default blindly.",
+      "video_id": "nrFk9fAaiII"
+    },
+    "choose-flat-for-one-multi-word-model": {
+      "title": "Choose Flat for One Multi-Word Model",
+      "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },
     "intro-to-flask-make-model": {
