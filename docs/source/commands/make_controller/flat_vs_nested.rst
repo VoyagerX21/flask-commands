@@ -245,12 +245,14 @@ not:
 
 .. centered:: ``ShoppingList -> Store -> Ingredient``
 
-That is why the build-up order matters. ``--nest`` uses the registered parent
-chain and generates the remaining words as the next child. If you want
-``Store`` to be its own parent in the chain, generate and register ``Store``
-before you generate ``Ingredient`` under it.
+Flask-Commands uses the registered parents as an anchor and when you provide 
+the option ``--nest`` and then takes the remaining words segments that come
+after the registered parent chain to generate the next child resource. 
+Consequently, if we want ``Store`` to be its own parent in the chain, we 
+have to build-up in order by generate and register ``Store`` before 
+you generate ``Ingredient`` under it.
 
-This is the pattern to remember:
+The takeway pattern to remember here is:
 
  Build nested resources in the same order you want Flask-Commands to understand
  them.
@@ -259,10 +261,162 @@ Each command registers the next model before the following command needs it.
 Because every command includes ``--crud``, every level also receives its own
 controller, routes, and templates.
 
+Use Namespaces Without Turning Them Into Models
+-----------------------------------------------
 
-This is one of those spots where the tool is trying to be honest rather than
-magical. Sometimes a name can describe more than one good structure, and in
-that moment the command lets you decide which story your app should tell.
+Namespaces are still useful with controller names.
 
-The same flat-versus-nested decision shows up again from the model-first side,
-and it is worth seeing from that direction too.
+A common example is a ``Staff`` section. Staff users will need a private area 
+where they can manage recipe content, while regular users browse and cook from 
+the public recipe pages which are built by the staff.
+
+If you have been following along, you already have ``Recipe`` as a registered
+model. If not, create the recipe resource first.
+
+.. admonition:: Before you run this
+
+   This section assumes ``Recipe`` is already a registered model. If you do not
+   have it yet, create the model-backed resource first with the following 
+   command:
+
+   .. code-block:: bash
+
+      flask make:controller RecipeController --crud -m
+
+Once ``Recipe`` exists, you can build a staff CRUD controller for recipes like
+this:
+
+.. code-block:: bash
+
+   flask make:controller StaffRecipeController --crud
+
+Notice that this command does not include ``-m``. We are not generating a new
+model. We are building namespaced CRUD scaffolding around the existing
+``Recipe`` model.
+
+Conceptually, the route shape is:
+
+- ``/staff/recipes``
+- ``/staff/recipes/<int:recipe_id>``
+
+Here, ``Staff`` is the namespace and ``Recipe`` is the RESTful resource.
+
+As a side note, the command can still create staff recipe CRUD
+scaffolding even if ``Recipe`` is not registered. Thus, it may sound 
+convenient to skip the step of registered the ``Recipe`` model.  However, this
+puts the app in an odd state.  You would have a staff-only recipe ``show`` 
+route (named ``staff.recipes.show``) without a normal public ``show`` route 
+(named ``recipes.show``).  In other words, staff could write and read recipes 
+but the public user would never be able to read them.  
+
+That is probably not the shape you want. Staff users may need extra tools for
+managing recipes, but regular users still need the ordinary recipe pages.
+
+So my recommended approach is to build the model-backed resource first, 
+then add the namespace around it:
+
+.. code-block:: bash
+
+   flask make:controller RecipeController --crud -m
+   flask make:controller StaffRecipeController --crud
+
+That gives you both:
+
+- public recipe CRUD scaffolding
+- staff recipe CRUD scaffolding
+
+without turning ``Staff`` into a model.
+
+.. admonition:: A more production-minded example
+   
+   If you want to be more selective, you can give public users only the read pages
+   and give staff users the full CRUD surface.
+
+   .. code-block:: bash
+
+      flask make:view recipes.index -rcm
+      flask make:view recipes.show -rc
+      flask make:controller StaffRecipeController --crud
+
+   The first command creates the public recipe index and generates the ``Recipe``
+   model. The second command adds the public recipe show page. The final command
+   adds the full staff CRUD controller around the already registered ``Recipe``
+   model.
+
+Combine Namespaces with Nested Model Generation
+-----------------------------------------------
+
+You can combine namespaces, nested resources, CRUD scaffolding, and generated
+models. The key is still to build the registered model chain in order.
+
+Suppose staff users need to manage recipe steps and tips inside a private staff
+area.
+
+That relationship looks like this:
+
+.. centered:: ``Staff / Recipe -> CookStep -> Tip``
+
+Start by creating the top-level model-backed resource:
+
+.. code-block:: bash
+
+   flask make:controller RecipeController --crud -m
+
+Then create the staff CRUD controller for that existing model:
+
+.. code-block:: bash
+
+   flask make:controller StaffRecipeController --crud
+
+Now you can generate nested children inside the staff namespace:
+
+.. code-block:: bash
+
+   flask make:controller StaffRecipeCookStepController --crud -m --nest
+   flask make:controller StaffRecipeCookStepTipController --crud -m --nest
+
+The first nested staff command sees:
+
+- namespace: ``Staff``
+- registered parent: ``Recipe``
+- generated child: ``CookStep``
+
+So it builds:
+
+- model: ``CookStep``
+- controller: ``StaffRecipeCookStepController``
+- routes: ``/staff/recipes/<int:recipe_id>/cook-steps``
+
+The second nested staff command sees:
+
+- namespace: ``Staff``
+- registered parents: ``Recipe`` and ``CookStep``
+- generated child: ``Tip``
+
+So it builds:
+
+- model: ``Tip``
+- controller: ``StaffRecipeCookStepTipController``
+- routes: ``/staff/recipes/<int:recipe_id>/cook-steps/<int:cook_step_id>/tips``
+
+The rule is the same as before:
+
+- namespaces come before the registered model chain
+- registered models become parents
+- ``--nest`` generates the next child
+- ``--crud`` gives each controller its RESTful scaffolding
+
+That means the order matters. Build the top-level model first, then build the
+namespaced controller for that model, then generate each nested child one level
+at a time.
+
+That wraps up the controller-first path.   We started with the controller name, 
+used ``-m`` when we wanted model generation, and used ``--flat`` and ``--nest``
+when the controller name carries more than one possible meaning.  The last part
+was the key to let you choose whether Flask-Commands should keep words 
+together as one model or build a nested relationship from the registered 
+model chain.
+
+Next we will look at the same choice from the model-first side. Instead of
+starting with a controller name and asking for a model, we will start with a
+model name and ask Flask-Commands to build the CRUD structure around it.
