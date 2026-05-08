@@ -94,19 +94,19 @@ generated the missing nested structure ``Ingredient``.
 
 In both cases, ``-m`` is what creates the flat-or-nested question. Registered
 models help Flask-Commands understand which words are already part of your app
-and which words still need generated models.
+and which words should be used to generate a model.
 
 If you choose **flat**, Flask-Commands keeps the words together:
 
 - model generated: ``RecipeIngredient``
 - controller class: ``RecipeIngredientController``
-- CRUD routes: ``/recipe-ingredients``
+- URL shape: ``/recipe-ingredients/<int:recipe_ingredient_id>``
 
 If you choose **nested**, Flask-Commands builds the relationship:
 
 - model story: ``Recipe -> Ingredient``
 - controller class: ``RecipeIngredientController``
-- CRUD routes: ``/recipes/<int:recipe_id>/ingredients``
+- URL shape: ``/recipes/<int:recipe_id>/ingredients/<int:ingredient_id>``
 
 You can skip the prompt with either ``--flat`` or ``--nest``:
 
@@ -117,14 +117,14 @@ You can skip the prompt with either ``--flat`` or ``--nest``:
 
 Therefore, Flask-Commands can build out complicated data 
 structures under multiple setups (a registered or not registered ``Recipe``).  
-In addition, if the new data structure contains the name 
+If the new data structure contains the name 
 of an existing data structure, choose ``--flat`` and keep the words together 
-as one model. However, if the controller name is describing a parent-child 
-relationship, choose ``--nest`` and let that relationship show in the 
+as one model. Conversly, if the controller name is describing a parent-child 
+relationship, choose ``--nest`` and let relationship show in the 
 generated CRUD structure.  
 
-Let's revisit a command we showed in the prior chapter and show how these new
-options will shorten the command.
+Let's revisit a command we showed in the prior chapter and used these new
+options to shorten the command.
 
 
 Choose Flat for One Multi-Word Model
@@ -138,7 +138,8 @@ controller whose model name needs more than one word.
 A ``ShoppingList`` is one data structure. It is not a ``Shopping`` model with a
 nested ``List`` model under it.
 
-In that chapter, we solved the problem by naming the model directly:
+In `Single Data Structures that are Multiple Words <controllers_and_models.html#single-data-structures-that-are-multiple-words>`__, we solved the problem by naming the model directly:
+
 
 .. code-block:: bash
 
@@ -147,12 +148,12 @@ In that chapter, we solved the problem by naming the model directly:
 That works because ``--model ShoppingList`` explicitly tells Flask-Commands
 that ``ShoppingList`` should stay together as one model.
 
-Without that instruction, ``Shopping`` could become a namespace and ``List``
-could become the RESTful resource. That is not the story we want for a shopping
-list.
+Without that instruction, ``Shopping`` becomes a namespace and ``List``
+could becomes the RESTful resource, which is not the story we want for a 
+shopping list.
 
-Now that we have ``-m`` and ``--flat``, we can let Flask-Commands generate the
-same model from the controller name:
+Now that we have ``-m`` and ``--flat``, we can let Flask-Commands to generate 
+the multi-word model from the controller name:
 
 .. code-block:: bash
 
@@ -171,10 +172,12 @@ The generated structure is flat:
 - controller class: ``ShoppingListController``
 - route package: ``app/routes/shopping_lists``
 - template folder: ``app/templates/shopping_lists``
-- URL shape: ``/shopping-lists``
+- URL shape: ``/shopping-lists/<int:shopping_list_id>``
 
-The rule to remember here is that ``--flat`` tells Flask-Commands that the 
-words before ``Controller`` describe one data structure.
+The rule to remember here is:
+
+ To keep all the words before ``Controller`` together as one data structure
+ use ``--flat`` with the ``-m`` generator flag.
 
 Build Nested Resources One Level at a Time
 ------------------------------------------
@@ -232,7 +235,8 @@ the relationship. If you skip the middle command and run:
    flask make:controller ShoppingListController --crud -m --flat
    flask make:controller ShoppingListStoreIngredientController --crud -m --nest
 
-Flask-Commands reads the second command like this:
+Flask-Commands reads the second command as a multi-word data structure like
+this:
 
 - registered parent: ``ShoppingList``
 - generated child: ``StoreIngredient``
@@ -246,16 +250,18 @@ not:
 .. centered:: ``ShoppingList -> Store -> Ingredient``
 
 Flask-Commands uses the registered parents as an anchor and when you provide 
-the option ``--nest`` and then takes the remaining words segments that come
-after the registered parent chain to generate the next child resource. 
-Consequently, if we want ``Store`` to be its own parent in the chain, we 
-have to build-up in order by generate and register ``Store`` before 
-you generate ``Ingredient`` under it.
+the option ``--nest`` it then takes the remaining words segments that come
+after the registered parent chain and combines them to generate the new 
+child resource. Consequently, if we want ``Store`` to be its own parent in 
+the chain, we have to build-up in order by generate and register ``Store`` 
+before generating ``Ingredient`` under it.
 
 The takeway pattern to remember here is:
 
- Build nested resources in the same order you want Flask-Commands to understand
- them.
+ Build nested resources one command at a time, from the top down. Run the parent
+ resource command first, then run the next child resource command under that
+ parent. Repeat this pattern for each child resource in the nested chain.
+
 
 Each command registers the next model before the following command needs it.
 Because every command includes ``--crud``, every level also receives its own
@@ -264,13 +270,17 @@ controller, routes, and templates.
 Use Namespaces Without Turning Them Into Models
 -----------------------------------------------
 
-Namespaces are still useful with controller names.
+Namespaces are the one place where the top-down pattern needs a little
+clarification. A namespace is not a parent model in the resource chain. It is a
+wrapper around an existing resource, so you usually want the resource to exist
+before you add the namespace.
+
 
 A common example is a ``Staff`` section. Staff users will need a private area 
 where they can manage recipe content, while regular users browse and cook from 
 the public recipe pages which are built by the staff.
 
-If you have been following along, you already have ``Recipe`` as a registered
+If you are following along with this tutorial, you already have ``Recipe`` as a registered
 model. If not, create the recipe resource first.
 
 .. admonition:: Before you run this

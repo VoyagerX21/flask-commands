@@ -261,9 +261,12 @@ def controller_generate_relative_path_from_controller_name(controller_name: str)
     Generate a slash-delimited relative path from a controller class name.
 
     This function derives hierarchy segments using
-    ``model_generate_hierarchy_from_controller_name``, then converts each
-    non-empty segment from PascalCase to snake_case, pluralizes it, and joins
-    the result with ``/``.
+    ``model_generate_hierarchy_from_controller_name``. If no registered model
+    anchor is found, all parsed segments are treated as resource segments and
+    pluralized. If a registered model anchor is found, leading unmatched
+    segments are treated as namespaces, kept singular, and combined into one
+    hyphenated URL segment. Model/resource segments are converted to snake_case,
+    pluralized, and joined with ``/``.
 
     Args:
         controller_name (str): Controller class name (for example,
@@ -274,9 +277,17 @@ def controller_generate_relative_path_from_controller_name(controller_name: str)
         when no segments can be derived.
 
     Examples:
+        # No registered models
+        >>> controller_generate_relative_path_from_controller_name("CommentController")
+        'comments'
+
         # Registered models: Post
         >>> controller_generate_relative_path_from_controller_name("PostController")
         'posts'
+
+         # Registered models: Post
+        >>> controller_generate_relative_path_from_controller_name("PostCommentController")
+        'posts/comments'
 
         # Registered models: Post, Comment
         >>> controller_generate_relative_path_from_controller_name("PostCommentController")
@@ -284,21 +295,33 @@ def controller_generate_relative_path_from_controller_name(controller_name: str)
 
         # Registered models: User, UserProfile   (multi-word model)
         >>> controller_generate_relative_path_from_controller_name("AdminUserProfileAvatarController")
-        'admins/user_profiles/avatars'
+        'admin/user_profiles/avatars'
 
-        # Registered models: User
-        >>> controller_generate_relative_path_from_controller_name("UserAPIController")
-        'users/apis'
+        # Registered models: Order
+        >>> controller_generate_relative_path_from_controller_name("FrontDeskOrderController")
+        'front-desk/orders'
 
     Note:
-        Output depends on registered models  in ``app/models/__init__.py``
+        Output depends on registered models in ``app/models/__init__.py``
         because hierarchy detection is model-aware.
     """
-    namespace, parent_models, child_model_name = \
+    
+    namespaces, parent_models, child_model_name = \
         model_generate_hierarchy_from_controller_name(controller_name)
-    segments = namespace + parent_models + [child_model_name]
-    return '/'.join(pluralize(camel_to_snake(segment))
-                    for segment in filter_falsy(segments))
+    
+    if not parent_models and not child_model_name:
+        return "/".join(
+            pluralize(camel_to_snake(segment))
+            for segment in filter_falsy(namespaces)
+        )
+    namespace_segment = "-".join(
+        camel_to_snake(segment) for segment in filter_falsy(namespaces))
+    
+    resource_segments = [
+        pluralize(camel_to_snake(segment)) 
+        for segment in filter_falsy(parent_models + [child_model_name])]
+    
+    return '/'.join(filter_falsy([namespace_segment]) + resource_segments)
 
 def controller_make_file(
         relative_path: str | None,

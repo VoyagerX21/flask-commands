@@ -873,7 +873,7 @@ def _split_hierarchy_from_segments(segments: list[str]) -> tuple[list[str], list
         else:
             break
 
-    # 2) Detect contiguous cahin of models from current index
+    # 2) Detect contiguous chain of models from current index
     while index < len(segments):
         match, match_length = \
             _find_longest_running_model_segment_match_from_index(
