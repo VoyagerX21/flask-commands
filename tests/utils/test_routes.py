@@ -464,7 +464,6 @@ def test_route_add_method_returns_warning_when_controller_import_insert_fails(
         "from app.routes.recipes import bp\n"
     )
 
-
 def test_route_write_directory_returns_when_write_routes_step_fails(tmp_path, monkeypatch):
     project_root = tmp_path
     app_dir = project_root / "app"
@@ -1484,4 +1483,24 @@ def test__write_routes_file_fails_when_routes_py_already_exists(tmp_path, monkey
     assert "app/routes/users/routes.py" in message
     assert "already exists" in message
 
-
+@pytest.mark.parametrize(
+    "action, expected_method, expected_route",
+    [
+        ("index", "GET", "/users"),
+        ("show", "GET", "/users/<int:user_id>"),
+        ("create", "GET", "/users/create"),
+        ("store", "POST", "/users"),
+        ("edit", "GET", "/users/<int:user_id>/edit"),
+        ("update", "POST", "/users/<int:user_id>"),
+        ("destroy", "POST", "/users/<int:user_id>/delete"),
+    ],
+)
+def test_docs_core_ideas_restful_actions_table_users(action, expected_method, expected_route):
+    assert route_http_method_for_action(action) == expected_method
+    assert route_generate_route_name(
+        relative_path="users",
+        action=action,
+        is_restful=True,
+        relative_path_segments=["users"],
+        relative_path_segment_models=["users"],
+    ) == expected_route

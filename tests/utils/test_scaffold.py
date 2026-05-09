@@ -93,3 +93,19 @@ def test_split_dotted_path_with_action_into_relative_path_and_action_with_capita
 )
 def test_split_pascal_case(raw, expected):
     assert split_pascal_case(raw) == expected
+
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [
+        ("recipes/comments/index", "recipes.comments.index"),
+        ("shopping-list.index", "shopping_list.index"),
+        ("recipes..comments...index", "recipes.comments.index"),
+        ("Recipes.Comments.Index", "recipes.comments.index"),
+    ],
+)
+def test_docs_core_ideas_view_input_normalization_examples(raw, expected):
+    is_successful, value = normalize_dotted_path_with_action(raw)
+
+    assert is_successful is True
+    assert value == expected

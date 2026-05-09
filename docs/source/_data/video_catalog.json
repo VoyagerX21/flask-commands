@@ -305,6 +305,11 @@
       "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },
+    "multi-word-namespaces": {
+      "title": "Multi-Word Namespaces",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
     "naming-nested-controllers-by-relationship": {
       "title": "Naming Nested Controllers by Relationship",
       "description": "Add a description",
@@ -322,6 +327,21 @@
     },
     "choose-flat-for-one-multi-word-model": {
       "title": "Choose Flat for One Multi-Word Model",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "combine-namespaces-with-nested-model-generation": {
+      "title": "Combine Namespaces with Nested Model Generation",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "use-namespaces-without-turning-them-into-models": {
+      "title": "Use Namespaces Without Turning Them Into Models",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
+    "build-nested-resources-one-level-at-a-time": {
+      "title": "Build Nested Resources One Level at a Time",
       "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },

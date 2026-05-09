@@ -322,14 +322,53 @@ or a nested resource like
 - ``/admin/<int:admin_id>/users/<int:user_id>``
 
 Instead, everything has the namespace ``admin`` in front.  This help organize 
-you content so that you can do thinkg like special permission checking.  The 
+you content so that you can do things like special permission checking.  The 
 take away here is to remember that Flask-Commands namespaces any leading 
 segment is not a registered model.  
 
  Flask-Commands treats any leading non-registered segments as namespaces.
 
-Now without further ado, let's 
-look closely at how we can nested resources.  
+.. _make-controller-multi-word-namespaces:
+
+Multi-Word Namespaces
+^^^^^^^^^^^^^^^^^^^^^
+
+.. youtube_embed:: multi-word-namespaces
+
+Namespaces can also contain more than one word. When several leading segments
+are not registered models, Flask-Commands keeps them together as one
+hyphenated namespace segment.
+
+Suppose your app has a test kitchen area where staff can review and adjust
+recipes before they are published. You do not need a ``TestKitchen`` model. You
+just need a section of the app where certain users can use can manage recipes.
+
+If ``Recipe`` is already registered, you can type:
+
+.. code-block:: bash
+
+   flask make:controller TestKitchenRecipeController --crud
+
+Flask-Commands reads the name like this:
+
+- ``TestKitchen`` is the namespace
+- ``Recipe`` is the registered model-backed resource
+- ``Controller`` tells Flask-Commands this is a controller class
+
+The public URL keeps the namespace together with a hyphen:
+
+- ``/test-kitchen/recipes``
+- ``/test-kitchen/recipes/<int:recipe_id>``
+
+We will see in the next section that is different from a nested model
+relationship. ``TestKitchen`` is not a parent resource, so there is no 
+``<int:test_kitchen_id>`` parameter. It is just a namespace that organizes 
+the recipe routes.
+
+Now we are ready for the other side of the naming rule.  A namespace is a 
+leading segment that is not a registered model. A nested parent is a leading 
+segment that is a registered model. So without further ado, Let's look at 
+that parent-child relationship next.
 
 Naming Nested Controllers by Relationship
 -----------------------------------------

@@ -195,3 +195,26 @@ def test_new_command_exception_before_project_directory_exists_does_not_cleanup(
 
     assert blocking_file.exists()
     assert not (tmp_path / "taken" / "my_app").exists()
+
+def test_docs_starting_a_project_create_project_with_flask_new(tmp_path, monkeypatch):
+    runner = CliRunner()
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(new, ["myproject"])
+
+    assert result.exit_code == 0, result.output
+    project = tmp_path / "myproject"
+    _assert_common_project_scaffold(project, "myproject")
+
+
+def test_docs_starting_a_project_create_project_without_database(tmp_path, monkeypatch):
+    runner = CliRunner()
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(new, ["myproject", "--no-db"])
+
+    assert result.exit_code == 0, result.output
+    project = tmp_path / "myproject"
+    _assert_common_project_scaffold(project, "myproject")
+    assert not (project / "app" / "models").exists()
+    assert not (project / "migrations").exists()

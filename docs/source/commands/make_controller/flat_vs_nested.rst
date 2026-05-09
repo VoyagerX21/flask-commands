@@ -182,11 +182,13 @@ The rule to remember here is:
 Build Nested Resources One Level at a Time
 ------------------------------------------
 
+.. youtube_embed:: build-nested-resources-one-level-at-a-time
+
 Now that ``ShoppingList`` is registered as one flat model, we can build nested
 resources under it.
 
 Suppose your cooking app wants to organize a shopping list by store, and then
-track ingredients inside each store section.
+track ingredients inside each store.
 
 That relationship looks like this:
 
@@ -249,6 +251,27 @@ not:
 
 .. centered:: ``ShoppingList -> Store -> Ingredient``
 
+There is one more shortcut you might be tempted to try. What if you skip
+straight to the longest controller name?
+
+.. code-block:: bash
+
+   flask make:controller ShoppingListStoreIngredientController --crud -m --nest
+
+If none of those models are registered yet, Flask-Commands has no registered
+parent chain to anchor on. In that case, the nested choice generates each
+segment as its own model:
+
+.. centered:: ``Shopping -> List -> Store -> Ingredient``
+
+That is probably not what you meant. A ``ShoppingList`` should be one
+two-word data structure, not separate ``Shopping`` and ``List`` models.
+
+Also notice that this command only creates one CRUD controller:
+``ShoppingListStoreIngredientController``. The generated CRUD surface is for
+the final nested resource, ``Ingredient``. It does not give you separate CRUD
+controllers for ``Shopping``, ``List``, or ``Store``.
+
 Flask-Commands uses the registered parents as an anchor and when you provide 
 the option ``--nest`` it then takes the remaining words segments that come
 after the registered parent chain and combines them to generate the new 
@@ -269,6 +292,8 @@ controller, routes, and templates.
 
 Use Namespaces Without Turning Them Into Models
 -----------------------------------------------
+
+.. youtube_embed:: use-namespaces-without-turning-them-into-models
 
 Namespaces are the one place where the top-down pattern needs a little
 clarification. A namespace is not a parent model in the resource chain. It is a
@@ -356,15 +381,22 @@ without turning ``Staff`` into a model.
 Combine Namespaces with Nested Model Generation
 -----------------------------------------------
 
+.. youtube_embed:: combine-namespaces-with-nested-model-generation
+
 You can combine namespaces, nested resources, CRUD scaffolding, and generated
 models. The key is still to build the registered model chain in order.
 
-Suppose staff users need to manage recipe steps and tips inside a private staff
-area.
+In the previous chapter we introduced a multi-word namespace (review in section 
+:ref:`Multi-Word Namespace <make-controller-multi-word-namespaces>`) with
+``TestKitchenRecipeController``. Let's keep using that idea and build a deeper
+staff-only workflow inside the test kitchen area.
+
+Suppose test kitchen users need to manage recipe steps and tips before a recipe
+is published.
 
 That relationship looks like this:
 
-.. centered:: ``Staff / Recipe -> CookStep -> Tip``
+.. centered:: ``TestKitchen / Recipe -> CookStep -> Tip``
 
 Start by creating the top-level model-backed resource:
 
@@ -376,18 +408,18 @@ Then create the staff CRUD controller for that existing model:
 
 .. code-block:: bash
 
-   flask make:controller StaffRecipeController --crud
+   flask make:controller TestKitchenRecipeController --crud
 
 Now you can generate nested children inside the staff namespace:
 
 .. code-block:: bash
 
-   flask make:controller StaffRecipeCookStepController --crud -m --nest
-   flask make:controller StaffRecipeCookStepTipController --crud -m --nest
+   flask make:controller TestKitchenRecipeCookStepController --crud -m --nest
+   flask make:controller TestKitchenRecipeCookStepTipController --crud -m --nest
 
 The first nested staff command sees:
 
-- namespace: ``Staff``
+- namespace: ``TestKitchen``
 - registered parent: ``Recipe``
 - generated child: ``CookStep``
 
@@ -395,19 +427,19 @@ So it builds:
 
 - model: ``CookStep``
 - controller: ``StaffRecipeCookStepController``
-- routes: ``/staff/recipes/<int:recipe_id>/cook-steps``
+- routes: ``/test-kitchen/recipes/<int:recipe_id>/cook-steps``
 
 The second nested staff command sees:
 
-- namespace: ``Staff``
+- namespace: ``TestKitchen``
 - registered parents: ``Recipe`` and ``CookStep``
 - generated child: ``Tip``
 
 So it builds:
 
 - model: ``Tip``
-- controller: ``StaffRecipeCookStepTipController``
-- routes: ``/staff/recipes/<int:recipe_id>/cook-steps/<int:cook_step_id>/tips``
+- controller: ``TestKitchenRecipeCookStepTipController``
+- routes: ``/test-kitchen/recipes/<int:recipe_id>/cook-steps/<int:cook_step_id>/tips``
 
 The rule is the same as before:
 

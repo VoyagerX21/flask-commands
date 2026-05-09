@@ -1,6 +1,7 @@
 import pytest
 from click.testing import CliRunner
 from flask_commands.commands.controller import make_controller
+from flask_commands.utils.naming import camel_to_snake
 
 @pytest.fixture
 def project(tmp_path, monkeypatch):
@@ -133,6 +134,27 @@ def project(tmp_path, monkeypatch):
 
     monkeypatch.chdir(root)
     return root
+
+def _register_doc_model(project, model_name: str) -> None:
+    snake_model_name = camel_to_snake(model_name)
+    (project / "app"/ "models" / f"{snake_model_name}.py").write_text(
+        f"class {model_name}:\n    pass\n", encoding="utf-8"
+    )
+    init_file = project / "app" / "models" / "__init__.py"
+    init_model_contents = init_file.read_text(encoding="utf-8")
+    model_import_line = f"from .{snake_model_name} import {model_name}"
+    if model_import_line not in init_model_contents:
+        separator = "\n" \
+            if init_model_contents \
+                and not init_model_contents.endswith("\n") else ""
+        init_file.write_text(
+            f"{init_model_contents}{separator}{model_import_line}\n", 
+            encoding="utf-8")
+
+def _assert_route_contains(project, relative_path: str, route: str) -> None:
+    route_file = project / "app" / "routes" / relative_path / "routes.py"        
+    assert route_file.exists()
+    assert route in route_file.read_text(encoding="utf-8")
 
 def test_make_controller_not_in_project_root(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
@@ -823,3 +845,153 @@ def test_make_controller_rejects_flat_with_explicit_model(project):
     assert "--flat and --nest cannot be used with --model." in result.output
     assert not (project / "app" / "controllers" / "guard_three_controller.py").exists()
     assert not (project / "app" / "models" / "tag.py").exists()
+
+def test_docs_make_controller_the_basics_create_a_simple_controller_recipe_controller(project):
+    result = CliRunner().invoke(make_controller, ["RecipeController"])
+    assert result.exit_code == 0, result.output
+    assert (project / "app/controllers/recipe_controller.py").read_text(encoding="utf-8") == (
+        "class RecipeController:\n    pass\n"
+    )
+
+def test_docs_make_controller_the_basics_add_restful_actions_with_crud_recipe_controller(project):
+    result = CliRunner().invoke(make_controller, ["RecipeController", "--crud"])
+    assert result.exit_code == 0, result.output
+    _assert_route_contains(project, "recipes", "@bp.route('/recipes/<int:recipe_id>', methods=['GET'])")
+    assert (project / "app/templates/recipes/index.html").exists()
+    assert (project / "app/templates/recipes/show.html").exists()
+    assert (project / "app/templates/recipes/create.html").exists()
+    assert (project / "app/templates/recipes/edit.html").exists()
+
+def test_docs_controllers_and_models_name_the_model_directly_recipe_model(project):
+    result = CliRunner().invoke(make_controller, ["RecipeController", "--model", "Recipe"])
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/recipe.py").exists()
+    assert "from .recipe import Recipe" in (project / "app/models/__init__.py").read_text(encoding="utf-8")
+
+def test_docs_controllers_and_models_generate_the_model_name_recipe_controller(project):
+    result = CliRunner().invoke(make_controller, ["RecipeController", "-m"])
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/recipe.py").exists()
+
+def test_docs_controllers_and_models_generating_a_restful_controller_with_a_model_recipe(project):
+    result = CliRunner().invoke(make_controller, ["RecipeController", "--crud", "-m"])
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/recipe.py").exists()
+    _assert_route_contains(project, "recipes", "@bp.route('/recipes/<int:recipe_id>', methods=['GET'])")
+
+def test_docs_controllers_and_models_single_data_structures_shopping_list_model(project):
+    result = CliRunner().invoke(
+        make_controller,
+        ["ShoppingListController", "--crud", "--model", "ShoppingList"],
+    )
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/shopping_list.py").exists()
+    _assert_route_contains(
+        project,
+        "shopping_lists",
+        "@bp.route('/shopping-lists/<int:shopping_list_id>', methods=['GET'])",
+    )
+
+def test_docs_controllers_and_models_when_to_namespace_admin_user_crud(project):
+    _register_doc_model(project, "User")
+    result = CliRunner().invoke(make_controller, ["AdminUserController", "--crud"])
+    assert result.exit_code == 0, result.output
+    _assert_route_contains(project, "admin/users", "@bp.route('/admin/users/<int:user_id>', methods=['GET'])")
+
+def test_docs_controllers_and_models_nested_relationship_recipe_ingredient_crud(project):
+    _register_doc_model(project, "Recipe")
+    result = CliRunner().invoke(make_controller, ["RecipeIngredientController", "--crud"])
+    assert result.exit_code == 0, result.output
+    _assert_route_contains(
+        project,
+        "recipes/ingredients",
+        "@bp.route('/recipes/<int:recipe_id>/ingredients/<int:ingredient_id>', methods=['GET'])",
+    )
+
+def test_docs_flat_vs_nested_flat_or_nest_flat_flag_recipe_ingredient(project):
+    _register_doc_model(project, "Recipe")
+    result = CliRunner().invoke(make_controller, ["RecipeIngredientController", "--crud", "-m", "--flat"])
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/recipe_ingredient.py").exists()
+    _assert_route_contains(
+        project,
+        "recipe_ingredients",
+        "@bp.route('/recipe-ingredients/<int:recipe_ingredient_id>', methods=['GET'])",
+    )
+
+def test_docs_flat_vs_nested_flat_or_nest_nest_flag_recipe_ingredient(project):
+    _register_doc_model(project, "Recipe")
+    result = CliRunner().invoke(make_controller, ["RecipeIngredientController", "--crud", "-m", "--nest"])
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/ingredient.py").exists()
+    _assert_route_contains(
+        project,
+        "recipes/ingredients",
+        "@bp.route('/recipes/<int:recipe_id>/ingredients/<int:ingredient_id>', methods=['GET'])",
+    )
+
+def test_docs_flat_vs_nested_choose_flat_for_one_multi_word_model_shopping_list(project):
+    result = CliRunner().invoke(make_controller, ["ShoppingListController", "--crud", "-m", "--flat"])
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/shopping_list.py").exists()
+    _assert_route_contains(
+        project,
+        "shopping_lists",
+        "@bp.route('/shopping-lists/<int:shopping_list_id>', methods=['GET'])",
+    )
+
+def test_docs_flat_vs_nested_build_nested_resources_one_level_at_a_time_shopping_list_chain(project):
+    runner = CliRunner()
+    assert runner.invoke(make_controller, ["ShoppingListController", "--crud", "-m", "--flat"]).exit_code == 0
+    assert runner.invoke(make_controller, ["ShoppingListStoreController", "--crud", "-m", "--nest"]).exit_code == 0
+    assert runner.invoke(make_controller, ["ShoppingListStoreIngredientController", "--crud", "-m", "--nest"]).exit_code == 0
+    _assert_route_contains(project, "shopping_lists", "@bp.route('/shopping-lists', methods=['GET'])")
+    _assert_route_contains(project, "shopping_lists/stores", "@bp.route('/shopping-lists/<int:shopping_list_id>/stores', methods=['GET'])")
+    _assert_route_contains(project, "shopping_lists/stores/ingredients", "@bp.route('/shopping-lists/<int:shopping_list_id>/stores/<int:store_id>/ingredients', methods=['GET'])")
+
+def test_docs_flat_vs_nested_build_nested_resources_skip_middle_creates_store_ingredient(project):
+    runner = CliRunner()
+    assert runner.invoke(make_controller, ["ShoppingListController", "--crud", "-m", "--flat"]).exit_code == 0
+    assert runner.invoke(make_controller, ["ShoppingListStoreIngredientController", "--crud", "-m", "--nest"]).exit_code == 0
+    assert (project / "app/models/store_ingredient.py").exists()
+    _assert_route_contains(project, "shopping_lists/store_ingredients", "@bp.route('/shopping-lists/<int:shopping_list_id>/store-ingredients', methods=['GET'])")
+
+def test_docs_flat_vs_nested_use_namespaces_without_models_staff_recipe(project):
+    runner = CliRunner()
+    assert runner.invoke(make_controller, ["RecipeController", "--crud", "-m"]).exit_code == 0
+    assert runner.invoke(make_controller, ["StaffRecipeController", "--crud"]).exit_code == 0
+    _assert_route_contains(project, "staff/recipes", "@bp.route('/staff/recipes/<int:recipe_id>', methods=['GET'])")
+
+def test_docs_flat_vs_nested_combine_namespaces_with_nested_model_generation_staff_recipe_chain(project):
+    runner = CliRunner()
+    assert runner.invoke(make_controller, ["RecipeController", "--crud", "-m"]).exit_code == 0
+    assert runner.invoke(make_controller, ["StaffRecipeController", "--crud"]).exit_code == 0
+    assert runner.invoke(make_controller, ["StaffRecipeCookStepController", "--crud", "-m", "--nest"]).exit_code == 0
+    assert runner.invoke(make_controller, ["StaffRecipeCookStepTipController", "--crud", "-m", "--nest"]).exit_code == 0
+    _assert_route_contains(project, "staff/recipes/cook_steps", "@bp.route('/staff/recipes/<int:recipe_id>/cook-steps', methods=['GET'])")
+    _assert_route_contains(project, "staff/recipes/cook_steps/tips", "@bp.route('/staff/recipes/<int:recipe_id>/cook-steps/<int:cook_step_id>/tips', methods=['GET'])")
+
+def test_docs_flat_vs_nested_use_multi_word_namespace_front_desk_order(project):
+    _register_doc_model(project, "Order")
+
+    result = CliRunner().invoke(
+        make_controller,
+        ["FrontDeskOrderController", "--crud"],
+    )
+
+    assert result.exit_code == 0, result.output
+    _assert_route_contains(
+        project,
+        "front-desk/orders",
+        "@bp.route('/front-desk/orders/<int:order_id>', methods=['GET'])",
+    )
+    
+def test_register_doc_model_does_not_duplicate_existing_import(project):
+    _register_doc_model(project, "Recipe")
+    _register_doc_model(project, "Recipe")
+
+    init_contents = (project / "app" / "models" / "__init__.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert init_contents.count("from .recipe import Recipe") == 1

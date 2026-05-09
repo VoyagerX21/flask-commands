@@ -83,8 +83,23 @@ def project(tmp_path, monkeypatch):
         "app = create_app(os.getenv('FLASK_CONFIG') or 'development')\n"
     )
 
+    (root / "app" / "models" / "__init__.py").write_text("", encoding="utf-8")
+
+
     monkeypatch.chdir(root)
     return root
+
+def _assert_view_route_contains(project, relative_path: str, route: str) -> None:
+    route_file = project / "app" / "routes" / relative_path / "routes.py"
+    assert route_file.exists()
+    assert route in route_file.read_text(encoding="utf-8")
+
+def _assert_controller_contains(project, controller_file_name: str, snippets: list[str]) -> None:
+    controller_file = project / "app" / "controllers" / controller_file_name
+    assert controller_file.exists()
+    controller_source = controller_file.read_text(encoding="utf-8")
+    for snippet in snippets:
+        assert snippet in controller_source
 
 def test_make_view_with_invalid_dotted_path(project):
     runner = CliRunner()
@@ -151,7 +166,6 @@ def test_make_view_root_and_explicit_mains_use_different_template_targets(projec
 
     assert (project / "app" / "templates" / "mains" / "contact.html").exists()
     assert not (project / "app" / "templates" / "contact.html").exists()
-
 
 def test_make_view_root_component_only_does_not_change_main_wiring(project):
     runner = CliRunner()
@@ -569,3 +583,252 @@ def test_make_view_plain_view_only_has_no_message_updates(project):
     assert "Created Controller Class" not in result.output
     assert "Added Route" not in result.output
     assert "Created New Model" not in result.output
+
+def test_docs_make_view_the_basics_create_simple_template_about(project):
+    result = CliRunner().invoke(make_view, ["about"])
+
+    assert result.exit_code == 0, result.output
+    assert (project / "app/templates/about.html").exists()
+
+
+def test_docs_make_view_the_basics_wire_page_explicitly_about(project):
+    result = CliRunner().invoke(
+        make_view,
+        ["about", "--route", "/about", "--controller", "MainController"],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert (project / "app/templates/about.html").exists()
+    _assert_view_route_contains(project, "mains", "@bp.route('/about', methods=['GET'])")
+    assert "def about" in (project / "app/controllers/main_controller.py").read_text(encoding="utf-8")
+
+
+def test_docs_make_view_the_basics_use_generator_flags_about_rc(project):
+    result = CliRunner().invoke(make_view, ["about", "-rc"])
+
+    assert result.exit_code == 0, result.output
+    assert (project / "app/templates/about.html").exists()
+    _assert_view_route_contains(project, "mains", "@bp.route('/about', methods=['GET'])")
+    _assert_controller_contains(
+        project,
+        "main_controller.py",
+        [
+            "def about() -> str:",
+            "return render_template('about.html')"
+        ]
+    )
+
+
+
+def test_docs_make_view_the_basics_use_mains_intentionally_explicit_route(project):
+    result = CliRunner().invoke(make_view, ["mains.about", "--route", "/about", "-c"])
+
+    assert result.exit_code == 0, result.output
+    assert (project / "app/templates/mains/about.html").exists()
+    _assert_view_route_contains(project, "mains", "@bp.route('/about', methods=['GET'])")
+    _assert_controller_contains(
+        project,
+        "main_controller.py",
+        [
+            "def about() -> str:",
+            "return render_template('mains/about.html')"
+        ]
+    )
+
+def test_docs_make_view_the_basics_use_mains_intentionally_generated_route(project):
+    result = CliRunner().invoke(make_view, ["mains.about", "-rc"])
+
+    assert result.exit_code == 0, result.output
+    assert (project / "app/templates/mains/about.html").exists()
+    _assert_view_route_contains(project, "mains", "@bp.route('/about', methods=['GET'])")
+    _assert_controller_contains(
+        project,
+        "main_controller.py",
+        [
+            "def about() -> str:",
+            "return render_template('mains/about.html')"
+        ]
+    )
+
+
+def test_docs_make_view_the_basics_quick_peek_nested_templates_components(project):
+    runner = CliRunner()
+
+    assert runner.invoke(make_view, ["components.accordions"]).exit_code == 0
+    assert runner.invoke(make_view, ["components.checkboxes"]).exit_code == 0
+    assert runner.invoke(make_view, ["components.selects"]).exit_code == 0
+
+    assert (project / "app/templates/components/accordions.html").exists()
+    assert (project / "app/templates/components/checkboxes.html").exists()
+    assert (project / "app/templates/components/selects.html").exists()
+
+def test_docs_make_view_model_prompt_missing_model_accepts_restful_route(project):
+    result = CliRunner().invoke(make_view, ["recipes.index", "-rc"], input="y\n")
+
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/recipe.py").exists()
+    _assert_view_route_contains(project, "recipes", "@bp.route('/recipes', methods=['GET'])")
+    _assert_controller_contains(
+        project,
+        "recipe_controller.py",
+        [
+            "class RecipeController:",
+            "def index() -> str:",
+            "return render_template('recipes/index.html')"
+        ]
+    )
+
+
+def test_docs_make_view_model_prompt_missing_model_declines_literal_route(project):
+    result = CliRunner().invoke(make_view, ["recipes.index", "-rc"], input="n\n")
+
+    assert result.exit_code == 0, result.output
+    assert not (project / "app/models/recipe.py").exists()
+    _assert_view_route_contains(project, "recipes", "@bp.route('/recipes/index', methods=['GET'])")
+    _assert_controller_contains(
+        project,
+        "recipe_controller.py",
+        [
+            "class RecipeController:",
+            "def index() -> str:",
+            "return render_template('recipes/index.html')"
+        ]
+    )
+
+
+def test_docs_make_view_model_prompt_explicit_literal_route_avoids_prompt(project):
+    result = CliRunner().invoke(make_view, ["recipes.index", "-c", "--route", "/recipes/index"])
+
+    assert result.exit_code == 0, result.output
+    assert not (project / "app/models/recipe.py").exists()
+    _assert_view_route_contains(project, "recipes", "@bp.route('/recipes/index', methods=['GET'])")
+    _assert_controller_contains(
+        project,
+        "recipe_controller.py",
+        [
+            "class RecipeController:",
+            "def index() -> str:",
+            "return render_template('recipes/index.html')"
+        ],
+    )
+
+
+def test_docs_make_view_model_prompt_explicit_restful_route_with_model_recipe(project):
+    result = CliRunner().invoke(
+        make_view,
+        ["recipes.index", "-c", "--route", "/recipes", "--model", "Recipe"],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/recipe.py").exists()
+    assert (project / "app/templates/recipes/index.html").exists()
+    _assert_view_route_contains(project, "recipes", "@bp.route('/recipes', methods=['GET'])")
+    _assert_controller_contains(
+        project,
+        "recipe_controller.py",
+        [
+            "class RecipeController:",
+            "def index() -> str:",
+            "return render_template('recipes/index.html')"
+        ]
+    )
+
+
+def test_docs_make_view_model_prompt_generated_route_controller_model_short_flags(project):
+    result = CliRunner().invoke(make_view, ["recipes.index", "-rcm"])
+
+    assert result.exit_code == 0, result.output
+    assert (project / "app/models/recipe.py").exists()
+    _assert_view_route_contains(project, "recipes", "@bp.route('/recipes', methods=['GET'])")
+
+def test_docs_make_view_building_first_resource_recipes_index_and_show(project):
+    runner = CliRunner()
+
+    assert runner.invoke(make_view, ["recipes.index", "-rcm"]).exit_code == 0
+    assert runner.invoke(make_view, ["recipes.show", "-rc"]).exit_code == 0
+
+    assert (project / "app/models/recipe.py").exists()
+    assert (project / "app/templates/recipes/index.html").exists()
+    assert (project / "app/templates/recipes/show.html").exists()
+    _assert_view_route_contains(project, "recipes", "@bp.route('/recipes', methods=['GET'])")
+    _assert_view_route_contains(project, "recipes", "@bp.route('/recipes/<int:recipe_id>', methods=['GET'])")
+    _assert_controller_contains(
+        project,
+        "recipe_controller.py",
+        [
+            "def index() -> str:",
+            "return render_template('recipes/index.html')",
+            "def show(recipe_id: int) -> str:",
+            "return render_template('recipes/show.html')"
+        ]
+    )
+
+
+def test_docs_make_view_get_vs_post_create_generates_template_store_does_not(project):
+    runner = CliRunner()
+
+    assert runner.invoke(make_view, ["recipes.create", "-rcm"]).exit_code == 0
+    assert runner.invoke(make_view, ["recipes.store", "-rcm"]).exit_code == 0
+
+    assert (project / "app/templates/recipes/create.html").exists()
+    assert not (project / "app/templates/recipes/store.html").exists()
+    _assert_view_route_contains(project, "recipes", "@bp.route('/recipes/create', methods=['GET'])")
+    _assert_view_route_contains(project, "recipes", "@bp.route('/recipes', methods=['POST'])")
+    _assert_controller_contains(
+        project,
+        "recipe_controller.py",
+        [
+            "def create() -> str:",
+            "return render_template('recipes/create.html')",
+            "def store() -> ResponseReturnValue:",
+            "return redirect(url_for('recipes.index'))"
+        ]
+    )
+
+
+def test_docs_make_view_nested_resources_recipes_comments_index_and_show(project):
+    runner = CliRunner()
+
+    assert runner.invoke(make_view, ["recipes.index", "-rcm"]).exit_code == 0
+    assert runner.invoke(make_view, ["recipes.comments.index", "-rcm"]).exit_code == 0
+    assert runner.invoke(make_view, ["recipes.comments.show", "-rc"]).exit_code == 0
+
+    assert (project / "app/models/comment.py").exists()
+    assert (project / "app/templates/recipes/comments/index.html").exists()
+    assert (project / "app/templates/recipes/comments/show.html").exists()
+    _assert_view_route_contains(project, "recipes/comments", "@bp.route('/recipes/<int:recipe_id>/comments', methods=['GET'])")
+    _assert_view_route_contains(project, "recipes/comments", "@bp.route('/recipes/<int:recipe_id>/comments/<int:comment_id>', methods=['GET'])")
+    _assert_controller_contains(
+        project,
+        "recipe_comment_controller.py",
+        [
+            "def index(recipe_id: int) -> str:",
+            "return render_template('recipes/comments/index.html')",
+            "def show(recipe_id: int, comment_id: int) -> str:",
+            "return render_template('recipes/comments/show.html')"
+        ]
+    )
+
+
+def test_docs_make_view_nested_resources_three_levels_deep_images(project):
+    runner = CliRunner()
+
+    assert runner.invoke(make_view, ["recipes.index", "-rcm"]).exit_code == 0
+    assert runner.invoke(make_view, ["recipes.comments.index", "-rcm"]).exit_code == 0
+    assert runner.invoke(make_view, ["recipes.comments.images.index", "-rcm"]).exit_code == 0
+
+    assert (project / "app/models/image.py").exists()
+    assert (project / "app/templates/recipes/comments/images/index.html").exists()
+    _assert_view_route_contains(
+        project,
+        "recipes/comments/images",
+        "@bp.route('/recipes/<int:recipe_id>/comments/<int:comment_id>/images', methods=['GET'])",
+    )
+    _assert_controller_contains(
+        project,
+        "recipe_comment_image_controller.py",
+        [
+            "def index(recipe_id: int, comment_id: int) -> str:",
+            "return render_template('recipes/comments/images/index.html')"
+        ]
+    )
