@@ -280,6 +280,10 @@ Not every leading word in a controller name should become a model, or is even
 part of a model.  There are times when you just need 
 to keep thing nice and organized.  This is the idea behind namespacing.  
 
+A namespace is not a parent model in the resource chain. It is a
+wrapper around an existing resource, consequently you want the resource to 
+exist before you add the namespace.
+
 A common example is ``Admin``. You want routes, controllers, and templates 
 that are specific to admimistrative users but you don't need an ``Admin`` 
 model in your database.  
@@ -343,7 +347,17 @@ Suppose your app has a test kitchen area where staff can review and adjust
 recipes before they are published. You do not need a ``TestKitchen`` model. You
 just need a section of the app where certain users can use can manage recipes.
 
-If ``Recipe`` is already registered, you can type:
+.. admonition:: Before you run this
+
+   This section assumes ``Recipe`` is already a registered model. If you do not
+   have it yet, create the model-backed resource first with the following 
+   command:
+
+   .. code-block:: bash
+
+      flask make:controller RecipeController --crud -m
+
+Once ``Recipe`` exists, you can type:
 
 .. code-block:: bash
 
@@ -364,6 +378,60 @@ We will see in the next section that is different from a nested model
 relationship. ``TestKitchen`` is not a parent resource, so there is no 
 ``<int:test_kitchen_id>`` parameter. It is just a namespace that organizes 
 the recipe routes.
+
+.. _make-controller-public-pages-and-private-tools:
+
+Public Pages and Private Tools
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. youtube_embed:: public-pages-and-private-tools
+
+Namespaces often represent private or specialized tools around a resource. In
+our cooking app, the public site may only need recipe browsing pages, while the
+test kitchen needs full CRUD tools for managing recipe content.
+
+.. admonition:: Before you run this
+
+   If you have followed the tutorial from the beginning, you already
+   have a ``RecipeController`` and a ``Recipe`` model in your project.
+
+   To avoid warnings and to see the creation output from start to finish please
+   spin up a fresh app with something like
+
+   .. code-block:: bash
+
+      flask new example_controller_with_namespace
+
+In a new project file, you can build this shape with the following commands:
+
+.. code-block:: bash
+
+   flask make:view recipes.index -rcm
+   flask make:view recipes.show -rc
+   flask make:controller TestKitchenRecipeController --crud
+
+The first command creates the public recipe index and generates the ``Recipe``
+model. The second command adds the public recipe show page. The final command
+adds the full test kitchen CRUD controller around the already registered
+``Recipe`` model.
+
+I’d write:
+
+That gives regular users the ordinary recipe pages:
+
+- ``/recipes``
+- ``/recipes/<int:recipe_id>``
+
+And it gives test kitchen users the private CRUD surface:
+
+- ``/test-kitchen/recipes``
+- ``/test-kitchen/recipes/<int:recipe_id>``
+- ``/test-kitchen/recipes/create``
+- ``/test-kitchen/recipes/<int:recipe_id>/edit``
+
+This is often a better production shape than giving the public side full CRUD.
+The public app gets the pages it needs, and the test kitchen namespace gets the
+management tools.
 
 Now we are ready for the other side of the naming rule.  A namespace is a 
 leading segment that is not a registered model. A nested parent is a leading 
@@ -448,26 +516,25 @@ controller.
 
 .. admonition:: Before you run this
 
-   If you have **not** followed the tutorial from the beginning, you may need
-   not have a ``Recipe`` model in your project.  For the next command to work
-   as expected you will need a registered ``Recipe`` model.  You can either 
-   register one by hand, or you can use the following flask command to generate
-   a quick stub.
+   This section assumes ``Recipe`` is already a registered model. If you do not
+   have it yet, create the model-backed resource first with the following 
+   command:
 
    .. code-block:: bash
 
-      flask make:view recipes.index -rcm
+      flask make:controller RecipeController --crud -m
 
-If you are following along you should already have a ``Recipe`` model.  This 
-is really the important part because without ``Recipe`` as a registered model
-Flask-Commands will treat ``Recipe`` as a namespace.  But when ``Recipe`` is 
-a model and we type:
+If you are following along you should already have a ``Recipe`` model. 
+Having ``Recipe`` as a register model before you run your next command is 
+really the important part.  Without ``Recipe`` as a registered model
+Flask-Commands will treat ``Recipe`` as a namespace.  However, when ``Recipe`` 
+is a model and we type:
 
 .. code-block:: bash
 
    flask make:controller RecipeIngredientController --crud
 
-We end up with the nested resource structure described above. Because
+we end up with the nested resource structure described above. Because
 ``Recipe`` is a registered model, Flask-Commands treats it as the parent
 resource. Because we passed ``--crud``, the final segment, ``Ingredient``,
 becomes the RESTful child resource.

@@ -66,14 +66,13 @@ Because of this you are receiving a warning in the terminal saying that
 ``RecipeController`` already exists.
 
 .. rst-class:: terminal-warning
-
 .. code-block:: text
 
    ⚠️  Warning: Controller Already Exists
        - Controller File for RecipeController already exists
        - No changes were made
 
-Don't be alarmed it you see this, it's **not a problem**.  This warning 
+Don't be alarmed if you see this, it's **not a problem**.  This warning 
 means Flask-Commands is protecting the file that already exists instead
 of overwriting it. 
 

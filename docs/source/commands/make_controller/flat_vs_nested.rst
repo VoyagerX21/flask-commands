@@ -194,7 +194,7 @@ That relationship looks like this:
 
 .. centered:: ``ShoppingList -> Store -> Ingredient``
 
-Build that relationship one level at a time:
+I recommand building the relationship one level at a time:
 
 .. code-block:: bash
 
@@ -202,7 +202,7 @@ Build that relationship one level at a time:
    flask make:controller ShoppingListStoreController --crud -m --nest
    flask make:controller ShoppingListStoreIngredientController --crud -m --nest
 
-The first command creates the top-level flat resource:
+As we have seen the first command creates the top-level flat resource:
 
 - model: ``ShoppingList``
 - controller: ``ShoppingListController``
@@ -276,7 +276,7 @@ Flask-Commands uses the registered parents as an anchor and when you provide
 the option ``--nest`` it then takes the remaining words segments that come
 after the registered parent chain and combines them to generate the new 
 child resource. Consequently, if we want ``Store`` to be its own parent in 
-the chain, we have to build-up in order by generate and register ``Store`` 
+the chain, we have to build-up in order by generating and registering ``Store`` 
 before generating ``Ingredient`` under it.
 
 The takeway pattern to remember here is:
@@ -285,98 +285,9 @@ The takeway pattern to remember here is:
  resource command first, then run the next child resource command under that
  parent. Repeat this pattern for each child resource in the nested chain.
 
-
 Each command registers the next model before the following command needs it.
 Because every command includes ``--crud``, every level also receives its own
 controller, routes, and templates.
-
-Use Namespaces Without Turning Them Into Models
------------------------------------------------
-
-.. youtube_embed:: use-namespaces-without-turning-them-into-models
-
-Namespaces are the one place where the top-down pattern needs a little
-clarification. A namespace is not a parent model in the resource chain. It is a
-wrapper around an existing resource, so you usually want the resource to exist
-before you add the namespace.
-
-
-A common example is a ``Staff`` section. Staff users will need a private area 
-where they can manage recipe content, while regular users browse and cook from 
-the public recipe pages which are built by the staff.
-
-If you are following along with this tutorial, you already have ``Recipe`` as a registered
-model. If not, create the recipe resource first.
-
-.. admonition:: Before you run this
-
-   This section assumes ``Recipe`` is already a registered model. If you do not
-   have it yet, create the model-backed resource first with the following 
-   command:
-
-   .. code-block:: bash
-
-      flask make:controller RecipeController --crud -m
-
-Once ``Recipe`` exists, you can build a staff CRUD controller for recipes like
-this:
-
-.. code-block:: bash
-
-   flask make:controller StaffRecipeController --crud
-
-Notice that this command does not include ``-m``. We are not generating a new
-model. We are building namespaced CRUD scaffolding around the existing
-``Recipe`` model.
-
-Conceptually, the route shape is:
-
-- ``/staff/recipes``
-- ``/staff/recipes/<int:recipe_id>``
-
-Here, ``Staff`` is the namespace and ``Recipe`` is the RESTful resource.
-
-As a side note, the command can still create staff recipe CRUD
-scaffolding even if ``Recipe`` is not registered. Thus, it may sound 
-convenient to skip the step of registered the ``Recipe`` model.  However, this
-puts the app in an odd state.  You would have a staff-only recipe ``show`` 
-route (named ``staff.recipes.show``) without a normal public ``show`` route 
-(named ``recipes.show``).  In other words, staff could write and read recipes 
-but the public user would never be able to read them.  
-
-That is probably not the shape you want. Staff users may need extra tools for
-managing recipes, but regular users still need the ordinary recipe pages.
-
-So my recommended approach is to build the model-backed resource first, 
-then add the namespace around it:
-
-.. code-block:: bash
-
-   flask make:controller RecipeController --crud -m
-   flask make:controller StaffRecipeController --crud
-
-That gives you both:
-
-- public recipe CRUD scaffolding
-- staff recipe CRUD scaffolding
-
-without turning ``Staff`` into a model.
-
-.. admonition:: A more production-minded example
-   
-   If you want to be more selective, you can give public users only the read pages
-   and give staff users the full CRUD surface.
-
-   .. code-block:: bash
-
-      flask make:view recipes.index -rcm
-      flask make:view recipes.show -rc
-      flask make:controller StaffRecipeController --crud
-
-   The first command creates the public recipe index and generates the ``Recipe``
-   model. The second command adds the public recipe show page. The final command
-   adds the full staff CRUD controller around the already registered ``Recipe``
-   model.
 
 Combine Namespaces with Nested Model Generation
 -----------------------------------------------
@@ -386,10 +297,12 @@ Combine Namespaces with Nested Model Generation
 You can combine namespaces, nested resources, CRUD scaffolding, and generated
 models. The key is still to build the registered model chain in order.
 
-In the previous chapter we introduced a multi-word namespace (review in section 
-:ref:`Multi-Word Namespace <make-controller-multi-word-namespaces>`) with
-``TestKitchenRecipeController``. Let's keep using that idea and build a deeper
-staff-only workflow inside the test kitchen area.
+In the previous chapter we introduced a multi-word namespace (review in 
+sections 
+:ref:`Multi-Word Namespace <make-controller-multi-word-namespaces>` and 
+:ref:`Public Pages and Private Tools <make-controller-public-pages-and-private-tools>`)
+with ``TestKitchenRecipeController``. Let's keep using that idea and build a 
+deeper staff-only workflow inside the test kitchen namespace.
 
 Suppose test kitchen users need to manage recipe steps and tips before a recipe
 is published.
@@ -404,13 +317,25 @@ Start by creating the top-level model-backed resource:
 
    flask make:controller RecipeController --crud -m
 
-Then create the staff CRUD controller for that existing model:
+.. admonition:: Public Index and Show Only Pages
+
+   In a more realistic application, you would just create a view page showing 
+   all the recipes and a single recipe resource for the public using the 
+   following two commands.
+
+   .. code-block:: bash
+
+      flask make:view recipes.index -rcm
+      flask make:view recipes.show -rc
+
+Then create the test kitchen CRUD controller for the already existing 
+``Recipe`` model:
 
 .. code-block:: bash
 
    flask make:controller TestKitchenRecipeController --crud
 
-Now you can generate nested children inside the staff namespace:
+Now you can generate nested children inside the test kitchen namespace:
 
 .. code-block:: bash
 
@@ -448,13 +373,17 @@ The rule is the same as before:
 - ``--nest`` generates the next child
 - ``--crud`` gives each controller its RESTful scaffolding
 
-That means the order matters. Build the top-level model first, then build the
-namespaced controller for that model, then generate each nested child one level
-at a time.
+As you have already seen, order matters. 
 
-That wraps up the controller-first path.   We started with the controller name, 
-used ``-m`` when we wanted model generation, and used ``--flat`` and ``--nest``
-when the controller name carries more than one possible meaning.  The last part
+ First build the top-level model. Then
+ add the namespaced controller around that model. Once the namespace is in place,
+ generate each nested child one level at a time so the whole nested chain lives
+ under that namespace.
+
+That wraps up the controller-first path.  We started with the controller name, 
+used ``--crud`` when we wanted all the RESTful actions, used ``-m`` when we 
+wanted model generation, and used ``--flat`` and ``--nest`` when the 
+controller name carries more than one possible meaning.  The last part
 was the key to let you choose whether Flask-Commands should keep words 
 together as one model or build a nested relationship from the registered 
 model chain.

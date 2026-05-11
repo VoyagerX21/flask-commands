@@ -18,7 +18,7 @@ That makes it useful in two very common situations:
 
 The bigger takeaway is that ``make:model`` is not only about creating a Python
 class. It is a strong starting point when you are thinking from the data
-outward. You know what kind of thing your app needs to store, and
+outward. You know what kind of data structure your app needs to store, and
 Flask-Commands helps build the surrounding structure from there.
 
 Everything in these sections builds on itself one step at a time.

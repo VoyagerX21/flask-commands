@@ -310,6 +310,11 @@
       "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },
+    "public-pages-and-private-tools": {
+      "title": "Public Pages and Private Tools",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
     "naming-nested-controllers-by-relationship": {
       "title": "Naming Nested Controllers by Relationship",
       "description": "Add a description",
@@ -332,11 +337,6 @@
     },
     "combine-namespaces-with-nested-model-generation": {
       "title": "Combine Namespaces with Nested Model Generation",
-      "description": "Add a description",
-      "video_id": "nrFk9fAaiII"
-    },
-    "use-namespaces-without-turning-them-into-models": {
-      "title": "Use Namespaces Without Turning Them Into Models",
       "description": "Add a description",
       "video_id": "nrFk9fAaiII"
     },
