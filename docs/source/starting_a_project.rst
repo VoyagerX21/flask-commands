@@ -71,6 +71,7 @@ That can be useful when:
 - you know the project does not need persistent data yet
 - you have a very specific way of handling data collection and don't want to use MySql or SQLite
 
+.. _run-the-new-project:
 Run the New Project
 -------------------
 
