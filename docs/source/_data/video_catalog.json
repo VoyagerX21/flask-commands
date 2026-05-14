@@ -365,6 +365,11 @@
       "description": "Learn the next practical step after generation so your model changes become real database structure instead of just code on disk.",
       "video_id": "nrFk9fAaiII"
     },
+    "create-update-and-delete-a-recipe": {
+      "title": "Create, Update, and Delete a Recipe",
+      "description": "Add a description",
+      "video_id": "nrFk9fAaiII"
+    },
     "build-a-resource-with-make-model-crud": {
       "title": "Build a resource with make:model --crud",
       "description": "Learn how a model-first command can expand outward into a fuller resource by generating the controller, routes, and templates around the data structure.",

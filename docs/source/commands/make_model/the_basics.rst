@@ -9,7 +9,7 @@ If you are newer to web development, a model is the part of your web
 application that stores your data in a structured way.  This approach is 
 especially useful when the data shape is the clearest thing in
 your head and you want to start there before thinking about controllers,
-routes, or views.  As a data engineer and mathematican, this is where I 
+routes, or views.  As a data engineer and mathematician, this is where I 
 find myself starting a project. 
 
 Make a Basic Model
@@ -73,14 +73,14 @@ this command:
 This generates:
 
 - ``app/models/recipe.py``
-- an registers the model in ``app/models/__init__.py``
+- and registers the model in ``app/models/__init__.py``
 
-The regisration part is important because it helps with clean imports into 
+The registration part is important because it helps with clean imports into 
 other parts of our application, mainly in controller files.  It also helps 
 Flask-Commands locate your application's data structures.  We have already
-seen how import it is for Flask-Commands to know about your data structure when
-you ask Flask-Commands to generate models based on relationship between the
-data structures.  But i'm getting ahead of myself, for now let's take a 
+seen how important it is for Flask-Commands to know about your data structure 
+when you ask Flask-Commands to generate models based on relationships between 
+the data structures.  But I'm getting ahead of myself, for now let's take a 
 closer look at the model file and see what we can do with a freshly generated 
 model file.
 
@@ -125,15 +125,14 @@ for us and understand each line.
 
 
 While the generated model file might look a little scary 🫣 at first, it is 
-actually a small starting point.  This is one of the main features in 
-Flask-Commands that I wanted for myself.  Often when building out a new 
-data structure, the first mental hurdle is just sketching out the model 
-file structure.  
+actually a small and useful starting point.  This is one of the main features 
+I wanted from Flask-Commands.  When I am building a new data structure, the
+first mental hurdle is often just getting the model file shaped correctly.
 
-Let's go though each line of this model file, and debunk the mystery.
-The first observation is to notice that a model is just a python class that 
+Let's go through each line of this model file and debunk the mystery.
+The first observation is to notice that a model is just a Python class that 
 extends ``db.Model``.  After declaring the class name we define the table name.
-As a convention Flask-Commands using a plural version of the singular model 
+As a convention Flask-Commands uses the plural version of the singular model 
 name.  After that there are three columns that every new model file ships with:
 
 - ``id``
@@ -141,11 +140,11 @@ name.  After that there are three columns that every new model file ships with:
 - ``updated_at``
 
 The first column is an integer column called ``id``.  The ``id`` column 
-is your table unique identify on each row in your table, and is used to
-make relationships between models.  The next two columns are datetime columns:
-``created_at``and ``updated_at``.  When a new instance is created and stored in 
+is your table unique identifier on each row in your table, and is used to
+make relationships between models.  The next two columns are datetime columns: 
+``created_at`` and ``updated_at``.  When a new instance is created and stored in 
 the database, these datetimes are set to populate without you doing any 
-additional work.  In addition, if you modify the instance, ``update_at`` 
+additional work.  In addition, if you modify the instance, ``updated_at`` 
 will receive a new timestamp when you save the changes to the database.
 
 Being able to save changes to the database is exactly where the last part of 
@@ -156,23 +155,24 @@ methods that finish off our class definition:
 - ``delete_from_database``
 - ``__repr__``
 
-Once you have create a new model instance, you can call ``store_in_database`` 
+Once you have created a new model instance, you can call ``store_in_database`` 
 to push that new data onto the database.  In addition, if you change any of the
-instances attributes you can use ``store_in_database`` again to persist 
-those change in the database. 
+instance's attributes you can use ``store_in_database`` again to persist 
+those changes in the database. 
 
 If you ever need to remove an instance from the database, 
 ``delete_from_database`` will remove the row of data.
 
 Finally, ``__repr__`` is a great tool for debugging.  It is the magic 🪄 method
-that runs when you print a model instance.      
+that runs when you print a model instance.   
 
-This gives you a clean base to build from, but is by no means a complete data
-structure.  You will have to fill out all your additional columns that 
-are needed to make the data structure meaningful.  In the next sections we look
-at how we might edit a models structure so that we can create, edit, and delete
-instances of the model all while saving the changes to our application's 
-database.
+The generated model gives you a clean base, but it is by no means the complete
+finished data structure. Right now, ``Recipe`` can be stored in the
+database, but it does not yet describe anything about a recipe.
+
+The next step is to add the columns that make the model meaningful. We will
+start with one simple column, ``name``, and then update the database so the
+schema matches the Python model.
 
 Edit the Model and Migrate the Database
 ---------------------------------------
@@ -183,8 +183,8 @@ At some point you will want to modify your model by adding new columns, changing
 the structure of your columns, or deleting columns.  
 
 I will briefly demonstrate how to add a column to a model, and then I will send 
-you off to lean more about model manipulation for other sources as this is not 
-a feature of Flask-Commands.
+you off to learn more about model manipulation from other sources, since this is
+not a feature of Flask-Commands.
 
 In our ``Recipe`` model lets update the columns by adding a ``name`` column.  
 To do this we just add the following line of code to the model class.
@@ -201,13 +201,13 @@ comes into play.
 
    Thanks to Miguel Grinberg we can use 
    `Flask-Migrate <https://flask-migrate.readthedocs.io/>`_ to make this 
-   process seemless!  Miguel's package Flask-Migrate is amazing at keeping 
+   process seamless!  Miguel's package Flask-Migrate is amazing at keeping 
    track of all the database changes and applying them,  so you can focus on 
    the final shape of your model file.  
    
-   If you use. ``flask new myproject`` to build your application, then 
+   If you use ``flask new myproject`` to build your application, then 
    Flask-Migrate is already wired up.  Otherwise, you will need to visit
-   Miguel's documentation to lean how to wire up Flask-Migrate.  
+   Miguel's documentation to learn how to wire up Flask-Migrate.  
 
 Once you update the model, you can easily generate a migration using the 
 following terminal commands:
@@ -222,16 +222,30 @@ like the default project scaffold so much.  When you ran ``flask new myproject``
 Flask-Commands wires up Flask-Migrate and Flask-SQLAlchemy for you so you can
 just focus on your application's database development. 
 
-One small note: this only applies to the default database-enabled project. If
-you created the project with ``flask new myproject --no-db``, then the
-database and migration pieces are intentionally not there.
+.. admonition:: One small note
+
+   If you created the project with the ``--no-db`` option like this
+   ``flask new myproject --no-db``, then the database and migration pieces 
+   are intentionally not there.  
+   
+   In this case, you will need to wire up both Flask-Migrate and 
+   Flask-SQLAlchemy if you wish to have a persistent database for your 
+   application.
+
+At this point, the Python model and the database schema agree with each
+other. The ``Recipe`` class has a ``name`` column, and the database has been
+upgraded to store that column.
+
+Now we can give the model a test drive 🏎️ in the terminal.
 
 Create, Update, and Delete a Recipe
 -----------------------------------
 
-Now that the model has a ``name`` column and the database has been migrated,
-we can use the model to start building out real instances and persist them 
-in our database 🥳.
+.. youtube_embed:: create-update-and-delete-a-recipe
+
+Now that the ``Recipe`` model has a ``name`` column and the database has been 
+migrated, we can use the model to start building out instances and persist them 
+in our database.  For me this is the fun part 🥳.
 
 As we saw in the :ref:`Run the New Project <run-the-new-project>`
 section of Starting a Project, the easiest way to start the application is to
@@ -245,8 +259,8 @@ That helper starts the application and opens a Flask shell for you in a
 separate terminal window.
 
 If you prefer, you can do this manually by activating your virtual
-environment running ``flask shell``.  In other words, first cd into your 
-project's root directory run the following commands:
+environment and running ``flask shell``. In other words, first cd into your 
+project's root directory and run the following commands:
 
 .. code-block:: bash
 
@@ -254,8 +268,8 @@ project's root directory run the following commands:
    flask shell
 
 Inside the flask shell, there is some magic happening for you that gives you 
-instant access to all your models without have to write import statements.  Normally,
-to access a model, you would have to write something like 
+instant access to all your models without having to write import statements.  
+Normally, to access a model, you would have to write something like 
 ``from app.models import Recipe``.  However, with the way Flask-Commands sets
 up your project, and with the default settings of Flask-SQLAlchemy, everything 
 just works!  
@@ -268,10 +282,10 @@ For those interested, the magic details are as follows:
 - Then, according to the 
   `Flask-SQLAlchemy documentation <https://flask-sqlalchemy.palletsprojects.com/en/stable/api/>`_ 
   the ``add_models_to_shell`` attribute is set to ``True`` by default, which 
-  means our models are all adds to ``flask shell`` automatically.
+  means our models are all imported into ``flask shell`` automatically.
 
-The shorten version is once you are inside the Flask shell, you can type
-``Recipe`` and the interprator will know that this is your ``Recipe`` model.  
+The shortened version is this: once you are inside the Flask shell, you can type
+``Recipe`` and the interpreter will know that this is your ``Recipe`` model.
 
 Without further delay let's now create a ``Recipe`` instance by making a 
 salad recipe:
@@ -282,9 +296,11 @@ salad recipe:
    >>> print(recipe)
    <Recipe id:None>
 
-Before the recipe is stored, ``id`` is ``None`` because the database has not
-created a row for it yet. By typing ``print(recipe)`` show the friendly 
-debugging representation from ``__repr__``.
+Here we create our first instance of ``Recipe``. Notice that the ``id`` is 
+``None``. This is because, at this point, the instance is only in memory and 
+has not yet created a row in our database.  Also notice that typing 
+``print(recipe)`` shows the friendly debugging representation from 
+``__repr__``.
 
 Now let's store this instance in the database and see the ``id`` column 
 populate:
@@ -298,7 +314,7 @@ populate:
    1
 
 Once the recipe is committed to the database, it has an ``id``. That is the
-database saying, "I know this instance and I have it assigned it to row 1."
+database saying, "I know this instance and I have assigned it to row 1."
 
 We can also see ``updated_at`` do its quiet little bit of magic 🪄. First, save
 the current timestamp:
@@ -344,6 +360,20 @@ The Python object still exists in memory, so ``recipe`` can still print as
 ``<Recipe id:1>``. But the database row is gone, which is why
 ``Recipe.query.count()`` returns ``0``.
 
+At this point, you have seen the full model-only workflow. We created a
+``Recipe`` model, added a real column, migrated the database, created an
+instance, updated it, and deleted it.
 
-Once the model exists, the next step gets more interesting: letting ``--crud``
-build the rest of the resource around it.
+That is enough when all you need is the data structure itself. But web
+applications do not live in a Flask shell. Personally, I could play in the Flask
+shell all day and would probably love a web app that was nothing more than
+a Flask shell. However, everyone else expects routes, controllers, and
+templates, as we have seen in prior chapters, to view and manipulate the data
+structures.
+
+To do this, we will carry over the ``--crud`` option from ``make:controller``
+into our new ``make:model`` world. In the next section, we will start from
+the same model-first idea, but let Flask-Commands build the rest of the
+resource around the model for us.
+
+
