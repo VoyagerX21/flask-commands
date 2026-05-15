@@ -60,21 +60,23 @@ That might feel a little underwhelmed at first, and honestly that is okay.
 This command is showing you the smallest possible controller shape before we
 start adding the more interesting structure on top of it with flags.
 
-If you have been following this documentation from the beginning, you already 
-created ``RecipeController`` earlier while working with ``flask make:view``. 
-Because of this you are receiving a warning in the terminal saying that 
-``RecipeController`` already exists.
+.. admonition:: For those following along
 
-.. rst-class:: terminal-warning
-.. code-block:: text
+   If you have been following this documentation from the beginning, you already 
+   created ``RecipeController`` earlier while working with ``flask make:view``. 
+   Because of this you are receiving a warning in the terminal saying that 
+   ``RecipeController`` already exists.
 
-   ⚠️  Warning: Controller Already Exists
-       - Controller File for RecipeController already exists
-       - No changes were made
+   .. rst-class:: terminal-warning
+   .. code-block:: text
 
-Don't be alarmed if you see this, it's **not a problem**.  This warning 
-means Flask-Commands is protecting the file that already exists instead
-of overwriting it. 
+      ⚠️  Warning: Controller Already Exists
+         - Controller File for RecipeController already exists
+         - No changes were made
+
+   Don't be alarmed if you see this, it's **not a problem**.  This warning 
+   means Flask-Commands is protecting the file that already exists instead
+   of overwriting it. 
 
 
 Add RESTful Actions with ``--crud``

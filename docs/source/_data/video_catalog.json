@@ -413,24 +413,28 @@
         { "heading": "Install and First Run", "doc": "install_and_first_run", "video_keys": ["install-the-prerequisites-for-flask-commands", "install-flask-commands-with-pipx", "install-flask-commands-with-pip", "confirm-the-command-with-version", "read-the-cli-at-a-glance-with-help"] },
         { "heading": "Starting a Project", "doc": "starting_a_project", "video_keys": ["create-a-project-with-flask-new", "what-the-default-scaffold-gives-you", "create-a-project-without-a-database", "run-the-new-project"] },
         { "heading": "Core Ideas", "doc": "commands/core_ideas", "video_keys": ["project-root-safety", "restful-actions", "dot-notation", "naming-conventions", "view-input-normalization"] },
+        { "heading": "flask make:view", "doc": "commands/make_view", "video_keys": ["into-to-flask-make-view"] },
         { "heading": "make:view The Basics", "doc": "commands/make_view/the_basics", "video_keys": ["create-a-simple-template-with-flask-make-view", "understand-the-mains-namespace", "wire-a-page-explicitly", "use-generator-flags-with-make-view", "use-mains-intentionally", "a-quick-peek-at-nested-views", "when-make-view-is-the-right-starting-point"] },
-        { "heading": "make:view Model Prompt", "doc": "commands/make_view/model_prompt", "video_keys": ["normalize-input-before-scaffolding", "understand-missing-model-prompts", "avoid-prompts-with-flags", "choose-between-route-model-and-m", "get-templates-vs-post-actions", "why-the-smarter-behavior-matters"] },
-        { "heading": "Building the First Resource", "doc": "commands/make_view/building_the_first_resource", "video_keys": ["build-recipes-index-as-the-first-resource", "understand-what-rcm-created", "add-recipes-show-to-the-resource", "why-recipes-show-matters", "keep-the-templates-intentionally-plain"] },
-        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images"] },
-        { "heading": "make:controller Basics", "doc": "commands/make_controller/the_basics", "video_keys": ["create-a-simple-controller", "add-restful-actions-with-crud"] },
-        { "heading": "make:controller and Models", "doc": "commands/make_controller/controllers_and_models", "video_keys": ["add-a-model-with-model-or-m", "go-nested-with-make-controller-crud"] },
-        { "heading": "make:controller Flat vs Nested", "doc": "commands/make_controller/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-when-using-m"] },
-        { "heading": "make:model Basics", "doc": "commands/make_model/the_basics", "video_keys": ["make-a-basic-model", "what-the-model-includes", "edit-the-model-and-migrate-the-database"] },
+        { "heading": "make:view Model Prompt", "doc": "commands/make_view/model_prompt", "video_keys": ["normalize-input-before-scaffolding", "understand-missing-model-prompts", "avoid-prompts-with-flags", "choose-between-route-model-and-m", "model-prompts-final-comment"] },
+        { "heading": "Building the First Resource", "doc": "commands/make_view/building_the_first_resource", "video_keys": ["build-recipes-index-as-the-first-resource", "understand-what-rcm-created", "add-recipes-show-to-the-resource", "why-recipes-show-matters", "keep-the-templates-intentionally-plain", "with-two-commands-you-have-something-to-show"] },
+        { "heading": "GET vs POST for RESTful Actions", "doc": "commands/make_view/get_vs_post_for_restful_actions", "video_keys": ["get-actions-render-pages", "post-actions-change-state", "the-browser-flow", "a-real-example-with-recipes-create-and-recipes-store", "no-template-for-post-actions", "what-get-vs-post-means-when-using-make-view"] },
+        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images", "why-nesting-pays-off"] },
+        { "heading": "flask make:controller", "doc": "commands/make_controller", "video_keys": ["intro-to-flask-make-controller"] },
+        { "heading": "make:controller Basics", "doc": "commands/make_controller/the_basics", "video_keys": ["create-a-simple-controller", "add-restful-actions-with-crud", "why-crud-feels-lika-a-big-deal"] },
+        { "heading": "Controllers and Models with make:controller", "doc": "commands/make_controller/controllers_and_models", "video_keys": ["add-a-model-with-model-or-m", "name-the-model-directly", "generate-the-model-name", "why-both-options-matter", "generating-a-restful-controller-with-a-model", "the-naming-problem", "single-data-structures-that-are-multiple-words", "when-to-namespace", "multi-word-namespaces", "public-pages-and-private-tools", "naming-nested-controllers-by-relationship", "go-nested-with-make-controller-crud"] },
+        { "heading": "make:controller Flat vs Nested", "doc": "commands/make_controller/flat_vs_nested", "video_keys": ["flat-or-nest-with-the-m-option", "choose-flat-for-one-multi-word-model", "build-nested-resources-one-level-at-a-time", "combine-namespaces-with-nested-model-generation"] },
+        { "heading": "flask make:model", "doc": "commands/make_model", "video_keys": ["intro-to-flask-make-model"] },
+        { "heading": "make:model Basics", "doc": "commands/make_model/the_basics", "video_keys": ["make-a-basic-model", "what-the-model-includes", "edit-the-model-and-migrate-the-database", "create-update-and-delete-a-recipe"] },
         { "heading": "make:model --crud", "doc": "commands/make_model/crud", "video_keys": ["build-a-resource-with-make-model-crud"] },
         { "heading": "make:model Flat vs Nested", "doc": "commands/make_model/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-with-make-model-crud"] },
-        { "heading": "Flat vs Nested", "doc": "commands/flat_vs_nested", "video_keys": ["understand-flat-structure", "understand-nested-structure", "how-to-choose-flat-vs-nested", "why-flat-vs-nested-matters"] },
+        { "heading": "Flat vs Nested as a Concept", "doc": "commands/flat_vs_nested", "video_keys": ["understand-flat-structure", "understand-nested-structure", "how-to-choose-flat-vs-nested", "why-flat-vs-nested-matters"] },
         { "heading": "Release Notes", "doc": "release_notes", "video_keys": ["why-the-latest-release-changes-matter"] }
       ]
     },
     "welcome_and_setup_videos": {
       "groups": [
         { "heading": "Welcome", "doc": "welcome", "video_keys": ["what-is-flask-commands", "what-flask-commands-is-not", "the-plain-recipe-app-we-are-building", "how-to-use-this-documentation"] },
-        { "heading": "Install and First Run", "doc": "install_and_first_run", "video_keys": ["install-flask-commands-with-pipx", "install-flask-commands-with-pip", "confirm-the-command-with-version", "read-the-cli-at-a-glance-with-help"] },
+        { "heading": "Install and First Run", "doc": "install_and_first_run", "video_keys": ["install-the-prerequisites-for-flask-commands", "install-flask-commands-with-pipx", "install-flask-commands-with-pip", "confirm-the-command-with-version", "read-the-cli-at-a-glance-with-help"] },
         { "heading": "Starting a Project", "doc": "starting_a_project", "video_keys": ["create-a-project-with-flask-new", "what-the-default-scaffold-gives-you", "create-a-project-without-a-database", "run-the-new-project"] },
         { "heading": "Core Ideas", "doc": "commands/core_ideas", "video_keys": ["project-root-safety", "restful-actions", "dot-notation", "naming-conventions", "view-input-normalization"] }
       ]
@@ -439,28 +443,31 @@
       "groups": [
         { "heading": "flask make:view", "doc": "commands/make_view", "video_keys": ["into-to-flask-make-view"] },
         { "heading": "make:view The Basics", "doc": "commands/make_view/the_basics", "video_keys": ["create-a-simple-template-with-flask-make-view", "understand-the-mains-namespace", "wire-a-page-explicitly", "use-generator-flags-with-make-view", "use-mains-intentionally", "a-quick-peek-at-nested-views", "when-make-view-is-the-right-starting-point"] },
-        { "heading": "make:view Model Prompt", "doc": "commands/make_view/model_prompt", "video_keys": ["normalize-input-before-scaffolding", "understand-missing-model-prompts", "avoid-prompts-with-flags", "choose-between-route-model-and-m", "get-templates-vs-post-actions", "why-the-smarter-behavior-matters"] },
-        { "heading": "Building the First Resource", "doc": "commands/make_view/building_the_first_resource", "video_keys": ["build-recipes-index-as-the-first-resource", "understand-what-rcm-created", "add-recipes-show-to-the-resource", "why-recipes-show-matters", "keep-the-templates-intentionally-plain"] },
-        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images"] }
+        { "heading": "make:view Model Prompt", "doc": "commands/make_view/model_prompt", "video_keys": ["normalize-input-before-scaffolding", "understand-missing-model-prompts", "avoid-prompts-with-flags", "choose-between-route-model-and-m", "model-prompts-final-comment"] },
+        { "heading": "Building the First Resource", "doc": "commands/make_view/building_the_first_resource", "video_keys": ["build-recipes-index-as-the-first-resource", "understand-what-rcm-created", "add-recipes-show-to-the-resource", "why-recipes-show-matters", "keep-the-templates-intentionally-plain", "with-two-commands-you-have-something-to-show"] },
+        { "heading": "GET vs POST for RESTful Actions", "doc": "commands/make_view/get_vs_post_for_restful_actions", "video_keys": ["get-actions-render-pages", "post-actions-change-state", "the-browser-flow", "a-real-example-with-recipes-create-and-recipes-store", "no-template-for-post-actions", "what-get-vs-post-means-when-using-make-view"] },
+        { "heading": "Nested Resources with make:view", "doc": "commands/make_view/nested_resources", "video_keys": ["build-recipes-comments-index", "add-recipes-comments-show", "go-three-levels-deep-with-images", "why-nesting-pays-off"] }
       ]
     },
     "make_controller_videos": {
       "groups": [
-        { "heading": "make:controller Basics", "doc": "commands/make_controller/the_basics", "video_keys": ["create-a-simple-controller", "add-restful-actions-with-crud"] },
-        { "heading": "make:controller and Models", "doc": "commands/make_controller/controllers_and_models", "video_keys": ["add-a-model-with-model-or-m", "go-nested-with-make-controller-crud"] },
-        { "heading": "make:controller Flat vs Nested", "doc": "commands/make_controller/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-when-using-m"] }
+        { "heading": "flask make:controller", "doc": "commands/make_controller", "video_keys": ["intro-to-flask-make-controller"] },
+        { "heading": "make:controller Basics", "doc": "commands/make_controller/the_basics", "video_keys": ["create-a-simple-controller", "add-restful-actions-with-crud", "why-crud-feels-lika-a-big-deal"] },
+        { "heading": "Controllers and Models with make:controller", "doc": "commands/make_controller/controllers_and_models", "video_keys": ["add-a-model-with-model-or-m", "name-the-model-directly", "generate-the-model-name", "why-both-options-matter", "generating-a-restful-controller-with-a-model", "the-naming-problem", "single-data-structures-that-are-multiple-words", "when-to-namespace", "multi-word-namespaces", "public-pages-and-private-tools", "naming-nested-controllers-by-relationship", "go-nested-with-make-controller-crud"] },
+        { "heading": "make:controller Flat vs Nested", "doc": "commands/make_controller/flat_vs_nested", "video_keys": ["flat-or-nest-with-the-m-option", "choose-flat-for-one-multi-word-model", "build-nested-resources-one-level-at-a-time", "combine-namespaces-with-nested-model-generation"] }
       ]
     },
     "make_model_videos": {
       "groups": [
-        { "heading": "make:model Basics", "doc": "commands/make_model/the_basics", "video_keys": ["make-a-basic-model", "what-the-model-includes", "edit-the-model-and-migrate-the-database"] },
+        { "heading": "flask make:model", "doc": "commands/make_model", "video_keys": ["intro-to-flask-make-model"] },
+        { "heading": "make:model Basics", "doc": "commands/make_model/the_basics", "video_keys": ["make-a-basic-model", "what-the-model-includes", "edit-the-model-and-migrate-the-database", "create-update-and-delete-a-recipe"] },
         { "heading": "make:model --crud", "doc": "commands/make_model/crud", "video_keys": ["build-a-resource-with-make-model-crud"] },
         { "heading": "make:model Flat vs Nested", "doc": "commands/make_model/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-with-make-model-crud"] }
       ]
     },
     "flat_vs_nested_videos": {
       "groups": [
-        { "heading": "Flat vs Nested", "doc": "commands/flat_vs_nested", "video_keys": ["understand-flat-structure", "understand-nested-structure", "how-to-choose-flat-vs-nested", "why-flat-vs-nested-matters"] }
+        { "heading": "Flat vs Nested as a Concept", "doc": "commands/flat_vs_nested", "video_keys": ["understand-flat-structure", "understand-nested-structure", "how-to-choose-flat-vs-nested", "why-flat-vs-nested-matters"] }
       ]
     }
   }

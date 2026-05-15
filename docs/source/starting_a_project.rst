@@ -72,6 +72,7 @@ That can be useful when:
 - you have a very specific way of handling data collection and don't want to use MySql or SQLite
 
 .. _run-the-new-project:
+
 Run the New Project
 -------------------
 
