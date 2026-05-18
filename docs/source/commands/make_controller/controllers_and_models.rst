@@ -191,6 +191,7 @@ naming convention so we can separate the following three ideas 💡:
 - a namespace that organizes part of the app
 - a nested resource relationship
 
+.. _single-data-structures-that-are-multiple-words:
 
 Single Data Structures that are Multiple Words
 ----------------------------------------------

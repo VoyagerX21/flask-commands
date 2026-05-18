@@ -28,5 +28,5 @@ Everything in these sections builds on itself one step at a time.
    :hidden:
 
    The Basics <make_model/the_basics>
-   make:model --crud <make_model/crud>
+   RESTful Resources <make_model/restful_resources>
    Flat vs Nested <make_model/flat_vs_nested>
