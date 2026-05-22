@@ -426,7 +426,7 @@
         { "heading": "flask make:model", "doc": "commands/make_model", "video_keys": ["intro-to-flask-make-model"] },
         { "heading": "make:model Basics", "doc": "commands/make_model/the_basics", "video_keys": ["make-a-basic-model", "what-the-model-includes", "edit-the-model-and-migrate-the-database", "create-update-and-delete-a-recipe"] },
         { "heading": "make:model --crud", "doc": "commands/make_model/restful_resources", "video_keys": ["build-a-resource-with-make-model-crud"] },
-        { "heading": "make:model Flat vs Nested", "doc": "commands/make_model/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-with-make-model-crud"] }
+        { "heading": "make:model Flat vs Nested", "doc": "commands/make_model/flat_vs_nested", "video_keys": ["choose-flat-or-nested-with-crud-for-make-model"] }
       ]
     },
     "welcome_and_setup_videos": {
@@ -460,7 +460,7 @@
         { "heading": "flask make:model", "doc": "commands/make_model", "video_keys": ["intro-to-flask-make-model"] },
         { "heading": "make:model Basics", "doc": "commands/make_model/the_basics", "video_keys": ["make-a-basic-model", "what-the-model-includes", "edit-the-model-and-migrate-the-database", "create-update-and-delete-a-recipe"] },
         { "heading": "make:model --crud", "doc": "commands/make_model/restful_resources", "video_keys": ["build-a-resource-with-make-model-crud"] },
-        { "heading": "make:model Flat vs Nested", "doc": "commands/make_model/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-with-make-model-crud"] }
+        { "heading": "make:model Flat vs Nested", "doc": "commands/make_model/flat_vs_nested", "video_keys": ["choose-flat-or-nested-with-crud-for-make-model"] }
       ]
     }
   }

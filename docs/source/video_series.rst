@@ -59,16 +59,6 @@ The takeaway is data-first scaffolding: how to start from the model, how that
 decision pushes outward into routes and controllers, and when that workflow
 makes more sense than starting from views or controllers.
 
-:doc:`Flat-vs-Nested Videos </videos/flat_vs_nested_videos>`
---------------------------------------------------------------------------------
-
-Those videos focus on comparison and decision-making, helping readers
-understand the tradeoffs between flat and nested project structure.
-
-The takeaway is architecture judgment: how to compare two honest ways of
-organizing a Flask app, what each structure is optimizing for, and how to pick
-the one that matches your project.
-
 .. toctree::
    :hidden:
    :maxdepth: 1
