@@ -184,7 +184,7 @@
       "title": "What Get vs Post Means WHen Using Make View",
       "description": "Add a description",
       "video_id": ""
-    },                    
+    },
     "get-templates-vs-post-actions": {
       "title": "GET templates vs POST actions",
       "description": "Learn why some actions produce templates and others do not, and how that distinction keeps the generated files honest to HTTP behavior.",
@@ -239,17 +239,17 @@
       "title": "Go three levels deep with images",
       "description": "Watch the nesting go one level further so you can see how the package handles deeper relationships without hiding what is happening.",
       "video_id": ""
-    },    
+    },
     "why-nesting-pays-off": {
       "title": "Why Nesting Pays Off",
       "description": "Add a description",
       "video_id": ""
-    },    
+    },
     "intro-to-flask-make-controller": {
       "title": "Intro To Flask Make Controller",
       "description": "Add a description",
       "video_id": ""
-    },    
+    },
     "create-a-simple-controller": {
       "title": "Create a simple controller",
       "description": "Learn how to start with the controller layer directly when the behavior feels clearer than the page or model structure at the beginning.",
@@ -375,34 +375,34 @@
       "description": "Learn how a model-first command can expand outward into a fuller resource by generating the controller, routes, and templates around the data structure.",
       "video_id": ""
     },
-    "choose-flat-vs-nested-with-make-model-crud": {
-      "title": "Choose flat vs nested with make:model --crud",
-      "description": "Learn how the flat-versus-nested choice changes the generated model-first structure so your folders and files tell the same story as your relationships.",
+    "choose-flat-or-nested-with-crud-for-make-model": {
+      "title": "Choose Flat or Nested with ``--crud``",
+      "description": "Add a description",
       "video_id": ""
     },
-    "understand-flat-structure": {
-      "title": "Understand flat structure",
-      "description": "Learn what a flat project layout optimizes for and why it can be the clearer choice when the relationship depth stays moderate.",
+    "skipping-the-prompt-with--flat-or--nest": {
+      "title": "Skipping the Prompt with ``--flat`` or ``--nest``",
+      "description": "Add a description",
       "video_id": ""
     },
-    "understand-nested-structure": {
-      "title": "Understand nested structure",
-      "description": "Learn what a nested layout is trying to communicate and why it can make deep relationships feel more honest instead of more confusing.",
+    "choosing-flat-for-one-multi-word-model": {
+      "title": "Choosing Flat for One Multi-Word Model",
+      "description": "Add a description",
       "video_id": ""
     },
-    "how-to-choose-flat-vs-nested": {
-      "title": "How to choose flat vs nested",
-      "description": "Learn a practical decision framework so the structure choice reflects the shape of your app instead of personal guesswork.",
+    "choosing-nest-for-parent-child-resource": {
+      "title": "Choosing Nest for a Parent-Child Resource",
+      "description": "Add a description",
       "video_id": ""
     },
-    "why-flat-vs-nested-matters": {
-      "title": "Why flat vs nested matters",
-      "description": "Learn why this choice affects the way people read, navigate, and maintain the project long after the first scaffold command has finished.",
+    "use-make-controller-for-namespacing": {
+      "title": "Use ``make:controller`` for Namespacing",
+      "description": "Add a description",
       "video_id": ""
     },
-    "why-the-latest-release-changes-matter": {
-      "title": "Why the latest release changes matter",
-      "description": "Learn what changed in the latest release and why the newer scaffolding behavior, naming cleanup, and documentation reshaping matter in day-to-day use.",
+    "build-nested-resources-one-level-at-a-time-make-model": {
+      "title": "Build Nested Resources One Level at a Time (make model)",
+      "description": "Add a description",
       "video_id": ""
     }
   },
@@ -425,10 +425,8 @@
         { "heading": "make:controller Flat vs Nested", "doc": "commands/make_controller/flat_vs_nested", "video_keys": ["flat-or-nest-with-the-m-option", "choose-flat-for-one-multi-word-model", "build-nested-resources-one-level-at-a-time", "combine-namespaces-with-nested-model-generation"] },
         { "heading": "flask make:model", "doc": "commands/make_model", "video_keys": ["intro-to-flask-make-model"] },
         { "heading": "make:model Basics", "doc": "commands/make_model/the_basics", "video_keys": ["make-a-basic-model", "what-the-model-includes", "edit-the-model-and-migrate-the-database", "create-update-and-delete-a-recipe"] },
-        { "heading": "make:model --crud", "doc": "commands/make_model/crud", "video_keys": ["build-a-resource-with-make-model-crud"] },
-        { "heading": "make:model Flat vs Nested", "doc": "commands/make_model/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-with-make-model-crud"] },
-        { "heading": "Flat vs Nested as a Concept", "doc": "commands/flat_vs_nested", "video_keys": ["understand-flat-structure", "understand-nested-structure", "how-to-choose-flat-vs-nested", "why-flat-vs-nested-matters"] },
-        { "heading": "Release Notes", "doc": "release_notes", "video_keys": ["why-the-latest-release-changes-matter"] }
+        { "heading": "make:model --crud", "doc": "commands/make_model/restful_resources", "video_keys": ["build-a-resource-with-make-model-crud"] },
+        { "heading": "make:model Flat vs Nested", "doc": "commands/make_model/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-with-make-model-crud"] }
       ]
     },
     "welcome_and_setup_videos": {
@@ -461,13 +459,8 @@
       "groups": [
         { "heading": "flask make:model", "doc": "commands/make_model", "video_keys": ["intro-to-flask-make-model"] },
         { "heading": "make:model Basics", "doc": "commands/make_model/the_basics", "video_keys": ["make-a-basic-model", "what-the-model-includes", "edit-the-model-and-migrate-the-database", "create-update-and-delete-a-recipe"] },
-        { "heading": "make:model --crud", "doc": "commands/make_model/crud", "video_keys": ["build-a-resource-with-make-model-crud"] },
+        { "heading": "make:model --crud", "doc": "commands/make_model/restful_resources", "video_keys": ["build-a-resource-with-make-model-crud"] },
         { "heading": "make:model Flat vs Nested", "doc": "commands/make_model/flat_vs_nested", "video_keys": ["choose-flat-vs-nested-with-make-model-crud"] }
-      ]
-    },
-    "flat_vs_nested_videos": {
-      "groups": [
-        { "heading": "Flat vs Nested as a Concept", "doc": "commands/flat_vs_nested", "video_keys": ["understand-flat-structure", "understand-nested-structure", "how-to-choose-flat-vs-nested", "why-flat-vs-nested-matters"] }
       ]
     }
   }

@@ -7,7 +7,7 @@ Some model names describe one obvious structure. Others can describe more than o
 
 In the last chapter we used ``make:model`` with ``--crud`` to build a simple model-backed resource. That workflow is easy to read when the model is one word like ``Recipe``.
 
-.. code-blocks:: bash
+.. code-block:: bash
 
    flask make:model Recipe --crud
 
@@ -89,6 +89,8 @@ If you know which structure you want, you can skip the prompt by using either ``
 
 Choosing Flat for One Multi-Word Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. youtube_embed:: choosing-flat-for-one-multi-word-model
 
 Use ``--flat`` when the words describe one model:
 
@@ -215,7 +217,7 @@ childen models as we will see in the next section.
 Build Nested Resources One Level at a Time
 ------------------------------------------
 
-.. youtube_embed:: build-nested-resources-one-level-at-a-time
+.. youtube_embed:: build-nested-resources-one-level-at-a-time-make-model
 
 Now let's build multiple child resources on top of our ``TestKitchen / Recipe``
 structure.

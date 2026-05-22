@@ -78,4 +78,3 @@ the one that matches your project.
    videos/make_view_videos
    videos/make_controller_videos
    videos/make_model_videos
-   videos/flat_vs_nested_videos
