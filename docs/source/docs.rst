@@ -18,7 +18,5 @@ your friend.
    commands/make_view
    commands/make_controller
    commands/make_model
-   commands/flat_vs_nested
    commands/cheat_sheet
-   release_notes
    changelog

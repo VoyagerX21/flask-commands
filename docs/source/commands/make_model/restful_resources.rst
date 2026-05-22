@@ -88,65 +88,10 @@ And yes, I would absolutely rather have multiple doors 🚪 than crawl through a
 window 🪟 like a stressed-out raccoon 🦝. Wait, no. Ignore the raccoon 🤪. The 
 point is doors are good.
 
-For a simple resource like ``Recipe``, both approaches are easy to read. But as
-soon as the model name has more than one word or become nested, the 
-model-first command starts to feel much nicer.
-
-Multi-Word Data Structures
---------------------------
-
-Recall, in :ref:`Single Data Structures that are Multiple Words<single-data-structures-that-are-multiple-words>` from the make controller chapters we created a signal data structure, ``ShoppoingList``, that consisted of two words.
-
-In this chapter we created this structue by explicitly defining the models name using the following command:
-
-.. code-block:: bash
-
-   flask make:controller ShoppingListController --crud --model ShoppingList
-
-However, later we saw that we could allow Flask-Commands to generate the model name and use the flat flag like so:
-
-.. code-block:: bash
-
-   flask make:controller ShoppingListController --crud -m --flat
-
-Both commands are valid, but they require you to explain how the controller name
-should become a model.
-
-From the model-first side, the command is simpler:
-
-.. code-block:: bash
-
-   flask make:model ShoppingList --crud
-
-For me this is the ideal way of designing, and reads as:
-
-   Make  a ``ShoppingList`` model, and build the CRUD resource around it.
-
-That gives you the flat ``ShoppingList`` resource:
-
-- model class: ``ShoppingList``
-- model file: ``app/models/shopping_list.py``
-- controller class: ``ShoppingListController``
-- controller file: ``app/controllers/shopping_list_controller.py``
-- route package: ``app/routes/shopping_lists/``
-- template folder: ``app/templates/shopping_lists/``
-- URL shape: ``/shopping-lists``
-
-So in one command, you end up with the new model plus the controller, routes, and views
-that wrap around it.
-
-For me ``make:model --crud`` is such a natural way of building out
-resources.  I can quickly build out new models and wire them into the application.  I don't have to worry about multi-word models it all just works.  
-
-But what about model relationships like we had with ``make:controller``?  This is actually where things get interesting.
-
- When every segment of a Model Name is not a registered model you
- will generate a multi-word model.  
-
-This is one of the reasons ``make:model --crud`` can be such a nice workflow.
-If the data is the part you know first, the rest of the application structure
-can grow outward from there.
-
-And once the model-first CRUD workflow feels good, the next interesting
-question is the same one we saw with controllers: should the structure be flat
-or nested?
+For a single segment resource names like ``Recipe``, both approaches are easy 
+to read. But as soon as the model name has more than one word or you want
+nested resources, the model-first command starts to feel much nicer.
+However, similar to make controller we can't escape either the prompt or 
+directing Flask-Commands with an optional flag of ``flat`` or ``nested``.
+This is where we will pick up in our next chapter 
+:ref:`Flat vs Nested with make:model<flat-vs-nested-with-make-model>`.

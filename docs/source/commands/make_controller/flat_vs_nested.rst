@@ -29,30 +29,34 @@ could reasonably mean more than one thing.
 To make that decision, Flask-Commands looks at the controller name segments and
 compares them to the registered models. From there, it determines the possible
 model-generation options. This is where you come in and guide the command with
-one of two options: ``--flat`` or ``--nest``. They let you tell Flask-Commands
-which model story the controller name should tell.
+one of two options: ``--flat`` or ``--nest``. These options let you tell 
+Flask-Commands which model story the controller name should tell.
+
+.. _flat-or-nest-with-the-m-option:
 
 Flat or Nest with the ``-m`` Option
 -----------------------------------
 
 .. youtube_embed:: flat-or-nest-with-the-m-option
 
-We have seen using the ``--crud`` flag builds RESTful scaffolding:
+When you add the ``--crud`` flag you are telling Flask-Commands to build a
+RESTful scaffolding for the data structure.  That means build:
 
 - controller methods
 - route handlers
 - templates for the ``GET`` actions
 
-In addition we have seen the ``-m`` flag adds model generation to that 
-process. That means this command:
+In addition, we have seen that the  ``-m`` flag adds model generation to that 
+process. Putting this together means that the command:
 
 .. code-block:: bash
 
    flask make:controller RecipeIngredientController --crud -m
 
 asks Flask-Commands to generate model names from 
-``RecipeIngredientController``.  In the prior chapter, we ran this command 
-without the ``-m`` option and with ``Recipe`` as a registered model.  
+``RecipeIngredientController`` with RESTful scaffolding.  In the prior 
+chapter, we ran this command without the ``-m`` option and with ``Recipe`` 
+as a registered model.  
 
 If we run this command in a new project the generated model name from 
 ``RecipeIngredientController`` can tell two different model stories:
@@ -71,8 +75,8 @@ segments:
 
    Detected multiple child like segments:
    Recipe, Ingredient
-   1) (flatten resource model)  = RecipeIngredient
-   2) (generate the following models) = Recipe, Ingredient
+      1) (flatten resource model)  = RecipeIngredient
+      2) (generate the following models) = Recipe, Ingredient
    Choose model structure (1/2, flat/nest): [1]:
 
 In this case, the flat choice generates one model, ``RecipeIngredient``. The
@@ -126,6 +130,7 @@ generated CRUD structure.
 Let's revisit a command we showed in the prior chapter and used these new
 options to shorten the command.
 
+.. _choose-flat-for-one-multi-word-model:
 
 Choose Flat for One Multi-Word Model
 ------------------------------------

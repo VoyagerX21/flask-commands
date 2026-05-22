@@ -6,7 +6,7 @@
 .. raw:: html
 
    <style>
-    
+
         .bd-main .bd-content .bd-article-container {
             max-width: none !important;
             padding-left: 0px !important;
@@ -199,7 +199,7 @@
                         <div class=" flex-1 rounded-lg p-1 text-center">3. Generate a resource</div>
                     </div>
                     <div class="text-white rounded-lg flex flex-col md:flex-row overflow-hidden my-2">
-                        
+
                         <div class="font-mono text-sm flex-1 bg-black px-4 py-2 flex flex-col justify-center">
                             <div>$ flask new myproject</div>
                             <div>$ cd myproject</div>
@@ -207,7 +207,7 @@
                         </div>
                         <div class="flex-1 bg-gray-800 px-4 py-2 flex flex-col justify-center">
                             In three commands, Flask-Commands takes you from zero to generated your owns application's routes, controllers, models, and views.
-                        </div>   
+                        </div>
                     </div>
                 </div>
             </section>
@@ -220,11 +220,11 @@
                     <a href="install_and_first_run.html" class="no-underline! bg-gradient-to-br from-violet-100 to-violet-200  text-indigo-800! flex items-start justify-center gap-2  font-extrabold px-4 py-2 rounded border-1 border-violet-200">
                         <span>Start With Installation</span>
                     </a>
-                    <a href="docs.html" class="no-underline! bg-gradient-to-r from-slate-100/80 to-slate-100 flex items-start justify-center gap-2  font-extrabold px-4 py-2 rounded border-1 border-slate-200 hover:text-[#0a7d91]! text-[#0a7d91]!">                        
+                    <a href="docs.html" class="no-underline! bg-gradient-to-r from-slate-100/80 to-slate-100 flex items-start justify-center gap-2  font-extrabold px-4 py-2 rounded border-1 border-slate-200 hover:text-[#0a7d91]! text-[#0a7d91]!">
                         <span>Browse Commands</span>
                     </a>
                 <div>
-            </section>            
+            </section>
         </div>
     </div>
 
@@ -234,5 +234,4 @@
 
    Docs <docs>
    Videos <video_series>
-   
-    
+

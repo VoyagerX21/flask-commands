@@ -982,7 +982,7 @@ def test_docs_flat_vs_nested_use_multi_word_namespace_front_desk_order(project):
     assert result.exit_code == 0, result.output
     _assert_route_contains(
         project,
-        "front-desk/orders",
+        "front_desk/orders",
         "@bp.route('/front-desk/orders/<int:order_id>', methods=['GET'])",
     )
     

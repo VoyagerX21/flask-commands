@@ -314,7 +314,7 @@ def controller_generate_relative_path_from_controller_name(controller_name: str)
             pluralize(camel_to_snake(segment))
             for segment in filter_falsy(namespaces)
         )
-    namespace_segment = "-".join(
+    namespace_segment = "_".join(
         camel_to_snake(segment) for segment in filter_falsy(namespaces))
     
     resource_segments = [
