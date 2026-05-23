@@ -5,7 +5,7 @@ Now that we have built a simple resource and looked at how RESTful actions
 work, the next step is to build on that structure with nested resources.
 
 If you are newer to web development, do not let the phrase “nested
-resources” scare you off. All it means is that one object belongs to another 
+resources” scare you off. All it means is that one object belongs to another
 object.
 
 
@@ -16,15 +16,15 @@ In our cooking app let's add comments and images so we have:
 
 Nesting like this ``Recipe -> Comment -> Image`` is the idea we are after.
 
-In URL terms, nesting means the child's URL depends on the parent instead of 
+In URL terms, nesting means the child's URL depends on the parent instead of
 standing alone.
 
-One of the feature I was unwilling to compromise on when building 
-Flask-Commands was making the folder structure, route structure, controller 
-structure, and endpoint naming all reflect their relationships. That way, when 
-you come back to the code six months later, you can quickly see how the 
-data structures relate without digging through the project (or 
-having an AI 🤖 dig through your files to answer how to objects are related). 
+One of the feature I was unwilling to compromise on when building
+Flask-Commands was making the folder structure, route structure, controller
+structure, and endpoint naming all reflect their relationships. That way, when
+you come back to the code six months later, you can quickly see how the
+data structures relate without digging through the project (or
+having an AI 🤖 dig through your files to answer how to objects are related).
 
 
 Build ``recipes.comments.index``
@@ -73,15 +73,15 @@ The key part of the story is that the ``comments`` blueprint gets registered
 
 - ``app/routes/recipes/__init__.py``
 
-When I saw this the first time I thought "this is weird 🤪, who would have 
-thought to register a blueprint in another blueprint!!!!"  But this is one of 
-the cool things I love about Flask. Flask is not so opinionated that it gets 
+When I saw this the first time I thought "this is weird 🤪, who would have
+thought to register a blueprint in another blueprint!!!!"  But this is one of
+the cool things I love about Flask. Flask is not so opinionated that it gets
 in your way, which gives you the freedom to try different structures.
 
 Ok, you’re saying, that’s great but why would I do this?
 
 By registering the ``comments`` blueprint inside the ``recipes``
-blueprint, we are able to use the dotted naming convention when referencing 
+blueprint, we are able to use the dotted naming convention when referencing
 a route:
 
 .. code-block:: python
@@ -96,7 +96,7 @@ Now the route name, the folders, and the controller naming all follow that same
 relationship in the data.
 
 What makes this so useful is that all of those pieces follow the same
-relationship. In our example, the story that comments belong to recipes is 
+relationship. In our example, the story that comments belong to recipes is
 seen in the structures that are built:
 
 - ``app/models/comment.py`` (comment building block)
@@ -159,16 +159,16 @@ Or in plain English:
 - images belong to comments
 - comments belong to recipes
 
-The command to build out the index page for images and set up the relationship 
+The command to build out the index page for images and set up the relationship
 is what you would expect:
 
 .. code-block:: bash
 
    flask make:view recipes.comments.images.index -rcm
 
-Our brains 🧠 definatly link like this, **Recipes -> Comments -> Images**. 
+Our brains 🧠 definitely thinks like this, **Recipes -> Comments -> Images**.
 However, it hurts my brain just thinking 🧐 about how we would wire all these
-parts together in a Flask application and not break something. 
+parts together in a Flask application and not break something.
 
 But here is the nice part: you do not have to wire all of that by hand.
 
@@ -190,17 +190,17 @@ what gives you endpoint naming like:
 
 That is one of the coolest parts of the package to me. You tell
 Flask-Commands the relationship structure with dots, throw in your generated
-flags of route ``-r``, controller ``-c``, and model ``-m``, and preso 🪄
+flags of route ``-r``, controller ``-c``, and model ``-m``, and presto 🪄
 everything is built for you.
 
 You can keep going deeper if you want. Flask-Commands will support as many
-levels deep as you want; however, as a rule of thumb, I rarely go 
-over three levels deep. Once things get deeper than that, the structure 
+levels deep as you want; however, as a rule of thumb, I rarely go
+over three levels deep. Once things get deeper than that, the structure
 can start feeling hard to read even if it is technically correct.
 
-This structure and naming is one of the parts of the package I was unwilling 
-to compromise on while developing Flask-Commands.  I always felt that if the 
-structure is nested in the application, then I want it to read as nested 
+This structure and naming is one of the parts of the package I was unwilling
+to compromise on while developing Flask-Commands.  I always felt that if the
+structure is nested in the application, then I want it to read as nested
 in the endpoint naming too.
 
 So with:
@@ -209,13 +209,13 @@ So with:
 
    flask make:view recipes.comments.images.index -rcm
 
-your endpoint names is of the same form:
+your endpoint names are of the same form:
 
 .. code-block:: python
 
    url_for('recipes.comments.images.index', recipe_id=1, comment_id=2)
 
-I love ❤️ this, because it's easy to remember and the endpoint itself tells 
+I love ❤️ this, because it's easy to remember and the endpoint itself tells
 the truth about the relationship structures.
 
 You do not have to guess:
@@ -227,8 +227,8 @@ You do not have to guess:
 The endpoint name already answers all these questions.
 
 For any developer, that is a big deal. Route names, controller
-names, and folder paths can end up as a hodgepodge mess if you let them. 
-However, when everything line up with the data structures, the app becomes 
+names, and folder paths can end up as a hodgepodge mess if you let them.
+However, when everything lines up with the data structures, the app becomes
 much more manageable to maintain.
 
 
@@ -247,7 +247,7 @@ With just these three commands:
    flask make:view recipes.comments.index -rcm
    flask make:view recipes.comments.images.index -rcm
 
-You are able to bring to life a surprising amount of relationship-aware 
+You are able to bring to life a surprising amount of relationship-aware
 structure in just a short amount of time.
 
 From these commands, your Flask application quickly contains a mature
@@ -259,9 +259,9 @@ level of structure in the following areas:
 - models
 - endpoint names
 
-As we have shown above same idea does not stop at ``index``. You can use the
-same thing for ``show`` and for the other five RESTful actions. That is where 
-the structure really starts to scale, because the naming and relationships 
+As we have shown above, the same idea does not stop at ``index``. You can use the
+same thing for ``show`` and for the other five RESTful actions. That is where
+the structure really starts to scale, because the naming and relationship
 keeps lining up as your app grows.  Keeping your application tidy, readable,
 and more importantly maintainable.
 
@@ -269,8 +269,8 @@ At this point I thought great but what if I already know that I want all
 seven RESTful actions.  Are you telling me that I have to type in seven
 different commands!  I thought this was going to save me time?
 
-Please don't stress out 😬.  If you find yourself generating 
-RESTful actions one at a time, the natural next question is: can 
+Please don't stress out 😬.  If you find yourself generating
+RESTful actions one at a time, the natural next question is: can
 Flask-Commands build all seven actions in one command?
 
 I'm happy to say, yes 👏 and that is exactly where our next topic will take us

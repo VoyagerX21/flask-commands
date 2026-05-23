@@ -20,9 +20,9 @@ If you use Homebrew, both are easy to install. If Homebrew is not installed,
 visit the `official Homebrew site <https://brew.sh/>`_ first.
 
 
-Because Flask-Commands plugs into Flask's CLI, the recommend way
-to install this package is through a global ``pipx`` install that also 
-exposes dependency apps. You can check whether ``pipx`` is installed by 
+Because Flask-Commands plugs into Flask's CLI, the recommended way
+to install this package is through a global ``pipx`` install that also
+exposes dependency apps. You can check whether ``pipx`` is installed by
 running:
 
 .. code-block:: bash
@@ -38,17 +38,17 @@ On macOS with Homebrew, that usually looks like this:
    brew install pipx
    pipx ensurepath
 
-You will also want ``npm`` available because the generated Flask project include
+You will also want ``npm`` available because the generated Flask project includes
 Tailwind CSS tooling. To check whether ``npm`` is installed, run:
 
 .. code-block:: bash
 
    npm --version
 
-If that prints a version number, you are good to go. If not, you 
+If that prints a version number, you are good to go. If not, you
 will need to install node because ``npm`` comes with Node.js. Install Node.js
 from the `official Node.js download page <https://nodejs.org/en/download>`_ or
-the unoffically community install using Homebrew:
+the unofficial community install using Homebrew:
 
 .. code-block:: bash
 
@@ -67,8 +67,8 @@ This is the recommended way to install Flask-Commands. ``pipx`` keeps the
 installation isolated and makes Flask's ``flask`` command with Flask-Commands
 extras now available to you anywhere.
 
-What is ``--include-deps`` doing? Flask-Commands is a Flask CLI plugin. 
-``pipx`` needs to expose Flask’s ``flask`` executable from the installed 
+What is ``--include-deps`` doing? Flask-Commands is a Flask CLI plugin.
+``pipx`` needs to expose Flask’s ``flask`` executable from the installed
 dependencies so your plugin commands appear under the real Flask CLI.
 
 Install Flask-Commands with ``pip``
@@ -88,7 +88,7 @@ installed so Tailwind CSS works in the generated Flask project.
 There are two common ways people handle a ``pip`` install.
 
 If you install Flask-Commands inside a virtual environment, that environment
-must be activated any time you want to use Flask-Commands through Flask’s CLI. 
+must be activated any time you want to use Flask-Commands through Flask’s CLI.
 That can be a little awkward for ``flask new``, because the environment where
 Flask-Commands is installed may live in a different place from the Flask app
 you want to create.
@@ -133,7 +133,7 @@ For most people, checking the version is the first “yes, it worked” moment
 after installation.
 
 Notice that Flask-Commands is not exposed as a separate top-level executable.
-Instead Flask-Commands plugs into Flask’s CLI, which means there are two 
+Instead Flask-Commands plugs into Flask’s CLI, which means there are two
 useful version checks:
 
 .. code-block:: bash

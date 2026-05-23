@@ -26,6 +26,16 @@ The takeaway is foundation: what the tool does, how to install it cleanly, how
 to start a project safely, and which naming and routing ideas make the rest of
 the docs easier to understand.
 
+:doc:`New Project Videos </videos/new_videos>`
+--------------------------------------------------------------------------------
+
+This page follows the ``flask new`` workflow on its own, from creating a fresh
+application through inspecting the scaffold, choosing the no-database option,
+and running the generated project locally.
+
+The takeaway is project creation: how to get from an empty folder to a running
+Flask app that is ready for the generator chapters.
+
 :doc:`make:view Videos </videos/make_view_videos>`
 --------------------------------------------------------------------------------
 
@@ -65,6 +75,7 @@ makes more sense than starting from views or controllers.
 
    videos/watch_the_series_in_order
    videos/welcome_and_setup_videos
+   videos/new_videos
    videos/make_view_videos
    videos/make_controller_videos
    videos/make_model_videos

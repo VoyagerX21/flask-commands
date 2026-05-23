@@ -15,7 +15,7 @@ However, not every model name is this simple. As we have seen before, we might
 have multiple words describing a single model, like ``ShoppingList``.  Other times, the words might describe a nested
 relationship, like ``Recipe -> Ingredient``.
 
-This chapter explains how ``make:model`` handles these multi-word scenario from the model-first side.
+This chapter explains how ``make:model`` handles these multi-word scenarios from the model-first side.
 
 
 Choose Flat or Nested with ``--crud``
@@ -23,10 +23,10 @@ Choose Flat or Nested with ``--crud``
 
 .. youtube_embed:: choose-flat-or-nested-with-crud-for-make-model
 
-In the prior chapter we saw that by adding ``--crud`` to ``make:model`` instructs Flask-Commands to build the model and
+In the prior chapter we saw that adding ``--crud`` to ``make:model`` instructs Flask-Commands to build the model and
 then wires RESTful scaffolding around it.
 
-In the last chapter you saw this with a simple one-word model, ``Recipe``.  In that case, there is only one structure choice. When you provide ``make:model`` with a multi-word segment we introduce is bit of ambiguity as we will see in the section.
+In the last chapter you saw this with a simple one-word model, ``Recipe``.  In that case, there is only one structure choice. When you provide ``make:model`` with a multi-word segment we introduce a bit of ambiguity as we will see in the section.
 
 If you are following this tutorial from the controller chapters,  this section will feel familiar as it mirrors the :ref:`Flat or Nest with the -m Option<flat-or-nest-with-the-m-option>`
 section, but from the model-first side.
@@ -49,12 +49,12 @@ This reads more directly:
 
    Make a ``RecipeIngredient`` model-backed resource and wire CRUD around it.
 
-The command is easier to read and remember; however, the multi-word segments introduces a naming question.
+The command is easier to read and remember; however, the multi-word segments introduce a naming question.
 
 - should the word segments stay together as one model?
 - or should the route wiring show a parent-child relationship based on the word segments?
 
-This uncertianty results in the following terminal prompt:
+This uncertainty results in the following terminal prompt:
 
 .. code-block:: text
 
@@ -105,7 +105,7 @@ Use ``--flat`` when the words describe one model:
    - ``flask make:controller ShoppingListController --crud -m --flat``
 
 In one command you end up with the flat ``ShoppingList`` resource, which is
-fully wire up with a new controller, routes, and views.
+fully wired up with a new controller, routes, and views.
 
 - model class: ``ShoppingList``
 - model file: ``app/models/shopping_list.py``
@@ -133,7 +133,7 @@ Use ``--nest`` when the words describe a relationship:
 
    - ``flask make:controller RecipeIngredientController --crud -m --nest``
 
-In this once command you tell Flask-Commands to make ``Ingredient`` model as a nested resource under ``Recipe`` and to wire RESTful resources around ``Ingredient``.
+In this one command you tell Flask-Commands to make an ``Ingredient`` model as a nested resource under ``Recipe`` and to wire RESTful resources around ``Ingredient``.
 
 - model class: ``Ingredient``
 - model file: ``app/models/ingredient.py``
@@ -144,7 +144,7 @@ In this once command you tell Flask-Commands to make ``Ingredient`` model as a n
 - URL shape: ``/recipes/<int:recipe_id>/ingredients/<int:ingredient_id>``
 
 
-This will happens independently of ``Recipe``.  If ``Recipe`` is not built then Flask-Commands also builds out the missing parent models, in addition to the child model, ``Ingredient``.  While this is helpful it does leave a missing RESTful route resources for the parent resource as the CRUD behavior is only applied to child model.  In order for ``Recipe`` to also have all the RESTful routes you would have run ``make:model`` on ``Recipe`` first before running ``make:model`` on the combined ``RecipeIngredient``.
+This happens independently of ``Recipe``.  If ``Recipe`` is not built then Flask-Commands also builds out the missing parent models, in addition to the child model, ``Ingredient``.  While this is helpful it does leave missing RESTful route resources for the parent resource as the CRUD behavior is only applied to the child model.  In order for ``Recipe`` to also have all the RESTful routes you would have run ``make:model`` on ``Recipe`` first before running ``make:model`` on the combined ``RecipeIngredient``.
 
 .. admonition:: Why do we need to nest?
 
@@ -184,7 +184,7 @@ So if we want this structure:
 
 .. centered:: ``TestKitchen / Recipe``
 
-I would rely on ``made:model`` for the ``Recipe`` model and ``make:controller`` for the ``TestKitchen`` namespace.  In other words, I would use the following commands:
+I would rely on ``make:model`` for the ``Recipe`` model and ``make:controller`` for the ``TestKitchen`` namespace.  In other words, I would use the following commands:
 
 .. code-block:: bash
 
@@ -212,7 +212,7 @@ There is no ``TestKitchen`` model, and there is no
 that organizes this part of the application.
 
 Once the namespace exists, we can return to ``make:model`` when we are ready to add
-childen models as we will see in the next section.
+children models as we will see in the next section.
 
 Build Nested Resources One Level at a Time
 ------------------------------------------
@@ -233,7 +233,7 @@ That overall structure looks like this for the test kitchen users:
 for the publich the url looks like this
 
 - ``/recipes`` all recipes
-- ``/recipes/<int:recipe_id>`` and individual recipe
+- ``/recipes/<int:recipe_id>`` an individual recipe
 
 To build this out from start to finish in a new project I would use the following commands:
 
@@ -250,7 +250,7 @@ The first command creates the top-level model
 
 - registered model: ``Recipe``
 
-The second and third command build out the wired up views for showing all recipes and an individual recipe.
+The second and third commands build out the wired up views for showing all recipes and an individual recipe.
 
 - controller: ``RecipeController``
 - URL shape: ``/recipes``
@@ -314,4 +314,4 @@ So the pattern is:
 
    Build the structure from the top down. Use ``make:controller`` for the
    namespace surface, then return to ``make:model --crud --nest`` when you are
-   ready to add one addition child at a time.
+   ready to add one additional child at a time.

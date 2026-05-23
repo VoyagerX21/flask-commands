@@ -206,7 +206,7 @@
                             <div>$ flask make:view posts.index -rcm</div>
                         </div>
                         <div class="flex-1 bg-gray-800 px-4 py-2 flex flex-col justify-center">
-                            In three commands, Flask-Commands takes you from zero to generated your owns application's routes, controllers, models, and views.
+                            In three commands, Flask-Commands takes you from zero to generating routes, controllers, models, and views for your application.
                         </div>
                     </div>
                 </div>

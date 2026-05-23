@@ -1,16 +1,16 @@
 GET vs POST for RESTful Actions with make:view
 ==============================================
 
-Now that we have built a simple resource with ``index`` and ``show``, we can 
-step we step back and look at the other RESTful patterns and how the actions 
-themselve can be partictioned into two distinct groups.
+Now that we have built a simple resource with ``index`` and ``show``, we can
+step back and look at the other RESTful patterns and how the actions
+themselves can be partitioned into two distinct groups.
 
 - Some actions exist to show a page in the browser.
 - Other actions exist to make data changes, and then send the browser elsewhere.
 
 Flask-Commands follows this structural flow. If the action is meant to
-render a page, it makes sense to generate a template.  However, if the action 
-is meant to process a data change, then generating a template file would 
+render a page, it makes sense to generate a template.  However, if the action
+is meant to process a data change, then generating a template file would
 actually be the wrong thing to create.
 
 In this chapter we look at why:
@@ -73,7 +73,7 @@ That means:
 are not really page-rendering actions.
 
 These actions are usually triggered by a form submission or some other user
-interaction that application state changes. They create, update, or delete some
+interaction that changes application state. They create, update, or delete some
 object in your database.
 
 Because of that, Flask-Commands does not generate a template file for these
@@ -92,7 +92,7 @@ That is why a command like this:
 
    flask make:view recipes.store -rcm
 
-do not create a template file they just wire up the route and controller.  
+does not create a template file; it just wires up the route and controller.
 
 The Browser Flow
 ----------------
@@ -107,7 +107,7 @@ First you ``GET`` a page so the browser has something to show.
 
 Then you ``POST`` data back to the server when the user submits a form.
 
-When the ``POST`` is finish it redirected to another page so the user can see 
+When the ``POST`` is finished, it redirects to another page so the user can see
 the result.
 
 That is why a ``create`` action and a ``store`` action belong together even
@@ -122,7 +122,7 @@ A Real Example with ``recipes.create`` and ``recipes.store``
 
 .. youtube_embed:: a-real-example-with-recipes-create-and-recipes-store
 
-Let's walk throught this concept slowly with and example.  Say you want to 
+Let's walk through this concept slowly with an example.  Say you want to
 add a new recipe to our cooker site.
 
 First, we show the page to ``create`` a new recipe so the user visits:
@@ -139,8 +139,8 @@ That is a ``GET`` action, so it makes sense to have a template such as:
 
 That page contains the form the user fills out.
 
-Then the user press the save button which submits the form.  The submission is
-sent to a ``POST`` route where you application processes the data:
+Then the user presses the save button which submits the form.  The submission is
+sent to a ``POST`` route where your application processes the data:
 
 .. code-block:: text
 
@@ -170,7 +170,7 @@ redirects the browser to:
 That way the user can see the full list of recipes, including the new one they
 just created.
 
-In the case something is wrong or missing, the application usually redirects 
+In the case something is wrong or missing, the application usually redirects
 the user back to the ``create`` page so they can fix the form and try again.
 
 So even though ``create`` and ``store`` are tightly connected, only one of them
@@ -211,12 +211,12 @@ What GET vs Post Means When Using ``make:view``
 
 .. youtube_embed:: what-get-vs-post-means-when-using-make-view
 
-Try to remove: A quick way to think about it is this:
+A quick way to think about it is this:
 
 - GET a page
   - shows a page so you expect a template
-- POST a from
-  - is meant to process data, so expect route and controller wiring with a redirect 
+- POST a form
+  - is meant to process data, so expect route and controller wiring with a redirect
 
 In our example above these two commands are doing different kinds of work:
 

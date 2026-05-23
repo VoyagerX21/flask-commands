@@ -28,8 +28,8 @@ in the same directory where you run ``flask make:*``.
 
 That safeguard exists to prevent accidental file creation in the wrong
 directory. True confession, the reason I built this safeguard is because I
-accidentally ran the ``flask make:*`` in the wrong place several time resulting
-in many minutes of not so fun cleanups 🤨.  So there is not a safeguard on 
+accidentally ran the ``flask make:*`` in the wrong place several times, resulting
+in many minutes of not so fun cleanups 🤨.  So there is now a safeguard on
 the commands for myself and others.
 
 The one exception here is ``flask new``, which can be run from anywhere because
@@ -62,8 +62,8 @@ the browser lifecycle as:
 .. centered:: **Get -> Post -> Redirect**
 
 You get the page, you post a form, and then you redirect to a new page to give
-feedback about what just happened.  In chart form these are the seven RESTful 
-actions.  This helped me I hope it will do the same for you.
+feedback about what just happened.  In chart form these are the seven RESTful
+actions.  This helped me, and I hope it will do the same for you.
 
 .. table:: The Seven RESTful Actions
 
@@ -87,7 +87,7 @@ Dot Notation
 
 .. youtube_embed:: dot-notation
 
-Dot notation is one of the core ideas in Flask-Commands and is used to show 
+Dot notation is one of the core ideas in Flask-Commands and is used to show
 structure both in your data and your filing system.
 
 For example:
@@ -146,8 +146,8 @@ A dotted name can influence:
 
 This is one of the things I care a lot about in the package. If the resource
 relationship is nested, I want the naming to read as nested too. That way when
-you come back to the project later, the structure mimic's the data's 
-relationship. 
+you come back to the project later, the structure mimic's the data's
+relationship.
 
 Naming Conventions
 ------------------
@@ -224,7 +224,7 @@ Flask-Commands normalizes that to:
    recipes.comments.index
 
 That is helpful because sometimes your brain is thinking in folder paths, and
-sometimes your brain is thinking in dot notation url names, and sometimes 
+sometimes your brain is thinking in dot notation url names, and sometimes
 your brain is just doing its best before coffee ☕️.
 
 Dashes into Underscores Within a Segment
@@ -243,11 +243,11 @@ the segments are:
 - ``shopping_list`` -> resource
 - ``index`` -> action
 
-You often need more then one word to describe an object.  That's find and 
-Flask-Commands allows for this using eith ``-`` or ``_``.  I figured people 
-would use both so the offical marker is the ``_`` but user whichever you perfer.
+You often need more than one word to describe an object.  That's fine and
+Flask-Commands allows for this using either ``-`` or ``_``.  I figured people
+would use both so the official marker is the ``_`` but user whichever you prefer.
 
-Here are some example of to use a double-word resource or folder:
+Here are some examples of using a double-word resource or folder:
 
 .. code-block:: text
 
@@ -255,7 +255,7 @@ Here are some example of to use a double-word resource or folder:
    pantry_items.show
    recipe_reviews.index
 
-Just remember, **dots separate** structure into segments and **underscores keep 
+Just remember, **dots separate** structure into segments and **underscores keep
 multiple words together** inside one segment.
 
 Repeated Separators
@@ -263,26 +263,26 @@ Repeated Separators
 
 If the input gets a little messy, Flask-Commands cleans that up too.
 
-Something we reedit something so many time that when we finally press the 
+Something we re-edit something so many times that when we press the
 enter key it looks like this:
 
 .. code-block:: text
 
    recipes..comments...index
 
-that's fine Flask-Commands has your back with a lttle cleanup to this:
+That's fine Flask-Commands has your back with a little cleanup to this:
 
 .. code-block:: text
 
    recipes.comments.index
 
-In other words don't stress about that accidental extra separators from 
+In other words, don't stress about those accidental extra separators from
 turning into weird project structure.
 
 Upper and Lower Case Anywhere
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the input has any uppercase characters anywhere Flask-Commands normalizes 
+If the input has any uppercase characters anywhere Flask-Commands normalizes
 that too.
 
 For example:

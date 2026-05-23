@@ -1,4 +1,4 @@
-Flat vs Nested with make:controller 
+Flat vs Nested with make:controller
 ===================================
 
 Some controller names describe only one clear model shape. Others can describe
@@ -29,7 +29,7 @@ could reasonably mean more than one thing.
 To make that decision, Flask-Commands looks at the controller name segments and
 compares them to the registered models. From there, it determines the possible
 model-generation options. This is where you come in and guide the command with
-one of two options: ``--flat`` or ``--nest``. These options let you tell 
+one of two options: ``--flat`` or ``--nest``. These options let you tell
 Flask-Commands which model story the controller name should tell.
 
 .. _flat-or-nest-with-the-m-option:
@@ -46,19 +46,19 @@ RESTful scaffolding for the data structure.  That means build:
 - route handlers
 - templates for the ``GET`` actions
 
-In addition, we have seen that the  ``-m`` flag adds model generation to that 
+In addition, we have seen that the  ``-m`` flag adds model generation to that
 process. Putting this together means that the command:
 
 .. code-block:: bash
 
    flask make:controller RecipeIngredientController --crud -m
 
-asks Flask-Commands to generate model names from 
-``RecipeIngredientController`` with RESTful scaffolding.  In the prior 
-chapter, we ran this command without the ``-m`` option and with ``Recipe`` 
-as a registered model.  
+asks Flask-Commands to generate model names from
+``RecipeIngredientController`` with RESTful scaffolding.  In the prior
+chapter, we ran this command without the ``-m`` option and with ``Recipe``
+as a registered model.
 
-If we run this command in a new project the generated model name from 
+If we run this command in a new project the generated model name from
 ``RecipeIngredientController`` can tell two different model stories:
 
 - flat: ``RecipeIngredient``
@@ -93,7 +93,7 @@ If ``Recipe`` is already registered, the prompt changes:
    Choose model structure (1/2, flat/nest): [1]:
 
 Now Flask-Commands recognizes ``Recipe`` as an existing parent model. The flat
-choice still generates ``RecipeIngredient``, but the nested choice only 
+choice still generates ``RecipeIngredient``, but the nested choice only
 generated the missing nested structure ``Ingredient``.
 
 In both cases, ``-m`` is what creates the flat-or-nested question. Registered
@@ -119,13 +119,13 @@ You can skip the prompt with either ``--flat`` or ``--nest``:
    flask make:controller RecipeIngredientController --crud -m --flat
    flask make:controller RecipeIngredientController --crud -m --nest
 
-Therefore, Flask-Commands can build out complicated data 
-structures under multiple setups (a registered or not registered ``Recipe``).  
-If the new data structure contains the name 
-of an existing data structure, choose ``--flat`` and keep the words together 
-as one model. Conversly, if the controller name is describing a parent-child 
-relationship, choose ``--nest`` and let relationship show in the 
-generated CRUD structure.  
+Therefore, Flask-Commands can build out complicated data
+structures under multiple setups (a registered or not registered ``Recipe``).
+If the new data structure contains the name
+of an existing data structure, choose ``--flat`` and keep the words together
+as one model. Conversely, if the controller name is describing a parent-child
+relationship, choose ``--nest`` and let relationship show in the
+generated CRUD structure.
 
 Let's revisit a command we showed in the prior chapter and used these new
 options to shorten the command.
@@ -154,10 +154,10 @@ That works because ``--model ShoppingList`` explicitly tells Flask-Commands
 that ``ShoppingList`` should stay together as one model.
 
 Without that instruction, ``Shopping`` becomes a namespace and ``List``
-could becomes the RESTful resource, which is not the story we want for a 
+becomes the RESTful resource, which is not the story we want for a
 shopping list.
 
-Now that we have ``-m`` and ``--flat``, we can let Flask-Commands to generate 
+Now that we have ``-m`` and ``--flat``, we can let Flask-Commands generate
 the multi-word model from the controller name:
 
 .. code-block:: bash
@@ -199,7 +199,7 @@ That relationship looks like this:
 
 .. centered:: ``ShoppingList -> Store -> Ingredient``
 
-I recommand building the relationship one level at a time:
+I recommend building the relationship one level at a time:
 
 .. code-block:: bash
 
@@ -277,14 +277,14 @@ Also notice that this command only creates one CRUD controller:
 the final nested resource, ``Ingredient``. It does not give you separate CRUD
 controllers for ``Shopping``, ``List``, or ``Store``.
 
-Flask-Commands uses the registered parents as an anchor and when you provide 
-the option ``--nest`` it then takes the remaining words segments that come
-after the registered parent chain and combines them to generate the new 
-child resource. Consequently, if we want ``Store`` to be its own parent in 
-the chain, we have to build-up in order by generating and registering ``Store`` 
+Flask-Commands uses the registered parents as an anchor and when you provide
+the option ``--nest`` it then takes the remaining word segments that come
+after the registered parent chain and combines them to generate the new
+child resource. Consequently, if we want ``Store`` to be its own parent in
+the chain, we have to build-up in order by generating and registering ``Store``
 before generating ``Ingredient`` under it.
 
-The takeway pattern to remember here is:
+The takeaway pattern to remember is:
 
  Build nested resources one command at a time, from the top down. Run the parent
  resource command first, then run the next child resource command under that
@@ -302,11 +302,11 @@ Combine Namespaces with Nested Model Generation
 You can combine namespaces, nested resources, CRUD scaffolding, and generated
 models. The key is still to build the registered model chain in order.
 
-In the previous chapter we introduced a multi-word namespace (review in 
-sections 
-:ref:`Multi-Word Namespace <make-controller-multi-word-namespaces>` and 
+In the previous chapter we introduced a multi-word namespace (review in
+sections
+:ref:`Multi-Word Namespace <make-controller-multi-word-namespaces>` and
 :ref:`Public Pages and Private Tools <make-controller-public-pages-and-private-tools>`)
-with ``TestKitchenRecipeController``. Let's keep using that idea and build a 
+with ``TestKitchenRecipeController``. Let's keep using that idea and build a
 deeper staff-only workflow inside the test kitchen namespace.
 
 Suppose test kitchen users need to manage recipe steps and tips before a recipe
@@ -324,8 +324,8 @@ Start by creating the top-level model-backed resource:
 
 .. admonition:: Public Index and Show Only Pages
 
-   In a more realistic application, you would just create a view page showing 
-   all the recipes and a single recipe resource for the public using the 
+   In a more realistic application, you would just create a view page showing
+   all the recipes and a single recipe resource for the public using the
    following two commands.
 
    .. code-block:: bash
@@ -333,7 +333,7 @@ Start by creating the top-level model-backed resource:
       flask make:view recipes.index -rcm
       flask make:view recipes.show -rc
 
-Then create the test kitchen CRUD controller for the already existing 
+Then create the test kitchen CRUD controller for the already existing
 ``Recipe`` model:
 
 .. code-block:: bash
@@ -378,19 +378,19 @@ The rule is the same as before:
 - ``--nest`` generates the next child
 - ``--crud`` gives each controller its RESTful scaffolding
 
-As you have already seen, order matters. 
+As you have already seen, order matters.
 
  First build the top-level model. Then
  add the namespaced controller around that model. Once the namespace is in place,
  generate each nested child one level at a time so the whole nested chain lives
  under that namespace.
 
-That wraps up the controller-first path.  We started with the controller name, 
-used ``--crud`` when we wanted all the RESTful actions, used ``-m`` when we 
-wanted model generation, and used ``--flat`` and ``--nest`` when the 
+That wraps up the controller-first path.  We started with the controller name,
+used ``--crud`` when we wanted all the RESTful actions, used ``-m`` when we
+wanted model generation, and used ``--flat`` and ``--nest`` when the
 controller name carries more than one possible meaning.  The last part
-was the key to let you choose whether Flask-Commands should keep words 
-together as one model or build a nested relationship from the registered 
+was the key to let you choose whether Flask-Commands should keep words
+together as one model or build a nested relationship from the registered
 model chain.
 
 Next we will look at the same choice from the model-first side. Instead of

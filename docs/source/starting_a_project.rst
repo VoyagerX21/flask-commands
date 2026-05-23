@@ -11,8 +11,8 @@ Create a Project with ``flask new``
 .. youtube_embed:: create-a-project-with-flask-new
 
 The fastest way to begin is to scaffold a new project directory and move into
-it.  First open a terminal and navigate to where you want the new project.  
-Then type the follow where ``myproject`` is the name of your new project:
+it.  First open a terminal and navigate to where you want the new project.
+Then type the following where ``myproject`` is the name of your new project:
 
 .. code-block:: bash
 
@@ -54,7 +54,7 @@ Create a Project Without a Database
 
 .. youtube_embed:: create-a-project-without-a-database
 
-Sometimes you want the Flask structure without the database pieces. Introducing 
+Sometimes you want the Flask structure without the database pieces. Introducing
 the optional flag ``--no-db``.
 
 .. code-block:: bash
@@ -66,10 +66,10 @@ support, models, and migration setup.
 
 That can be useful when:
 
-- you are building a marketing site and not collect data
-- you want to delay database decisions until later 
+- you are building a marketing site and not collecting data
+- you want to delay database decisions until later
 - you know the project does not need persistent data yet
-- you have a very specific way of handling data collection and don't want to use MySql or SQLite
+- you have a very specific way of handling data collection and don't want to use MySQL or SQLite
 
 .. _run-the-new-project:
 
@@ -78,15 +78,15 @@ Run the New Project
 
 .. youtube_embed:: run-the-new-project
 
-Once the project has been created, the recommended way to lauch 🚀 the application 
+Once the project has been created, the recommended way to launch 🚀 the application
 on macOS is:
 
 .. code-block:: bash
 
    ./run.sh
 
-This little helper script is meant to get you back up and running quickly. It 
-brings the local development environment online without making you remember 
+This little helper script is meant to get you back up and running quickly. It
+brings the local development environment online without making you remember
 every step by hand.
 
 The ``run.sh`` script performs the following actions:
@@ -101,10 +101,10 @@ The ``run.sh`` script performs the following actions:
 Hot Reloading
 ~~~~~~~~~~~~~
 
-Flask handles reloading of your server with ''--debug'' but not reloading of 
-your web browser. In other words, you would need to refresh your browser 
-every time you make a change to your application to see the new effect.  
-However, when you use ``run.sh`` browser reloading is enabled automatically 
+Flask handles reloading of your server with ''--debug'' but not reloading of
+your web browser. In other words, you would need to refresh your browser
+every time you make a change to your application to see the new effect.
+However, when you use ``run.sh`` browser reloading is enabled automatically
 and watches the following directories:
 
 - templates/
@@ -113,17 +113,17 @@ and watches the following directories:
 - models/
 - routes/
 
-Any change made in these folders will **immediately trigger a browser reload** 
-in Chrome—no manual refresh required. This allows you to edit backend logic, 
+Any change made in these folders will **immediately trigger a browser reload**
+in Chrome—no manual refresh required. This allows you to edit backend logic,
 HTML templates, or forms and see the results instantly.
 
-Please note, ``fswatch`` will need to be install on your machine in order for 
+Please note, ``fswatch`` will need to be installed on your machine in order for
 this to work.  To install ``fswatch`` you can use brew.
 
 Visual Studio Code Setup (macOS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For ``./run.sh`` to open Visual Studio Code automatically, the code command 
+For ``./run.sh`` to open Visual Studio Code automatically, the code command
 must be available in your shell.
 
 To enable this in VS Code:
@@ -143,7 +143,7 @@ To enable this in VS Code:
 #. Verify the setup by running the following in your terminal:
 
 .. code-block:: bash
-   
+
    code .
 
 If Visual Studio Code opens the current directory, the setup is complete.
@@ -229,12 +229,12 @@ up-to-date (one for every project).
 Alternative (Manual Startup)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you perfer to start up manually (not using ``run.sh``), or if you are not 
-on macOS, the manual startup path is still available through the project 
+If you prefer to start up manually (not using ``run.sh``), or if you are not
+on macOS, the manual startup path is still available through the project
 virtual environment and the usual Flask run commands.
 
 .. code-block:: bash
-   
+
    source venv/bin/activate
    flask run --debug
 

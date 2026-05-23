@@ -1,4 +1,4 @@
-Model Prompt for make:view 
+Model Prompt for make:view
 ==========================
 
 Now that we have eased into ``flask make:view``, let’s talk about the smarter
@@ -123,12 +123,12 @@ So throughout this section we will include the controller generator to avoid con
 
    flask make:view recipes.index -rc
 
-By using the controller generator flag Flask-Commands generates the 
+By using the controller generator flag Flask-Commands generates the
 resource-specific controller too, so the route now points to a new controller
 method ``RecipeController.index()`` instead.
 
-Let's stay focused on the real question in this chapter: whether the route 
-should become ``/recipes`` or ``/recipes/index`` when the model does not 
+Let's stay focused on the real question in this chapter: whether the route
+should become ``/recipes`` or ``/recipes/index`` when the model does not
 exist yet.  In both examples above ``Recipe`` does not exist yet.
 
 The issue here is the generated route.  When you ask Flask-Commands to generate
@@ -137,10 +137,10 @@ a route Flask-Commands sees two possible directions for a route:
 - if ``Recipe`` is treated like the resource, the route becomes ``/recipes``
 - if not, Flask-Commands can fall back to the more literal route ``/recipes/index``
 
-That is why the prompt exists. I figured there is a chance the model needs to 
-be created for the RESTful action to act upon, or the route you are building 
-just happens to end in a RESTful action name and you would prefer the literal 
-word in the URL.  
+That is why the prompt exists. I figured there is a chance the model needs to
+be created for the RESTful action to act upon, or the route you are building
+just happens to end in a RESTful action name and you would prefer the literal
+word in the URL.
 
 Avoid Prompts with Flags
 ------------------------
@@ -168,8 +168,8 @@ provide the route explicitly:
 Here Flask-Commands does not need to ask anything because you already told it
 the exact route to use.
 
-If you want the more RESTful result, you can either provide the route 
-explicitly using the RESTful pattern or you can create the model on the fly 
+If you want the more RESTful result, you can either provide the route
+explicitly using the RESTful pattern or you can create the model on the fly
 when you are building the view.
 
 The explicit RESTful route is similar to the about without the index:
@@ -178,14 +178,14 @@ The explicit RESTful route is similar to the about without the index:
 
    flask make:view recipes.index -c --route /recipes
 
-In both cases above, notice that the model is not created for you because 
-you have not told Flask-Commands to build a model associated with this route.  
-However, the prompt was not necessary here because you explicitly told 
-Flask-Commands the route.  
+In both cases above, notice that the model is not created for you because
+you have not told Flask-Commands to build a model associated with this route.
+However, the prompt was not necessary here because you explicitly told
+Flask-Commands the route.
 
 If you want Flask-Commands to also generate a model while you are creating your
-RESTful view you can add on the model information to the above command in one 
-of two ways.  
+RESTful view you can add on the model information to the above command in one
+of two ways.
 
 Either by specifying the model name yourself with ``--model``:
 
@@ -200,9 +200,9 @@ Or you can allow Flask-Commands to generate the name with ``-m``:
 
    flask make:view recipes.index --route /recipes -cm
 
-In all the above examples you have avoided the prompt because you have explicitly 
+In all the above examples you have avoided the prompt because you have explicitly
 defined the route.  If you want Flask-Commands to generate the route with
-``-r``, you can still avoid the prompt by creating the model on the fly 
+``-r``, you can still avoid the prompt by creating the model on the fly
 as you did above.
 
 Either by giving Flask-Commands the model information up front using ``--model``
@@ -211,20 +211,20 @@ Either by giving Flask-Commands the model information up front using ``--model``
 
    flask make:view recipes.index -rc --model Recipe
 
-or by using the generator ``-m``.  
+or by using the generator ``-m``.
 
 .. code-block:: bash
 
    flask make:view recipes.index -rcm
 
-Notice here that the order of ``r``, ``c`` and ``m`` does not matter.  
+Notice here that the order of ``r``, ``c`` and ``m`` does not matter.
 
 This last form is the shortest way to generate the view, controller, route,
-and model.  In this particular case you avoid the prompt by give full
-control over to Flask-Commands to do all the heavy lifting 🏋️‍♀️ and use 
+and model.  In this particular case you avoid the prompt by giving full
+control over to Flask-Commands to do all the heavy lifting 🏋️‍♀️ and use
 generator flags for everything.
 
-As you can see there are several ways to avoid the prompt, but they all follow 
+As you can see there are several ways to avoid the prompt, but they all follow
 the same idea: this prompt only comes into play when you ask for a
 generated route on a RESTful action and Flask-Commands still needs a little
 more information to know exactly what structure you want.
@@ -255,8 +255,8 @@ Use ``-m`` when:
 - you want Flask-Commands to generate the model as part of the command flow
 - you do not want to repeat yourself more than necessary
 
-Also not you can mix together the ``--route`` with ``--model`` or ``-m`` if 
-that gives you want you want when wiring up your view file with Flask-Commands.
+Also note you can mix together the ``--route`` with ``--model`` or ``-m`` if
+that gives you what you want when wiring up your view file with Flask-Commands.
 
 A simple way to think about it is:
 
@@ -271,15 +271,15 @@ Final Comment
 
 The goal of this section is not to avoid or not avoid a prompt.  Instead,
 I wanted to give you a tool that allowed you to make a view which included
-all the bells and whistle 🛎️ you need to properly wire up what you need your
-way so you could get back to the more interesting part of your application,
+all the bells 🛎️ and whistles you need, and properly wire up the views your
+way.  That way you could get back to the more interesting part of your application,
 your application. Hopefully after this section with ``make:view``
 
-- You can feel you can type naturally.
+- You can feel comfortable typing naturally.
 - You can be explicit about how you want your view wired to your back end.
 - You can let the package help when the structure is obvious.
-- You are prompt aware, and ready for Flask-Commands to ask about database 
-  sturcture so you are not left with a lot of cleanup 🧹 work later.
+- You are prompt aware, and ready for Flask-Commands to ask about database
+  structure so you are not left with a lot of cleanup 🧹 work later.
 
 That is really the sweet spot I wanted for a command like this:
 
