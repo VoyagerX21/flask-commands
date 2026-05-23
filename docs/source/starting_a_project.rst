@@ -54,8 +54,8 @@ Create a Project Without a Database
 
 .. youtube_embed:: create-a-project-without-a-database
 
-Sometimes you want the Flask structure without the database pieces. Introducing
-the optional flag ``--no-db``.
+Sometimes you want the Flask structure without the database pieces; this is
+where the optional flag ``--no-db`` comes into play.
 
 .. code-block:: bash
 
@@ -101,10 +101,10 @@ The ``run.sh`` script performs the following actions:
 Hot Reloading
 ~~~~~~~~~~~~~
 
-Flask handles reloading of your server with ''--debug'' but not reloading of
+Flask handles reloading of your server with ``--debug`` but not reloading of
 your web browser. In other words, you would need to refresh your browser
 every time you make a change to your application to see the new effect.
-However, when you use ``run.sh`` browser reloading is enabled automatically
+However, when you use ``run.sh``, browser reloading is enabled automatically
 and watches the following directories:
 
 - templates/

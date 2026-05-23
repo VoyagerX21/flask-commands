@@ -17,7 +17,7 @@ Make a Basic Model
 
 .. youtube_embed:: make-a-basic-model
 
-If I was building the cooker application we have been working on from scratch,
+If I were building the cooker application we have been working on from scratch,
 I would start by thinking, *"A cooking application will need a place to store
 all the recipes."*  Consequently, my first thought would be to build a
 ``Recipe`` model. The simplest way to scaffold out a model is with
@@ -46,7 +46,7 @@ this command:
 
       ⚠️  Warning: One or more make model steps produced a warning or failure.
 
-   Don't be alarmed if you see this, it's **not a problem**.  This warning
+   Don't be alarmed if you see this; it's **not a problem**.  This warning
    means Flask-Commands is protecting the file that already exists instead
    of overwriting it.
 
@@ -140,7 +140,7 @@ name.  After that there are three columns that every new model file ships with:
 - ``updated_at``
 
 The first column is an integer column called ``id``.  The ``id`` column
-is your table unique identifier on each row in your table, and is used to
+is your table's unique identifier on each row in your table, and is used to
 make relationships between models.  The next two columns are datetime columns:
 ``created_at`` and ``updated_at``.  When a new instance is created and stored in
 the database, these datetimes are set to populate without you doing any
@@ -245,7 +245,7 @@ Create, Update, and Delete a Recipe
 
 Now that the ``Recipe`` model has a ``name`` column and the database has been
 migrated, we can use the model to start building out instances and persist them
-in our database.  For me this is the fun part 🥳.
+in our database.  For me, this is the fun part 🥳.
 
 As we saw in the :ref:`Run the New Project <run-the-new-project>`
 section of Starting a Project, the easiest way to start the application is to

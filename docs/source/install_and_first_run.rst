@@ -48,7 +48,7 @@ Tailwind CSS tooling. To check whether ``npm`` is installed, run:
 If that prints a version number, you are good to go. If not, you
 will need to install node because ``npm`` comes with Node.js. Install Node.js
 from the `official Node.js download page <https://nodejs.org/en/download>`_ or
-the unofficial community install using Homebrew:
+the unofficial community installation using Homebrew:
 
 .. code-block:: bash
 

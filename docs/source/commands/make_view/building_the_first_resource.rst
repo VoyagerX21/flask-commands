@@ -1,8 +1,8 @@
 Building the First Resource with make:view
 ==========================================
 
-Now that we have looked at prompts and generator flags, we are ready to build 
-something that feels like a real part of an application. 
+Now that we have looked at prompts and generator flags, we are ready to build
+something that feels like a real part of an application.
 
 We will start with ``recipes.index`` because it is one of the clearest ways to
 see how Flask-Commands can scaffold a resource instead of just a template.
@@ -32,7 +32,7 @@ That one command creates and wires quite a bit:
 - a route
 - a model
 
-That is where the command starts to shine ✨
+That is where the command starts to shine ✨.
 
 Instead of making one file and then wiring the rest by hand, you get a real
 working slice of the application structure in one compact command that is easy
@@ -66,9 +66,9 @@ you should expect to see structure like:
 and the related registration updates needed to connect those pieces into the
 app.
 
-If you are new to RESTful naming, think of ``index`` as the page that list
-all the instances of a single object.  This pages is a great place to start 
-when building a new object because it keeps the focus on the core pieces 
+If you are new to RESTful naming, think of ``index`` as the page that lists
+all the instances of a single object.  This page is a great place to start
+when building a new object because it keeps the focus on the core pieces
 working together:
 
 - the route handles the URL namespace for requesting this object

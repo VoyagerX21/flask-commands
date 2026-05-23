@@ -3,17 +3,21 @@
 Flat vs Nested with make:model
 ==============================
 
-Some model names describe one obvious structure. Others can describe more than one valid resource shape, and that is where this chapter gets interesting.
+Some model names describe one obvious structure. Others can describe more
+than one valid resource shape, and that is where this chapter gets interesting.
 
-In the last chapter we used ``make:model`` with ``--crud`` to build a simple model-backed resource. That workflow is easy to read when the model is one word like ``Recipe``.
+In the last chapter we used ``make:model`` with ``--crud`` to build a simple
+model-backed resource. That workflow is easy to read when the model is one
+word like ``Recipe``.
 
 .. code-block:: bash
 
    flask make:model Recipe --crud
 
 However, not every model name is this simple. As we have seen before, we might
-have multiple words describing a single model, like ``ShoppingList``.  Other times, the words might describe a nested
-relationship, like ``Recipe -> Ingredient``.
+have multiple words describing a single model, like ``ShoppingList``.  Other
+times, the words might describe a nested relationship, like
+``Recipe -> Ingredient``.
 
 This chapter explains how ``make:model`` handles these multi-word scenarios from the model-first side.
 
@@ -23,21 +27,28 @@ Choose Flat or Nested with ``--crud``
 
 .. youtube_embed:: choose-flat-or-nested-with-crud-for-make-model
 
-In the prior chapter we saw that adding ``--crud`` to ``make:model`` instructs Flask-Commands to build the model and
-then wires RESTful scaffolding around it.
+In the prior chapter we saw that adding ``--crud`` to ``make:model``
+instructs Flask-Commands to build the model and wire RESTful scaffolding
+around it.
 
-In the last chapter you saw this with a simple one-word model, ``Recipe``.  In that case, there is only one structure choice. When you provide ``make:model`` with a multi-word segment we introduce a bit of ambiguity as we will see in the section.
+In the last chapter you saw this with a simple one-word model, ``Recipe``.  In
+that case, there is only one structure choice. When you provide ``make:model``
+with a multi-word segment we introduce a bit of ambiguity as we will see in
+the section.
 
-If you are following this tutorial from the controller chapters,  this section will feel familiar as it mirrors the :ref:`Flat or Nest with the -m Option<flat-or-nest-with-the-m-option>`
+If you are following this tutorial from the controller chapters, this
+section will feel familiar as it mirrors the :ref:`Flat or Nest with the -m Option<flat-or-nest-with-the-m-option>`
 section, but from the model-first side.
 
-In the controller-first workflow, we explored the multi-segment controller with the following command:
+In the controller-first workflow, we explored the multi-segment controller
+with the following command:
 
 .. code-block:: bash
 
    flask make:controller RecipeIngredientController --crud -m
 
-This command asks Flask-Commands to create a controller, generate a model from the controller name, and wire RESTful scaffolding around the result.
+This command asks Flask-Commands to create a controller, generate a model
+from the controller name, and wire RESTful scaffolding around the result.
 
 The model-first approach version of the above command is shortened to:
 
@@ -49,7 +60,8 @@ This reads more directly:
 
    Make a ``RecipeIngredient`` model-backed resource and wire CRUD around it.
 
-The command is easier to read and remember; however, the multi-word segments introduce a naming question.
+The command is easier to read and remember; however, the multi-word segments
+introduce a naming question.
 
 - should the word segments stay together as one model?
 - or should the route wiring show a parent-child relationship based on the word segments?
@@ -67,7 +79,7 @@ In this case, Flask-Commands can create one flat model,
 ``RecipeIngredient``, or it can generate the nested model chain,
 ``Recipe -> Ingredient``.
 
-If  ``Recipe`` is already registered, then the prompt becomes:
+If ``Recipe`` is already registered, then the prompt becomes:
 
 .. code-block:: text
 
@@ -85,7 +97,8 @@ Skipping the Prompt with ``--flat`` or ``--nest``
 
 .. youtube_embed:: skipping-the-prompt-with--flat-or--nest
 
-If you know which structure you want, you can skip the prompt by using either ``--flat`` or ``--nest``.
+If you know which structure you want, you can skip the prompt by using
+either ``--flat`` or ``--nest``.
 
 Choosing Flat for One Multi-Word Model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -100,7 +113,7 @@ Use ``--flat`` when the words describe one model:
 
 .. admonition:: Make Controller Equivalence
 
-   Recall this is the model-first equivalent of what we saw in  :ref:`Choose Flat for One Multi-Word Model<choose-flat-for-one-multi-word-model>` with the following command:
+   Recall this is the model-first equivalent of what we saw in :ref:`Choose Flat for One Multi-Word Model<choose-flat-for-one-multi-word-model>` with the following command:
 
    - ``flask make:controller ShoppingListController --crud -m --flat``
 
@@ -133,7 +146,9 @@ Use ``--nest`` when the words describe a relationship:
 
    - ``flask make:controller RecipeIngredientController --crud -m --nest``
 
-In this one command you tell Flask-Commands to make an ``Ingredient`` model as a nested resource under ``Recipe`` and to wire RESTful resources around ``Ingredient``.
+In this one command you tell Flask-Commands to make an ``Ingredient`` model as
+a nested resource under ``Recipe`` and to wire RESTful resources around
+``Ingredient``.
 
 - model class: ``Ingredient``
 - model file: ``app/models/ingredient.py``
@@ -144,13 +159,21 @@ In this one command you tell Flask-Commands to make an ``Ingredient`` model as a
 - URL shape: ``/recipes/<int:recipe_id>/ingredients/<int:ingredient_id>``
 
 
-This happens independently of ``Recipe``.  If ``Recipe`` is not built then Flask-Commands also builds out the missing parent models, in addition to the child model, ``Ingredient``.  While this is helpful it does leave missing RESTful route resources for the parent resource as the CRUD behavior is only applied to the child model.  In order for ``Recipe`` to also have all the RESTful routes you would have run ``make:model`` on ``Recipe`` first before running ``make:model`` on the combined ``RecipeIngredient``.
+This happens independently of ``Recipe``.  If ``Recipe`` is not built then
+Flask-Commands also builds out the missing parent models, in addition to the
+child model, ``Ingredient``.  While this is helpful, it leaves the parent
+resource without RESTful routes because the CRUD behavior is only
+applied to the child model.  In order for ``Recipe`` to also have all the
+RESTful routes you would have run ``make:model`` on ``Recipe`` first before
+running ``make:model`` on the combined ``RecipeIngredient``.
 
 .. admonition:: Why do we need to nest?
 
-   You might ask, *'Why do we even need to nest I want an ``Ingredient`` model so why not just run ``flask make:model Ingredient --crud``?*
+   You might ask, *'Why do we even need to nest? I want an ``Ingredient``
+   model so why not just run ``flask make:model Ingredient --crud``?*
 
-   The answer is, you can if you don't care about having routes that show the nested relationship. This approach would result in URLs like this
+   The answer is, you can if you don't care about having routes that show
+   the nested relationship. This approach would result in URLs like these:
 
    - ``/recipes/<int:recipe_id>``
    - ``/ingredients/<int:ingredient_id>``
@@ -191,7 +214,7 @@ I would rely on ``make:model`` for the ``Recipe`` model and ``make:controller`` 
    flask make:model Recipe
    flask make:controller TestKitchenRecipeController --crud
 
-The first command creates and generates the model ``Recipe``.
+The first command creates the model ``Recipe``.
 
 The second command creates a namespaced RESTful controller around the already
 registered ``Recipe`` model.
@@ -211,8 +234,8 @@ There is no ``TestKitchen`` model, and there is no
 ``<int:test_kitchen_id>`` route parameter. ``TestKitchen`` is just the namespace
 that organizes this part of the application.
 
-Once the namespace exists, we can return to ``make:model`` when we are ready to add
-children models as we will see in the next section.
+As we will see in the next section, once the namespace exists we can return
+to ``make:model`` to add additional child models.
 
 Build Nested Resources One Level at a Time
 ------------------------------------------
@@ -224,18 +247,19 @@ structure.
 
 Suppose test kitchen users need to manage recipe steps and tips before a recipe
 is published.  In addition, suppose the public can only see a list of all the
-published recipes and each view each individual recipe.
+published recipes and view each individual recipe.
 
 That overall structure looks like this for the test kitchen users:
 
 .. centered:: ``TestKitchen / Recipe -> CookStep -> Tip``
 
-for the publich the url looks like this
+For the public, the URL looks like these:
 
 - ``/recipes`` all recipes
 - ``/recipes/<int:recipe_id>`` an individual recipe
 
-To build this out from start to finish in a new project I would use the following commands:
+To build this out from start to finish in a new project I would use the
+following commands:
 
 .. code-block:: bash
 
@@ -250,13 +274,15 @@ The first command creates the top-level model
 
 - registered model: ``Recipe``
 
-The second and third commands build out the wired up views for showing all recipes and an individual recipe.
+The second and third commands build out the wired up views for showing all
+recipes and an individual recipe.
 
 - controller: ``RecipeController``
 - URL shape: ``/recipes``
 - URL shape: ``/recipes/<int:recipe_id>``
 
-The fourth command adds the RESTful actions around the  namespaced ``Recipe`` model:
+The fourth command adds the RESTful actions around the namespaced
+``Recipe`` model:
 
 - namespace: ``TestKitchen``
 - registered model: ``Recipe``
@@ -307,8 +333,9 @@ If you skip the ``CookStep`` model generation and jump straight to:
 
    flask make:model TestKitchenRecipeCookStepTip --crud --nest
 
-Flask-Commands does not know that ``CookStep`` should be a parent model to ``Tip``. Instead, it will read the
-remaining words as one child model and generate ``CookStepTip``.
+Flask-Commands does not know that ``CookStep`` should be a parent model to
+``Tip``. Instead, it will read the remaining words as one child model and
+generate ``CookStepTip``.
 
 So the pattern is:
 

@@ -70,7 +70,7 @@ def make_controller(
     Notes:
     - If the target controller file already exists, the command exits early
       without making changes.
-    - CRUD wiring treats the last segment as a resource even if it is not a 
+    - CRUD wiring treats the last segment as a resource even if it is not a
       registered model.
     """
 
@@ -154,7 +154,7 @@ def make_controller(
             # puts the namespace in nested_model_names
             else:
                 click.echo(
-                    "Detected multiple child like segments:\n" +
+                    "Detected multiple child-like segments:\n" +
                     ", ".join(nested_model_names))
                 click.echo(f"1) (flatten resource model)  = {non_nested_model_name}")
                 click.echo(f"2) (generate the following models) = {', '.join(nested_model_names)}")
@@ -203,8 +203,8 @@ def make_controller(
         all_successful = all_successful and crud_result.is_successful
 
     present_blocks = present_output_blocks(
-        info_updates=info_updates, 
-        message_updates=message_updates, 
+        info_updates=info_updates,
+        message_updates=message_updates,
         crud_result=crud_result)
 
     for block in present_blocks:

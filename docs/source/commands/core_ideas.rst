@@ -29,7 +29,7 @@ in the same directory where you run ``flask make:*``.
 That safeguard exists to prevent accidental file creation in the wrong
 directory. True confession, the reason I built this safeguard is because I
 accidentally ran the ``flask make:*`` in the wrong place several times, resulting
-in many minutes of not so fun cleanups 🤨.  So there is now a safeguard on
+in many minutes of not-so-fun cleanups 🤨.  So there is now a safeguard on
 the commands for myself and others.
 
 The one exception here is ``flask new``, which can be run from anywhere because
@@ -224,7 +224,7 @@ Flask-Commands normalizes that to:
    recipes.comments.index
 
 That is helpful because sometimes your brain is thinking in folder paths, and
-sometimes your brain is thinking in dot notation url names, and sometimes
+sometimes your brain is thinking in dot notation URL names, and sometimes
 your brain is just doing its best before coffee ☕️.
 
 Dashes into Underscores Within a Segment
@@ -245,7 +245,7 @@ the segments are:
 
 You often need more than one word to describe an object.  That's fine and
 Flask-Commands allows for this using either ``-`` or ``_``.  I figured people
-would use both so the official marker is the ``_`` but user whichever you prefer.
+would use both so the official marker is the ``_`` but use whichever you prefer.
 
 Here are some examples of using a double-word resource or folder:
 
@@ -263,14 +263,14 @@ Repeated Separators
 
 If the input gets a little messy, Flask-Commands cleans that up too.
 
-Something we re-edit something so many times that when we press the
+Sometimes we re-edit something so many times that when we press the
 enter key it looks like this:
 
 .. code-block:: text
 
    recipes..comments...index
 
-That's fine Flask-Commands has your back with a little cleanup to this:
+That's fine. Flask-Commands has your back with a little cleanup to this:
 
 .. code-block:: text
 

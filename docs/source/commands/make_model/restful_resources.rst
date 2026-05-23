@@ -17,8 +17,8 @@ However, most resources need more than a model. For example, a recipe will
 need a controller, routes, and templates so people can work with it in the
 browser.
 
-Otherwise, the model is shouting with a megaphone 📣 saying, "Hey is there
-anyone out there? I'm ready to CRUD."  Which is why I decided to bring back
+Otherwise, the model is shouting with a megaphone 📣 saying, "Hey, is there
+anyone out there? I'm ready to CRUD."  That is why I decided to bring back
 our controller option ``--crud`` in this new make model section.
 
 Build a Resource with ``--crud``
@@ -27,7 +27,7 @@ Build a Resource with ``--crud``
 .. youtube_embed:: build-a-resource-with-make-model-crud
 
 In the event that you want to build a new model structure and you already know
-that you are going to need the full RESTful resource structure you can just
+that you are going to need the full RESTful resource structure, you can just
 add one optional flag to get everything built out at once.
 
 .. admonition:: Before you run this
@@ -35,7 +35,7 @@ add one optional flag to get everything built out at once.
    If you are following along from earlier chapters, there is a
    good chance that you already have a ``Recipe`` model in your project.
 
-   To avoid warnings and to see the creation output from start to finish please
+   To avoid warnings and to see the creation output from start to finish, please
    spin up a fresh app with something like
 
    .. code-block:: bash
@@ -51,8 +51,8 @@ Let's try it out with the following:
 
    flask make:model Recipe --crud
 
-For me this is the natural way I think about these structures and from this one
-short command I end up with the following structure:
+For me, this is the natural way I think about these structures, and from this
+one short command I end up with the following structure:
 
 - a ``Recipe`` model
 - model registration in ``app/models/__init__.py``
@@ -88,10 +88,10 @@ And yes, I would absolutely rather have multiple doors 🚪 than crawl through a
 window 🪟 like a stressed-out raccoon 🦝. Wait, no. Ignore the raccoon 🤪. The
 point is doors are good.
 
-For a single segment resource names like ``Recipe``, both approaches are easy
+For single-segment resource names like ``Recipe``, both approaches are easy
 to read. But as soon as the model name has more than one word or you want
 nested resources, the model-first command starts to feel much nicer.
-However, similar to make controller we can't escape either the prompt or
+However, similar to ``make:controller``, we can't escape either the prompt or
 directing Flask-Commands with an optional flag of ``flat`` or ``nested``.
 This is where we will pick up in our next chapter
 :ref:`Flat vs Nested with make:model<flat-vs-nested-with-make-model>`.

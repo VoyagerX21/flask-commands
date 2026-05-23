@@ -160,14 +160,14 @@
                             <div class="text-3xl ">⚡</div>
                             <h3 class="m-0">Fast Scaffolding</h3>
                         </div>
-                        <p class="m-0 text-slate-600">Commands for scaffold a working Flask project, and wiring your application's data.</p>
+                        <p class="m-0 text-slate-600">Commands for scaffolding a working Flask project, and wiring your application's data.</p>
                     </div>
                     <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 border-1 border-slate-200 dark:from-slate-600 dark:to-black dark:border-slate-900">
                         <div class="flex gap-2 items-center">
                             <div class="text-3xl ">📂</div>
                             <h3 class="m-0">Plain Files</h3>
                         </div>
-                        <p plass="m-0 text-slate-600">Generated clean files ready to edit so you still own your appilcation's files.</p>
+                        <p class="m-0 text-slate-600">Generated clean files ready to edit so you still own your application's files.</p>
                     </div>
                     <div class="flex flex-col gap-2 bg-gradient-to-b from-slate-50 to-indigo-50 rounded-lg py-4 px-8 border-1 border-slate-200 dark:from-slate-600 dark:to-black dark:border-slate-900">
                         <div class="flex gap-2 items-center">

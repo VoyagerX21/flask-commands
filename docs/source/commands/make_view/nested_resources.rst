@@ -8,8 +8,7 @@ If you are newer to web development, do not let the phrase “nested
 resources” scare you off. All it means is that one object belongs to another
 object.
 
-
-In our cooking app let's add comments and images so we have:
+In our cooker app, let's add comments and images so we have:
 
 - a comment belonging to a recipe
 - an image belonging to a comment
@@ -19,12 +18,12 @@ Nesting like this ``Recipe -> Comment -> Image`` is the idea we are after.
 In URL terms, nesting means the child's URL depends on the parent instead of
 standing alone.
 
-One of the feature I was unwilling to compromise on when building
+One of the features I was unwilling to compromise on when building
 Flask-Commands was making the folder structure, route structure, controller
 structure, and endpoint naming all reflect their relationships. That way, when
 you come back to the code six months later, you can quickly see how the
 data structures relate without digging through the project (or
-having an AI 🤖 dig through your files to answer how to objects are related).
+having an AI 🤖 dig through your files to answer how the objects are related).
 
 
 Build ``recipes.comments.index``
@@ -73,7 +72,7 @@ The key part of the story is that the ``comments`` blueprint gets registered
 
 - ``app/routes/recipes/__init__.py``
 
-When I saw this the first time I thought "this is weird 🤪, who would have
+When I saw this the first time, I thought, "this is weird 🤪, who would have
 thought to register a blueprint in another blueprint!!!!"  But this is one of
 the cool things I love about Flask. Flask is not so opinionated that it gets
 in your way, which gives you the freedom to try different structures.
@@ -166,7 +165,7 @@ is what you would expect:
 
    flask make:view recipes.comments.images.index -rcm
 
-Our brains 🧠 definitely thinks like this, **Recipes -> Comments -> Images**.
+Our brains 🧠 definitely think like this, **Recipes -> Comments -> Images**.
 However, it hurts my brain just thinking 🧐 about how we would wire all these
 parts together in a Flask application and not break something.
 
@@ -262,11 +261,11 @@ level of structure in the following areas:
 As we have shown above, the same idea does not stop at ``index``. You can use the
 same thing for ``show`` and for the other five RESTful actions. That is where
 the structure really starts to scale, because the naming and relationship
-keeps lining up as your app grows.  Keeping your application tidy, readable,
-and more importantly maintainable.
+structure keeps lining up as your app grows.  This keeps your application
+tidy, readable, and, more importantly, maintainable.
 
-At this point I thought great but what if I already know that I want all
-seven RESTful actions.  Are you telling me that I have to type in seven
+At this point I thought, great, but what if I already know that I want all
+seven RESTful actions?  Are you telling me that I have to type in seven
 different commands!  I thought this was going to save me time?
 
 Please don't stress out 😬.  If you find yourself generating

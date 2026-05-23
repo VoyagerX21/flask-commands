@@ -13,9 +13,9 @@ That is really what ``flask make:controller`` is about.
 
 
 If you are newer to web development, a controller method is just Python code
-that decides what response should be returned for a route or it is where
-data is transferred from into object instances in your database. In other
-words, it is the part of the app where request behavior starts to take life.
+that decides the response data a route returns or what data is turned into
+instance objects in your database. In other words, it is
+the part of the app where request behavior starts to come to life 🐣.
 
 A Simple Controller
 -------------------
@@ -55,7 +55,7 @@ And the controller starts out very simple:
        pass
 
 
-That might feel a little underwhelmed at first, and honestly that is okay.
+That might feel a little underwhelming at first, and honestly that is okay.
 
 This command is showing you the smallest possible controller shape before we
 start adding the more interesting structure on top of it with flags.
@@ -74,7 +74,7 @@ start adding the more interesting structure on top of it with flags.
          - Controller File for RecipeController already exists
          - No changes were made
 
-   Don't be alarmed if you see this, it's **not a problem**.  This warning
+   Don't be alarmed if you see this; it's **not a problem**.  This warning
    means Flask-Commands is protecting the file that already exists instead
    of overwriting it.
 
@@ -95,15 +95,14 @@ app.
 .. admonition:: Before you run this
 
    If you are following along from the beginning, ``RecipeController`` already
-   exists. In order to avoid the the controller-already-exists warning from
+   exists. In order to avoid the controller-already-exists warning from
    above I recommend spinning up a fresh project, something like
 
    .. code-block:: bash
 
       flask new example_controller_with_crud
 
-   so you can see the full ``--crud``  output from
-   start to finish.
+   so you can see the full ``--crud`` output from start to finish.
 
 .. code-block:: bash
 
@@ -122,7 +121,7 @@ With the ``--crud`` flag you get:
 Templates are only created for the ``GET`` actions. The ``POST`` actions
 (``store``, ``update``, and ``destroy``) wire the controller and route
 behavior, but they do not generate templates.  If you would like a refresher
-on why ``POST`` routes do not need templates please check out why ``POST``
+on why ``POST`` routes do not need templates, please check out why ``POST``
 actions do not generate templates in the section
 :ref:`No Template for POST Actions <no-template-for-post-actions>`.
 
@@ -140,7 +139,7 @@ Why ``--crud`` Feels Like a Big Deal
 .. youtube_embed:: why-crud-feels-like-a-big-deal
 
 If you have been following along with ``flask make:view``, this is where
-``flask make:controller`` starts to feel like a party 🎉
+``flask make:controller`` starts to feel like a party 🎉.
 
 With ``flask make:view``, building a RESTful resource means thinking
 one action at a time. This is helpful when you are learning or if you
@@ -196,7 +195,7 @@ That is the real magic of ``--crud``. It does not replace the smaller
 step-by-step workflow. Instead it gives you another way to work when the
 situation calls for it.
 
-You now have both approaches at your hands:
+You now have both approaches in your hands:
 
 - If you only need a few actions, ``flask make:view`` is the way to go
 - If you want the whole RESTful resource, ``flask make:controller`` with

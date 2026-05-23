@@ -1,4 +1,4 @@
-The Basics of make:view 
+The Basics of make:view
 =======================
 
 Now for the fun part of this package 🎉
@@ -8,8 +8,8 @@ project**. This is not a correctional behavioral choice. This is a life-saving
 choice to make sure you do not create a ton of files in the wrong place 😥
 
 The ``flask make:view`` command generates template files under
-``app/templates/``. At its simplest, Flask-Commands just makes a view file. 
-But it can also help wire that view into your application with a route, a 
+``app/templates/``. At its simplest, Flask-Commands just makes a view file.
+But it can also help wire that view into your application with a route, a
 controller, and even a model if you want to keep going.
 
 That is one of the reasons I like this command so much: you can start small
@@ -59,7 +59,7 @@ Just the file.
 That may sound a little underwhelming at first, but sometimes that is exactly
 what you want. Maybe you are making a basic page. Maybe you are sketching
 something out. Maybe you just want the file on disk first and want to think
-about the wiring after your coffee ☕️ kicks in. 
+about the wiring after your coffee ☕️ kicks in.
 
 The important thing to know is this: the template now exists, but it does
 **not** appear anywhere in your application yet. You cannot just type
@@ -150,11 +150,11 @@ Use Generator Flags
 
 .. youtube_embed:: use-generator-flags-with-make-view
 
-Sometime, and for me most of the time, I just want to see a starter page in 
-the browser all wired up and I really don't want to type a ton.  In my 
-opinion, that is not asking to much.  This is where generator flags come to 
-the rescue making the long command above into concepts only 🎉. Let start
-with ``-r`` and ``-c`` which you can combine into an even shorter
+Sometimes, and for me most of the time, I just want to see a starter page in
+the browser all wired up and I really don't want to type a ton.  In my
+opinion, that is not asking too much.  This is where generator flags come to
+the rescue, turning the long command above into a few short concept flags 🎉.
+Let's start with ``-r`` and ``-c``, which you can combine into an even shorter
 command ``-rc``.
 
 The same general result as above can be written like this:
@@ -165,7 +165,7 @@ The same general result as above can be written like this:
 
 Here:
 
-- ``-r`` means generate the **route** url for me from the name
+- ``-r`` means generate the **route** URL for me from the name
 - ``-c`` means generate the **controller** and add the method
 
 Much shorter. Much easier to remember.
@@ -245,7 +245,7 @@ That means dot notation can affect more than just the template path. It can
 also shape the controller and route wiring around the page, while still
 keeping the public URL clean for the ``mains`` namespace.
 
-I would have given the shorten version earlier, but we did not know about 
+I would have given the shorten version earlier, but we did not know about
 ``mains`` yet. Now we do so we can use the cool kids 😎 shortcuts.
 
 A Quick Peek at Nested Views
@@ -293,9 +293,9 @@ For example, maybe you know:
 
 That is where ``flask make:view`` really shines ☀️
 
-It lets you start small and add structure only when you need it.  Sometimes 
-the simplest step is the best first step. You do not have to jump straight 
-into models, controllers, and RESTful actions just because you wanted one 
+It lets you start small and add structure only when you need it.  Sometimes
+the simplest step is the best first step. You do not have to jump straight
+into models, controllers, and RESTful actions just because you wanted one
 page on disk.  However, if you want to wire everything up and see a single page,
 Flask-Commands has a simple command for that using the ``-rc`` optional flags.
 

@@ -148,11 +148,11 @@ def _register_doc_model(project, model_name: str) -> None:
             if init_model_contents \
                 and not init_model_contents.endswith("\n") else ""
         init_file.write_text(
-            f"{init_model_contents}{separator}{model_import_line}\n", 
+            f"{init_model_contents}{separator}{model_import_line}\n",
             encoding="utf-8")
 
 def _assert_route_contains(project, relative_path: str, route: str) -> None:
-    route_file = project / "app" / "routes" / relative_path / "routes.py"        
+    route_file = project / "app" / "routes" / relative_path / "routes.py"
     assert route_file.exists()
     assert route in route_file.read_text(encoding="utf-8")
 
@@ -398,7 +398,7 @@ def test_make_controller_generate_model_multi_child_segments_nested_choice(proje
     )
 
     assert result.exit_code == 0, result.output
-    assert "Detected multiple child like segments" in result.output
+    assert "Detected multiple child-like segments" in result.output
 
     # controller created
     controller_file_path = project / "app" / "controllers" / "admin_comment_controller.py"
@@ -431,7 +431,7 @@ def test_make_controller_generate_model_multi_child_segments_flatten_choice(proj
     )
 
     assert result.exit_code == 0, result.output
-    assert "Detected multiple child like segments" in result.output
+    assert "Detected multiple child-like segments" in result.output
 
     # flatten choice creates one combined model
     assert (project / "app" / "models" / "admin_comment.py").exists()
@@ -985,7 +985,7 @@ def test_docs_flat_vs_nested_use_multi_word_namespace_front_desk_order(project):
         "front_desk/orders",
         "@bp.route('/front-desk/orders/<int:order_id>', methods=['GET'])",
     )
-    
+
 def test_register_doc_model_does_not_duplicate_existing_import(project):
     _register_doc_model(project, "Recipe")
     _register_doc_model(project, "Recipe")

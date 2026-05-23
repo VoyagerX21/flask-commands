@@ -75,7 +75,7 @@ page pattern like:
 And when I say **registered model**, I mean a model that already exists in
 your app and has been added to ``app/models/__init__.py``.
 
-When Flask-Commands cannot find a registered model for the prior segment to
+When Flask-Commands cannot find a registered model for the segment before
 a RESTful action, it asks you which route shape you mean.
 
 For example, the command
@@ -172,7 +172,7 @@ If you want the more RESTful result, you can either provide the route
 explicitly using the RESTful pattern or you can create the model on the fly
 when you are building the view.
 
-The explicit RESTful route is similar to the about without the index:
+The explicit RESTful route is similar to the about route without the index:
 
 .. code-block:: bash
 
@@ -184,7 +184,7 @@ However, the prompt was not necessary here because you explicitly told
 Flask-Commands the route.
 
 If you want Flask-Commands to also generate a model while you are creating your
-RESTful view you can add on the model information to the above command in one
+RESTful view, you can add on the model information to the above command in one
 of two ways.
 
 Either by specifying the model name yourself with ``--model``:
@@ -269,16 +269,16 @@ Final Comment
 
 .. youtube_embed:: model-prompts-final-comment
 
-The goal of this section is not to avoid or not avoid a prompt.  Instead,
-I wanted to give you a tool that allowed you to make a view which included
-all the bells 🛎️ and whistles you need, and properly wire up the views your
-way.  That way you could get back to the more interesting part of your application,
-your application. Hopefully after this section with ``make:view``
+The goal of this section is not simply to avoid prompts. Instead, I wanted to
+give you a tool that allowed you to make a view which included all the bells
+🛎️ and whistles you need and properly wire it up your way.  That way
+you could get back to the more interesting part of your application, your
+application. Hopefully, after this section on ``make:view``, you can:
 
 - You can feel comfortable typing naturally.
 - You can be explicit about how you want your view wired to your back end.
 - You can let the package help when the structure is obvious.
-- You are prompt aware, and ready for Flask-Commands to ask about database
+- You are prompt-aware, and ready for Flask-Commands to ask about database
   structure so you are not left with a lot of cleanup 🧹 work later.
 
 That is really the sweet spot I wanted for a command like this:

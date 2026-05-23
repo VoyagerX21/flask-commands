@@ -46,7 +46,7 @@ RESTful scaffolding for the data structure.  That means build:
 - route handlers
 - templates for the ``GET`` actions
 
-In addition, we have seen that the  ``-m`` flag adds model generation to that
+In addition, we have seen that the ``-m`` flag adds model generation to that
 process. Putting this together means that the command:
 
 .. code-block:: bash
@@ -73,7 +73,7 @@ segments:
 
 .. code-block:: text
 
-   Detected multiple child like segments:
+   Detected multiple child-like segments:
    Recipe, Ingredient
       1) (flatten resource model)  = RecipeIngredient
       2) (generate the following models) = Recipe, Ingredient
@@ -124,10 +124,10 @@ structures under multiple setups (a registered or not registered ``Recipe``).
 If the new data structure contains the name
 of an existing data structure, choose ``--flat`` and keep the words together
 as one model. Conversely, if the controller name is describing a parent-child
-relationship, choose ``--nest`` and let relationship show in the
+relationship, choose ``--nest`` and let the relationship show in the
 generated CRUD structure.
 
-Let's revisit a command we showed in the prior chapter and used these new
+Let's revisit a command we showed in the prior chapter and use these new
 options to shorten the command.
 
 .. _choose-flat-for-one-multi-word-model:
@@ -277,11 +277,11 @@ Also notice that this command only creates one CRUD controller:
 the final nested resource, ``Ingredient``. It does not give you separate CRUD
 controllers for ``Shopping``, ``List``, or ``Store``.
 
-Flask-Commands uses the registered parents as an anchor and when you provide
-the option ``--nest`` it then takes the remaining word segments that come
+Flask-Commands uses the registered parents as an anchor and, when you provide
+the option ``--nest``, it takes the remaining word segments that come
 after the registered parent chain and combines them to generate the new
 child resource. Consequently, if we want ``Store`` to be its own parent in
-the chain, we have to build-up in order by generating and registering ``Store``
+the chain, we have to build up in order by generating and registering ``Store``
 before generating ``Ingredient`` under it.
 
 The takeaway pattern to remember is:
@@ -356,7 +356,7 @@ The first nested staff command sees:
 So it builds:
 
 - model: ``CookStep``
-- controller: ``StaffRecipeCookStepController``
+- controller: ``TestKitchenRecipeCookStepController``
 - routes: ``/test-kitchen/recipes/<int:recipe_id>/cook-steps``
 
 The second nested staff command sees:
