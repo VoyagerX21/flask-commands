@@ -5,7 +5,7 @@ description = "A set of command line tools that help you scaffold out your flask
 authors = [
     {name = "Drew Butcher",email = "drewlbutcher@gmail.com"}
 ]
-license = {text = "MIT"}
+license = "MIT"
 readme = "README.md"
 requires-python = ">=3.11,<4.0"
 dependencies = [
