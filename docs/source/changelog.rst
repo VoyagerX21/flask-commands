@@ -8,6 +8,12 @@ This project follows `Keep a Changelog <https://keepachangelog.com/>`_ and
 Unreleased
 ----------
 
+0.3.2 - 2026-05-24
+-------------------
+Fixed
+~~~~~
+- Retry the package release with the PyPI publish workflow using Python ``3.11`` to match the project requirement.
+
 0.3.1 - 2026-05-24
 -------------------
 Fixed

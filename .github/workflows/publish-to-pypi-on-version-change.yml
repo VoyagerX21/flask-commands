@@ -46,11 +46,11 @@ jobs:
         if: steps.version_check.outputs.changed == 'true'
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Install Poetry
         if: steps.version_check.outputs.changed == 'true'
-        run: pipx install poetry==2.2.0
+        run: pipx install poetry==2.3.2
 
       - name: Install dependencies
         if: steps.version_check.outputs.changed == 'true'
