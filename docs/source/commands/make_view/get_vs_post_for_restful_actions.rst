@@ -16,7 +16,7 @@ actually be the wrong thing to create.
 In this chapter we look at why:
 
 - ``index``, ``show``, ``create``, and ``edit`` generate view templates
-- while ``store``, ``update``, and ``destroy`` do not generate view templates
+- ``store``, ``update``, and ``destroy`` do not generate view templates
 - how ``flask make:view`` follows the traditional browser flow
 
 Once this clicks, a lot of the generated output starts to feel much more
@@ -139,8 +139,8 @@ That is a ``GET`` action, so it makes sense to have a template such as:
 
 That page contains the form the user fills out.
 
-Then the user presses the save button which submits the form.  The submission is
-sent to a ``POST`` route where your application processes the data:
+Then the user presses the save button, which submits the form.  The submission
+is sent to a ``POST`` route where your application processes the data:
 
 .. code-block:: text
 

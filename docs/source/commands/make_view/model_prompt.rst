@@ -270,10 +270,10 @@ Final Comment
 .. youtube_embed:: model-prompts-final-comment
 
 The goal of this section is not simply to avoid prompts. Instead, I wanted to
-give you a tool that allowed you to make a view which included all the bells
-🛎️ and whistles you need and properly wire it up your way.  That way
+give you a tool that lets you make a view that includes all the bells
+🛎️ and whistles you need so you can wire it up your way.  That way
 you could get back to the more interesting part of your application, your
-application. Hopefully, after this section on ``make:view``, you can:
+application. Hopefully, after this section on ``make:view``:
 
 - You can feel comfortable typing naturally.
 - You can be explicit about how you want your view wired to your back end.

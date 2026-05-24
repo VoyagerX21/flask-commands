@@ -26,6 +26,7 @@ build/
 
 # Test / caching
 .coverage
+.coverage *
 htmlcov/
 .cache/
 .pytest_cache/

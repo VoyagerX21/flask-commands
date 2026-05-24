@@ -33,8 +33,8 @@ around it.
 
 In the last chapter you saw this with a simple one-word model, ``Recipe``.  In
 that case, there is only one structure choice. When you provide ``make:model``
-with a multi-word segment we introduce a bit of ambiguity as we will see in
-the section.
+with a multi-word segment, we introduce a bit of ambiguity as we will see in
+this section.
 
 If you are following this tutorial from the controller chapters, this
 section will feel familiar as it mirrors the :ref:`Flat or Nest with the -m Option<flat-or-nest-with-the-m-option>`
@@ -50,7 +50,7 @@ with the following command:
 This command asks Flask-Commands to create a controller, generate a model
 from the controller name, and wire RESTful scaffolding around the result.
 
-The model-first approach version of the above command is shortened to:
+The model-first version of the above command is shorter:
 
 .. code-block:: bash
 
@@ -58,7 +58,7 @@ The model-first approach version of the above command is shortened to:
 
 This reads more directly:
 
-   Make a ``RecipeIngredient`` model-backed resource and wire CRUD around it.
+   Make a ``RecipeIngredient`` model-backed resource and wire RESTful scaffolding around it.
 
 The command is easier to read and remember; however, the multi-word segments
 introduce a naming question.
@@ -162,9 +162,9 @@ a nested resource under ``Recipe`` and to wire RESTful resources around
 This happens independently of ``Recipe``.  If ``Recipe`` is not built then
 Flask-Commands also builds out the missing parent models, in addition to the
 child model, ``Ingredient``.  While this is helpful, it leaves the parent
-resource without RESTful routes because the CRUD behavior is only
+resource without RESTful routes because the RESTful scaffolding is only
 applied to the child model.  In order for ``Recipe`` to also have all the
-RESTful routes you would have run ``make:model`` on ``Recipe`` first before
+RESTful routes you would need to run ``make:model`` on ``Recipe`` first before
 running ``make:model`` on the combined ``RecipeIngredient``.
 
 .. admonition:: Why do we need to nest?
@@ -253,7 +253,7 @@ That overall structure looks like this for the test kitchen users:
 
 .. centered:: ``TestKitchen / Recipe -> CookStep -> Tip``
 
-For the public, the URL looks like these:
+For the public, the URLs look like this:
 
 - ``/recipes`` all recipes
 - ``/recipes/<int:recipe_id>`` an individual recipe

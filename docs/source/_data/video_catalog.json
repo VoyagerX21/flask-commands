@@ -341,7 +341,7 @@
       "video_id": ""
     },
     "build-nested-resources-one-level-at-a-time": {
-      "title": "Build Nested Resources One Level at a Time",
+      "title": "Build Nested Resources One Level at a Time (make:controller)",
       "description": "Learn why building nested controller resources from the top down keeps generated parents, children, routes, and prompts easier to reason about.",
       "video_id": ""
     },
@@ -401,7 +401,7 @@
       "video_id": ""
     },
     "build-nested-resources-one-level-at-a-time-make-model": {
-      "title": "Build Nested Resources One Level at a Time (make model)",
+      "title": "Build Nested Resources One Level at a Time (make:model)",
       "description": "Learn how to grow nested model-first resources from the top down so each registered parent is available before adding the next child.",
       "video_id": ""
     }

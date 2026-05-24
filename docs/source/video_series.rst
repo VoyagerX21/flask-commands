@@ -22,7 +22,7 @@ Here you will find the orientation material, installation steps, project
 creation flow, and the core ideas readers should understand before the deeper
 generator chapters.
 
-The takeaway is foundation: what the tool does, how to install it cleanly, how
+The takeaway is the foundation: what the tool does, how to install it cleanly, how
 to start a project safely, and which naming and routing ideas make the rest of
 the docs easier to understand.
 
@@ -33,8 +33,8 @@ This page follows the ``flask new`` workflow on its own, from creating a fresh
 application through inspecting the scaffold, choosing the no-database option,
 and running the generated project locally.
 
-The takeaway is project creation: how to get from an empty folder to a running
-Flask app that is ready for the generator chapters.
+The takeaway is the project creation flow: how to get from an empty folder
+to a running Flask app that is ready for the generator chapters.
 
 :doc:`make:view Videos </videos/make_view_videos>`
 --------------------------------------------------------------------------------
@@ -43,7 +43,7 @@ These videos follow the page-first workflow, including basic view generation,
 smarter prompts and normalization, first resource-building, and nested view
 work.
 
-The takeaway is page-first scaffolding: how to generate templates and routes
+The takeaway is the page-first scaffolding: how to generate templates and routes
 quickly, when the prompts are helping you, and how nested view structure grows
 without turning into guesswork.
 
@@ -51,21 +51,21 @@ without turning into guesswork.
 --------------------------------------------------------------------------------
 
 That group follows the controller-first workflow, from simple controller
-creation through CRUD scaffolding, controller-driven model generation, and
+creation through RESTful scaffolding, controller-driven model generation, and
 structure choices.
 
-The takeaway is controller-first thinking: when to start from the behavior
-layer, how CRUD generation expands a resource, and how model creation can be
+The takeaway is the controller-first thinking: when to start from the behavior
+layer, how the ``--crud`` flag expands a resource, and how model creation can be
 pulled into that same workflow.
 
 :doc:`make:model Videos </videos/make_model_videos>`
 --------------------------------------------------------------------------------
 
 This page follows the model-first workflow, covering basic model generation,
-CRUD scaffolding from a model, and the flat-vs-nested choice when generating
+RESTful scaffolding from a model, and the flat-vs-nested choice when generating
 structure.
 
-The takeaway is data-first scaffolding: how to start from the model, how that
+The takeaway is the data-first scaffolding: how to start from the model, how that
 decision pushes outward into routes and controllers, and when that workflow
 makes more sense than starting from views or controllers.
 

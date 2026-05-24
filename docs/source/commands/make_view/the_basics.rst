@@ -1,11 +1,11 @@
 The Basics of make:view
 =======================
 
-Now for the fun part of this package 🎉
+Now for the fun part of this package 🎉.
 
 Before we do anything else, **make sure you are at the root of your new
 project**. This is not a correctional behavioral choice. This is a life-saving
-choice to make sure you do not create a ton of files in the wrong place 😥
+choice to make sure you do not create a ton of files in the wrong place 😥.
 
 The ``flask make:view`` command generates template files under
 ``app/templates/``. At its simplest, Flask-Commands just makes a view file.
@@ -49,7 +49,7 @@ That’s it. You now have a new template at:
 
 - ``app/templates/about.html``
 
-Nice and simple 😌
+Nice and simple 😌.
 
 No route.
 No controller.
@@ -171,7 +171,7 @@ Here:
 Much shorter. Much easier to remember.
 
 I think of it like this: if I want the page to actually work, I probably need
-a **route** and a **controller**. So ``-rc`` becomes a nice little habit 😌
+a **route** and a **controller**. So ``-rc`` becomes a nice little habit 😌.
 
 This is one of the small pleasures of the package. Once the naming conventions
 are familiar, the short flags become very easy to remember.
@@ -245,7 +245,7 @@ That means dot notation can affect more than just the template path. It can
 also shape the controller and route wiring around the page, while still
 keeping the public URL clean for the ``mains`` namespace.
 
-I would have given the shorten version earlier, but we did not know about
+I would have given the shortened version earlier, but we did not know about
 ``mains`` yet. Now we do so we can use the cool kids 😎 shortcuts.
 
 A Quick Peek at Nested Views
@@ -291,7 +291,7 @@ For example, maybe you know:
 - you want to create the template first and worry about wiring second
 - you want to build outward from the page instead of starting from the model
 
-That is where ``flask make:view`` really shines ☀️
+That is where ``flask make:view`` really shines ☀️.
 
 It lets you start small and add structure only when you need it.  Sometimes
 the simplest step is the best first step. You do not have to jump straight

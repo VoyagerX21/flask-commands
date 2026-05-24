@@ -61,8 +61,8 @@ where the optional flag ``--no-db`` comes into play.
 
    flask new myproject --no-db
 
-This gives you the same general Flask project structure above without the database
-support, models, and migration setup.
+This gives you the same general Flask project structure described above
+without the database support, models, and migration setup.
 
 That can be useful when:
 
@@ -117,8 +117,8 @@ Any change made in these folders will **immediately trigger a browser reload**
 in Chrome—no manual refresh required. This allows you to edit backend logic,
 HTML templates, or forms and see the results instantly.
 
-Please note, ``fswatch`` will need to be installed on your machine in order for
-this to work.  To install ``fswatch`` you can use brew.
+Please note that ``fswatch`` must be installed on your machine in order for
+this to work.  To install ``fswatch`` you can use Homebrew.
 
 Visual Studio Code Setup (macOS)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

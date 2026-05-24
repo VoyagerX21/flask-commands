@@ -46,7 +46,7 @@ Tailwind CSS tooling. To check whether ``npm`` is installed, run:
    npm --version
 
 If that prints a version number, you are good to go. If not, you
-will need to install node because ``npm`` comes with Node.js. Install Node.js
+will need to install Node.js because ``npm`` comes with Node.js. Install Node.js
 from the `official Node.js download page <https://nodejs.org/en/download>`_ or
 the unofficial community installation using Homebrew:
 
@@ -64,8 +64,8 @@ Install Flask-Commands with ``pipx``
    pipx install Flask-Commands --include-deps
 
 This is the recommended way to install Flask-Commands. ``pipx`` keeps the
-installation isolated and makes Flask's ``flask`` command with Flask-Commands
-extras now available to you anywhere.
+installation isolated and makes Flask's ``flask`` command, with Flask-Commands
+extras, available anywhere.
 
 What is ``--include-deps`` doing? Flask-Commands is a Flask CLI plugin.
 ``pipx`` needs to expose Flask’s ``flask`` executable from the installed
@@ -97,9 +97,9 @@ you want to create.
 
    flask new myproject
 
-A second approach would be to install Flask-Commands globally with ``pip``, the
-command will be available system-wide. This is more convenient, but it also
-adds packages directly to your machine’s Python environment, which is why
+A second approach would be to install Flask-Commands globally with ``pip``,
+then the command will be available system-wide. This is more convenient, but it
+also adds packages directly to your machine’s Python environment, which is why
 ``pipx`` is still the recommended option.
 
 So ``pip`` absolutely works, but ``pipx`` is usually the smoother choice for

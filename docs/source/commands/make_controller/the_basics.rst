@@ -13,8 +13,8 @@ That is really what ``flask make:controller`` is about.
 
 
 If you are newer to web development, a controller method is just Python code
-that decides the response data a route returns or what data is turned into
-instance objects in your database. In other words, it is
+that decides what response data a route returns or what data gets turned into
+a database instance. In other words, it is
 the part of the app where request behavior starts to come to life 🐣.
 
 A Simple Controller
@@ -155,7 +155,7 @@ rest of the resource.
 However, there are also times when you already know you want the full
 resource.  In these cases typing the same idea seven times is going to feel
 extremely monotonous 🫩. In other words, for the single command above we
-would have had to type the seven below commands to end up with the same result.
+would have had to type the seven commands below to end up with the same result.
 
 .. code-block:: bash
 
@@ -167,11 +167,11 @@ would have had to type the seven below commands to end up with the same result.
    flask make:view recipes.update -rc
    flask make:view recipes.destroy -rc
 
-Please don't put yourself through this, you are likely to miss one! You now have
-the tools to either produce just a few of the RESTful actions or you can
-produce all seven with a single command.
+Please don't put yourself through this; you are likely to miss one! You now have
+the tools to either produce just a few of the RESTful actions or all seven
+with a single command.
 
-Once you know that a resource is going to need all seven actions use the
+Once you know that a resource is going to need all seven actions, use the
 command ``flask make:controller`` with the ``--crud`` flag.
 
 .. code-block:: bash

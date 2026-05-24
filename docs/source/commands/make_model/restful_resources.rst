@@ -1,5 +1,5 @@
-RESTful Resource with make:model
-================================
+RESTful Resource with make:model --crud
+=======================================
 
 Creating the model structure in an application is only the first step when
 building out a full application or application feature.
@@ -19,7 +19,7 @@ browser.
 
 Otherwise, the model is shouting with a megaphone 📣 saying, "Hey, is there
 anyone out there? I'm ready to CRUD."  That is why I decided to bring back
-our controller option ``--crud`` in this new make model section.
+our controller option ``--crud`` in this new ``make:model`` section.
 
 Build a Resource with ``--crud``
 --------------------------------
@@ -66,7 +66,7 @@ one short command I end up with the following structure:
 That is a lot of typing you did not have to type. I am personally a big fan of
 not typing the same boilerplate seven times while pretending I am having fun.
 
-If you have been following along this will look familiar.  You have actually
+If you have been following along, this will look familiar.  You have actually
 already seen a command in the make controller chapters that built out these
 exact same files with this exact same structure:
 
@@ -81,7 +81,7 @@ With ``make:controller``, you start thinking from the mechanics of the object
 (controller name) and ask Flask-Commands to generate the model from it.
 
 With ``make:model``, you start thinking from the object (model name) and ask
-Flask-Commands to build the CRUD structure around it.
+Flask-Commands to build the RESTful structure around it.
 
 Neither one is more correct. They are just different doors into the same house.
 And yes, I would absolutely rather have multiple doors 🚪 than crawl through a
@@ -92,6 +92,6 @@ For single-segment resource names like ``Recipe``, both approaches are easy
 to read. But as soon as the model name has more than one word or you want
 nested resources, the model-first command starts to feel much nicer.
 However, similar to ``make:controller``, we can't escape either the prompt or
-directing Flask-Commands with an optional flag of ``flat`` or ``nested``.
-This is where we will pick up in our next chapter
+the need to direct Flask-Commands with an optional ``--flat`` or
+``--nest`` flag.  This is where we will pick up in our next chapter
 :ref:`Flat vs Nested with make:model<flat-vs-nested-with-make-model>`.

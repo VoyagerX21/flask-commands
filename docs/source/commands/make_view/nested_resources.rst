@@ -142,7 +142,7 @@ Go Three Levels Deep with Images
 
 .. youtube_embed:: go-three-levels-deep-with-images
 
-Now let’s dive a little deeper down this rabbit hole 🐇
+Now let’s dive a little deeper down this rabbit hole 🐇.
 
 Suppose that in our cooking app, users can upload images when they leave a
 comment.
@@ -236,7 +236,7 @@ Why Nesting Pays Off
 
 .. youtube_embed:: why-nesting-pays-off
 
-Nested resources are where dot notation really starts paying dividends 💰
+Nested resources are where dot notation really starts paying dividends 💰.
 
 With just these three commands:
 
@@ -266,11 +266,11 @@ tidy, readable, and, more importantly, maintainable.
 
 At this point I thought, great, but what if I already know that I want all
 seven RESTful actions?  Are you telling me that I have to type in seven
-different commands!  I thought this was going to save me time?
+different commands?  I thought this was going to save me time?
 
 Please don't stress out 😬.  If you find yourself generating
 RESTful actions one at a time, the natural next question is: can
 Flask-Commands build all seven actions in one command?
 
-I'm happy to say, yes 👏 and that is exactly where our next topic will take us
+I'm happy to say yes 👏, and that is exactly where our next topic will take us
 when we learn a new command ``flask make:controller``.

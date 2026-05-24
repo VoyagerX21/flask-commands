@@ -4,7 +4,7 @@ Welcome
 .. youtube_embed:: what-is-flask-commands
 
 Flask-Commands is a local-first CLI **plugin for Flask** that adds a small
-amount of opinionated but transparent structure for building Flask application
+amount of opinionated but transparent structure for building Flask applications
 quickly. The goal is not to make a pretty website. The goal is to help you
 scaffold views, controllers, routes, and models so you can spend less time
 wiring and more time building.

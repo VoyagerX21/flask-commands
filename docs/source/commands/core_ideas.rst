@@ -27,7 +27,7 @@ In practice, that means Flask-Commands expects to find:
 in the same directory where you run ``flask make:*``.
 
 That safeguard exists to prevent accidental file creation in the wrong
-directory. True confession, the reason I built this safeguard is because I
+directory. True confession: the reason I built this safeguard is because I
 accidentally ran the ``flask make:*`` in the wrong place several times, resulting
 in many minutes of not-so-fun cleanups 🤨.  So there is now a safeguard on
 the commands for myself and others.
@@ -146,7 +146,7 @@ A dotted name can influence:
 
 This is one of the things I care a lot about in the package. If the resource
 relationship is nested, I want the naming to read as nested too. That way when
-you come back to the project later, the structure mimic's the data's
+you come back to the project later, the structure mimics the data's
 relationship.
 
 Naming Conventions
@@ -245,7 +245,7 @@ the segments are:
 
 You often need more than one word to describe an object.  That's fine and
 Flask-Commands allows for this using either ``-`` or ``_``.  I figured people
-would use both so the official marker is the ``_`` but use whichever you prefer.
+would use both so the official marker is the ``_``, but use whichever you prefer.
 
 Here are some examples of using a double-word resource or folder:
 
@@ -282,7 +282,7 @@ turning into weird project structure.
 Upper and Lower Case Anywhere
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the input has any uppercase characters anywhere Flask-Commands normalizes
+If the input has any uppercase characters, Flask-Commands normalizes
 that too.
 
 For example:

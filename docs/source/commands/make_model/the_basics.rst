@@ -80,7 +80,7 @@ other parts of our application, mainly in controller files.  It also helps
 Flask-Commands locate your application's data structures.  We have already
 seen how important it is for Flask-Commands to know about your data structure
 when you ask Flask-Commands to generate models based on relationships between
-the data structures.  But I'm getting ahead of myself, for now let's take a
+the data structures.  But I'm getting ahead of myself.  For now, let's take a
 closer look at the model file and see what we can do with a freshly generated
 model file.
 
@@ -287,7 +287,7 @@ For those interested, the magic details are as follows:
 The shortened version is this: once you are inside the Flask shell, you can type
 ``Recipe`` and the interpreter will know that this is your ``Recipe`` model.
 
-Without further delay let's now create a ``Recipe`` instance by making a
+Without further delay, let's now create a ``Recipe`` instance by making a
 salad recipe:
 
 .. code-block:: pycon

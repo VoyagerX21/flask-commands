@@ -85,7 +85,7 @@ In this case, these two commands produced the same general result:
 The important difference is who chooses the model name.
 
 With ``--model Recipe``, you choose the exact model name.  This option puts
-you in the driver seat 🚗, you can call the model anything you want.
+you in the driver's seat 🚗; you can call the model anything you want.
 
 On the other hand, with ``-m`` or ``--generate-model``, Flask-Commands reads
 the controller name and generates the model name following the rule:
@@ -147,8 +147,8 @@ command!
 
 
 We now have the full story on how to generate a new data structure (``-m``)
-and include all seven RESTful routes (``--crud``) in one command.  I always say
-'trust but verify', so let's combine the two options to see what happens:
+and include all seven RESTful routes (``--crud``) in one command.  I always say,
+*"trust but verify,"* so let's combine the two options to see what happens:
 
 .. code-block:: bash
 
@@ -212,7 +212,7 @@ name.
 In this case you will have to use ``--model`` and explicitly tell
 Flask-Commands that you want a model with multiple words; otherwise,
 Flask-Commands will generate a model for you but only with the segment before
-``Controller``, in this case ``List`` so if you want the two-word model ``ShoppingList``
+``Controller``, in this case ``List``, so if you want the two-word model ``ShoppingList``
 you will have to tell Flask-Commands with the ``--model`` option.
 
 .. code-block:: bash
@@ -252,7 +252,7 @@ And the controller method receives that same two-word resource id:
                shopping_list_id=shopping_list_id
            )
 
-By explicitly telling Flask-Commands that the model is ``ShoppingList`` the
+By explicitly telling Flask-Commands that the model is ``ShoppingList``, the
 two words stay together as one data structure. The route looks like
 
 - ``/shopping-lists/<int:shopping_list_id>``
@@ -284,7 +284,7 @@ Not every leading word in a controller name should become a model, or is even
 part of a model.  There are times when you just need
 to keep things nice and organized.  This is the idea behind namespacing.
 
-A namespace is not a parent model in the resource chain, it is a
+A namespace is not a parent model in the resource chain; it is a
 wrapper around an existing resource.  Consequently, you want the resource to
 exist before you add the namespace.
 
@@ -306,14 +306,14 @@ To do this you would type:
    flask make:controller AdminUserController --crud
 
 Let's explain what's going on behind the scenes.  Flask-Commands takes
-``AdminUserController`` removes the ``Controller`` part, and breaks down
+``AdminUserController``, removes the ``Controller`` part, and breaks down
 ``AdminUser`` into two segments ``Admin`` and ``User`` based on the
 capitalization.  From there Flask-Commands recognizes that ``Admin`` is not
 a registered model while ``User`` is a registered model.  When I say
 **registered model**, I mean a model that exists in your application and is
 imported in ``app/models/__init__.py``.
 
-Because ``Admin`` is not a registered model when Flask-Commands builds out the
+Because ``Admin`` is not a registered model, when Flask-Commands builds out the
 route URLs it will not include the parameter ``<int:admin_id>``.  Conversely,
 because ``User`` is a registered model when Flask-Commands builds out the
 route URLs it will include the parameter ``<int:user_id>``.  Consequently,
@@ -349,7 +349,7 @@ hyphenated namespace segment.
 
 Suppose your app has a test kitchen area where staff can review and adjust
 recipes before they are published. You do not need a ``TestKitchen`` model. You
-just need a section of the app where certain users can use can manage recipes.
+just need a section of the app where certain users can manage recipes.
 
 .. admonition:: Before you run this
 
@@ -378,7 +378,7 @@ The public URL keeps the namespace together with a hyphen:
 - ``/test-kitchen/recipes``
 - ``/test-kitchen/recipes/<int:recipe_id>``
 
-We will see in the next section that is different from a nested model
+We will see in the next section that this is different from a nested model
 relationship. ``TestKitchen`` is not a parent resource, so there is no
 ``<int:test_kitchen_id>`` parameter. It is just a namespace that organizes
 the recipe routes.
@@ -418,8 +418,6 @@ The first command creates the public recipe index and generates the ``Recipe``
 model. The second command adds the public recipe show page. The final command
 adds the full test kitchen CRUD controller around the already registered
 ``Recipe`` model.
-
-I’d write:
 
 That gives regular users the ordinary recipe pages:
 
@@ -514,8 +512,8 @@ Go Nested with ``--crud``
 
 .. youtube_embed:: go-nested-with-make-controller-crud
 
-After a lot of build up let's now build the nested relationship we
-just discussed **Recipe -> Ingredient** with a CRUD scaffolding in the
+After a lot of buildup, let's now build the nested relationship we
+just discussed **Recipe -> Ingredient** with RESTful scaffolding in the
 controller.
 
 .. admonition:: Before you run this
@@ -528,7 +526,7 @@ controller.
 
       flask make:controller RecipeController --crud -m
 
-If you are following along you should already have a ``Recipe`` model.
+If you are following along, you should already have a ``Recipe`` model.
 Having ``Recipe`` as a registered model before you run your next command is
 really the important part.  Without ``Recipe`` as a registered model
 Flask-Commands will treat ``Recipe`` as a namespace.  However, when ``Recipe``

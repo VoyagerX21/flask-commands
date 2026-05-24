@@ -39,7 +39,7 @@ Flat or Nest with the ``-m`` Option
 
 .. youtube_embed:: flat-or-nest-with-the-m-option
 
-When you add the ``--crud`` flag you are telling Flask-Commands to build a
+When you add the ``--crud`` flag you are telling Flask-Commands to build
 RESTful scaffolding for the data structure.  That means build:
 
 - controller methods
@@ -94,7 +94,7 @@ If ``Recipe`` is already registered, the prompt changes:
 
 Now Flask-Commands recognizes ``Recipe`` as an existing parent model. The flat
 choice still generates ``RecipeIngredient``, but the nested choice only
-generated the missing nested structure ``Ingredient``.
+generates the missing nested structure ``Ingredient``.
 
 In both cases, ``-m`` is what creates the flat-or-nested question. Registered
 models help Flask-Commands understand which words are already part of your app
@@ -125,7 +125,7 @@ If the new data structure contains the name
 of an existing data structure, choose ``--flat`` and keep the words together
 as one model. Conversely, if the controller name is describing a parent-child
 relationship, choose ``--nest`` and let the relationship show in the
-generated CRUD structure.
+generated RESTful scaffolding.
 
 Let's revisit a command we showed in the prior chapter and use these new
 options to shorten the command.
@@ -207,7 +207,7 @@ I recommend building the relationship one level at a time:
    flask make:controller ShoppingListStoreController --crud -m --nest
    flask make:controller ShoppingListStoreIngredientController --crud -m --nest
 
-As we have seen the first command creates the top-level flat resource:
+As we have seen, the first command creates the top-level flat resource:
 
 - model: ``ShoppingList``
 - controller: ``ShoppingListController``
@@ -299,7 +299,7 @@ Combine Namespaces with Nested Model Generation
 
 .. youtube_embed:: combine-namespaces-with-nested-model-generation
 
-You can combine namespaces, nested resources, CRUD scaffolding, and generated
+You can combine namespaces, nested resources, RESTful scaffolding, and generated
 models. The key is still to build the registered model chain in order.
 
 In the previous chapter we introduced a multi-word namespace (review in
@@ -395,4 +395,4 @@ model chain.
 
 Next we will look at the same choice from the model-first side. Instead of
 starting with a controller name and asking for a model, we will start with a
-model name and ask Flask-Commands to build the CRUD structure around it.
+model name and ask Flask-Commands to build the RESTful structure around it.
