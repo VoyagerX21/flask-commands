@@ -1,6 +1,6 @@
 [project]
 name = "flask-commands"
-version = "0.2.4"
+version = "0.3.0"
 description = "A set of command line tools that help you scaffold out your flask application quickly."
 authors = [
     {name = "Drew Butcher",email = "drewlbutcher@gmail.com"}
@@ -15,7 +15,9 @@ dependencies = [
 ]
 include = [
     { path = "flask_commands/project", format = "sdist" },
-    { path = "flask_commands/project", format = "wheel" }
+    { path = "flask_commands/project", format = "wheel" },
+    { path = "flask_commands/project_no_db", format = "sdist" },
+    { path = "flask_commands/project_no_db", format = "wheel" }
 ]
 
 [project.entry-points."flask.commands"]

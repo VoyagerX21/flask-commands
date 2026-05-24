@@ -7,6 +7,9 @@ This project follows `Keep a Changelog <https://keepachangelog.com/>`_ and
 
 Unreleased
 ----------
+
+0.3.0 - 2026-05-24
+-------------------
 Added
 ~~~~~
 - Add ``--no-db`` support to ``flask new`` for no-database project scaffolding.
@@ -15,29 +18,51 @@ Added
   - ``flask make:model ... --crud --flat|--nest``
   - ``flask make:controller ... -m --flat|--nest``
 - Add interactive nested model-selection prompts for ``make:model`` and ``make:controller`` inference flows.
-- Add RouteSpec-driven route analysis/prompt planning helpers in ``flask_commands/utils/routes.py``.
+- Add model-aware RESTful scaffolding for nested controller/model generation.
+- Add RouteSpec-driven route analysis and prompt-planning helpers in ``flask_commands/utils/routes.py``.
 - Add nested parent-route scaffolding helpers for multi-level blueprint setup.
+- Add centralized CRUD/RESTful output rendering helpers in ``flask_commands/utils/presents.py``.
+- Add shared scaffold result metadata for created, reused, skipped, warning, and failed wiring steps.
+- Add a ``flask commands --version`` / ``flask commands -v`` version command.
 - Add docs infrastructure for videos/navigation:
   - custom ``youtube_embed`` directive
+  - searchable video catalog data
+  - video library styles and client-side progress tracking
   - docs navigation template override
-- Add new utility test modules for ``venv`` and ``wirings`` and broaden command/utils coverage.
+- Add chapter-based docs pages for installation, project creation, core ideas, ``make:view``, ``make:controller``, ``make:model``, video series, and the cheat sheet.
+- Add new utility test modules for ``project``, ``presents``, ``venv``, and ``wirings`` and broaden command/utils coverage.
 
 Changed
 ~~~~~~~
-- Refactor dotted-path normalization and parsing into a consistent ``dotted_path_with_action`` flow across view/model/route wiring.
-- Refactor model hierarchy inference to be registry-aware and normalize inferred model names to PascalCase.
-- Refactor CRUD scaffolding to be model-aware for nested controller/model generation.
-- Refactor route creation/registration into helper-driven steps with clearer failure aggregation.
+- Register Flask-Commands through Flask CLI plugin entry points instead of a replacement top-level ``flask`` console script.
+- Refactor dotted-path normalization and parsing into a consistent dotted-path-with-action flow across view, model, route, and wiring code.
+- Refactor model hierarchy inference to be registry-aware, normalize inferred model names to PascalCase, and preserve multi-word model choices.
+- Refactor route creation/registration into helper-driven steps with clearer failure aggregation and immutable failure results.
+- Refactor controller/model/view wiring to report created, reused, skipped, warning, and failure states consistently.
 - Update ``flask new`` dependency/template flow to support DB-enabled and no-DB scaffolds.
 - Raise supported Python version to ``>=3.11,<4.0``.
-- Refresh command docs (introduction/new/make_view/nested_resources/rest_actions/index) to match new CLI behavior.
+- Update the generated project ``run.sh`` flow and docs to use Chrome/browser reload behavior consistently.
+- Refresh README examples, install guidance, docs links, and RESTful/CRUD wording to match the new docs.
+- Reorganize command docs into nested ``make:view``, ``make:controller``, and ``make:model`` chapters with cooking-app examples.
+- Redesign the docs homepage and video pages with updated navigation, responsive styles, and course progress support.
+- Refresh Poetry dependencies and lock file for the new Flask CLI plugin and docs/test tooling.
 
 Fixed
 ~~~~~
+- Stop ``--crud`` from creating implicit models unless model generation is requested with ``-m``, ``--model``, or ``make:model``.
+- Keep generated root templates out of ``mains`` when creating simple root-level views.
+- Import controllers when adding generated routes and handle missing controller imports more reliably.
+- Keep namespace route segments singular when generating namespaced nested controllers.
+- Correct the SQLite template path used during new project scaffolding.
 - Prevent partial route setup in nested parent-route failure scenarios.
 - Improve failure immutability for route write/registration edge cases.
 - Fix mobile docs logo/navigation behavior on command pages.
 - Remove stale/incorrect unreleased changelog references to non-existent helper names/files.
+
+Removed
+~~~~~~~
+- Remove obsolete single-page command docs in favor of the chapter-based guide.
+- Remove the legacy ``flask_commands.cli`` console-script entry point path.
 
 0.2.4 - 2026-01-26
 -------------------
