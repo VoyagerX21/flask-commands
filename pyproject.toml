@@ -32,6 +32,7 @@ commands = "flask_commands.commands.meta:commands"
 docs = [
     "sphinx (<9)",
     "sphinx-copybutton",
+    "pydata-sphinx-theme (>=0.16.1,<0.17.0)",
 ]
 
 [build-system]
