@@ -8,6 +8,12 @@ This project follows `Keep a Changelog <https://keepachangelog.com/>`_ and
 Unreleased
 ----------
 
+0.3.1 - 2026-05-24
+-------------------
+Fixed
+~~~~~
+- Retry the ``0.3.x`` package release after the PyPI publish workflow stopped before build because ``pyproject.toml`` and ``poetry.lock`` were out of sync.
+
 0.3.0 - 2026-05-24
 -------------------
 Added
