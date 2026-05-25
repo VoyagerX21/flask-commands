@@ -7,6 +7,9 @@ This project follows `Keep a Changelog <https://keepachangelog.com/>`_ and
 
 Unreleased
 ----------
+Added
+~~~~~
+- Add generated project template ``.gitignore`` files for database-backed and no-database scaffolds.
 
 0.3.2 - 2026-05-24
 -------------------
