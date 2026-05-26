@@ -11,6 +11,10 @@ Added
 ~~~~~
 - Add generated project template ``.gitignore`` files for database-backed and no-database scaffolds.
 
+Changed
+~~~~~~~
+- Update generated project template ``.gitignore`` files to ignore log directories and ``*.log`` files.
+
 0.3.2 - 2026-05-24
 -------------------
 Fixed
