@@ -15,7 +15,7 @@ everything local, readable, and easy to customize.
 
 All generated code is plain Flask code on disk. No hidden runtime layers. No
 framework lock-in. No mystery sauce. Just files you can open, read, edit, and
-actually own.
+actually own. (test)
 
 What Flask-Commands Is Not
 --------------------------
