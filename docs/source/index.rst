@@ -213,10 +213,10 @@
             </section>
 
             <section>
-                <h2 class="m-0 text-2xl font-bold text-slate-900 dark:text-slate-100! text-center mt-4">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100! text-center mt-8">
                     Supercharge your Flask projects today!
                 </h2>
-                <div class="flex flex-col md:flex-row gap-2 mt-2 mb-8 justify-center">
+                <div class="flex flex-col md:flex-row gap-4 my-4 justify-center">
                     <a href="install_and_first_run.html" class="no-underline! bg-gradient-to-br from-violet-100 to-violet-200  text-indigo-800! flex items-start justify-center gap-2  font-extrabold px-4 py-2 rounded border-1 border-violet-200">
                         <span>Start With Installation</span>
                     </a>

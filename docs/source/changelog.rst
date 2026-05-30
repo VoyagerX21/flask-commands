@@ -7,6 +7,9 @@ This project follows `Keep a Changelog <https://keepachangelog.com/>`_ and
 
 Unreleased
 ----------
+
+0.3.3 - 2026-05-30
+------------------
 Added
 ~~~~~
 - Add generated project template ``.gitignore`` files for database-backed and no-database scaffolds.
@@ -14,6 +17,7 @@ Added
 Changed
 ~~~~~~~
 - Update generated project template ``.gitignore`` files to ignore log directories and ``*.log`` files.
+- Update installation docs with ``pipx`` upgrade guidance and troubleshooting for exposing the ``flask`` command.
 
 0.3.2 - 2026-05-24
 -------------------

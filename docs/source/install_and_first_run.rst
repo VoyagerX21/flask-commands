@@ -71,6 +71,28 @@ What is ``--include-deps`` doing? Flask-Commands is a Flask CLI plugin.
 ``pipx`` needs to expose Flask’s ``flask`` executable from the installed
 dependencies so your plugin commands appear under the real Flask CLI.
 
+.. note::
+
+   To update Flask-Commands later, run:
+
+   .. code-block:: bash
+
+      pipx upgrade Flask-Commands
+
+   After upgrading, you can confirm the installed version with:
+
+   .. code-block:: bash
+
+      flask commands -v
+
+.. tip::
+
+   If the ``flask`` command is not available after installation, reinstall with:
+
+   .. code-block:: bash
+
+      pipx install Flask-Commands --include-deps --force
+
 Install Flask-Commands with ``pip``
 -----------------------------------
 
