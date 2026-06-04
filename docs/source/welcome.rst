@@ -67,10 +67,11 @@ this documentation works. This documentation is written like a small class.
 You can read from top to bottom, or you can jump around to the command
 family you care about.
 
-The YouTube callout appears at the top of each teachable section:
+Each teachable section starts with a video card that shows the video title,
+and a checkbox to indicate if you you have watched it so you can mark your
+progress through the series. If the video is already linked, you can expand
+the card and play it directly on the page. If the video is still planned, the
+card keeps its place in the course so you can see what is coming.
 
-**Prefer a walkthrough? Click to expand a YouTube Tutorial**
-
-That is there on purpose. The written docs are the source of truth, and the
-videos are meant to act like little guided walk-throughs of that exact section.
-
+The written docs are still the source of truth while the video cards are
+meant to act like a little guide walking you through that exact section.

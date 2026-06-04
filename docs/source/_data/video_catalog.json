@@ -3,22 +3,22 @@
     "what-is-flask-commands": {
       "title": "What is Flask-Commands",
       "description": "Learn what Flask-Commands is built to do, which parts of a Flask app it accelerates, and why the project leans so hard into local-first scaffolding.",
-      "video_id": ""
+      "video_id": "qE9XQC8srFM"
     },
     "what-flask-commands-is-not": {
       "title": "What Flask-Commands is not",
       "description": "Learn what the tool is intentionally not trying to solve so you can keep your expectations aimed at structure, wiring, and repeatable setup instead of design polish.",
-      "video_id": ""
+      "video_id": "LRbwJLQOGtk"
     },
     "the-plain-recipe-app-we-are-building": {
       "title": "The plain recipe app we are building",
       "description": "Learn why the docs use a plain recipe app as the teaching example and how that example gives us believable nested relationships to work with.",
-      "video_id": ""
+      "video_id": "YKnMXrLsq5o"
     },
     "how-to-use-this-documentation": {
       "title": "How to Use This Documentation",
       "description": "Learn how the written chapters and video callouts fit together so you can follow the course in order or jump to the command family you need.",
-      "video_id": ""
+      "video_id": "ycj4htqh9_A"
     },
     "install-the-prerequisites-for-flask-commands": {
       "title": "Install The Prerequisites for Flask-Commands",
