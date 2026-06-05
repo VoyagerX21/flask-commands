@@ -10,7 +10,7 @@ from flask_commands.utils.databases import install_sqlitedb
 @click.argument("project_name")
 @click.option("--no-db", is_flag=True, help="Skip database setup. By default, DB support is included")
 def new(project_name, no_db):
-    """Create a new Flask project scaffold.
+    """Scaffold a new Flask project.
 
     Creates the project directory, virtual environment, starter files, and Tailwind setup.
     Includes database support by default; pass --no-db to skip DB setup.
