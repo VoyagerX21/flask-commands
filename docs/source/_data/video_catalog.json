@@ -23,27 +23,27 @@
     "install-the-prerequisites-for-flask-commands": {
       "title": "Install The Prerequisites for Flask-Commands",
       "description": "Learn which local tools Flask-Commands expects, why pipx and npm matter, and how to check that your machine is ready before installing the package.",
-      "video_id": ""
+      "video_id": "w1zQPsbtIvE"
     },
     "install-flask-commands-with-pipx": {
       "title": "Install Flask-Commands with pipx",
       "description": "Learn the recommended install path for keeping the Flask-Commands plugins available globally without mixing the package into a project environment.",
-      "video_id": ""
+      "video_id": "wPEkMXvb9dU"
     },
     "install-flask-commands-with-pip": {
       "title": "Install Flask-Commands with pip",
       "description": "Learn the plain pip installation path, when it is acceptable, and what tradeoffs it has compared to the recommended pipx setup.",
-      "video_id": ""
+      "video_id": "CBcI1ZrCt4o"
     },
     "confirm-the-command-with-version": {
       "title": "Confirm the command with version",
       "description": "Learn how to verify that Flask-Commands is installed through Flask's CLI using `flask commands --version`, and how that differs from `flask --version`.",
-      "video_id": ""
+      "video_id": "zNCs2PtWFZA"
     },
     "read-the-cli-at-a-glance-with-help": {
       "title": "Read the CLI at a glance with help",
       "description": "See how Flask-Commands appears inside Flask's help output, and how to find specific Flask-Commands help documentation.",
-      "video_id": ""
+      "video_id": "-_d8P0xddlI"
     },
     "create-a-project-with-flask-new": {
       "title": "Create a project with flask new",
