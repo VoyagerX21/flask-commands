@@ -136,7 +136,7 @@ This command:
 So the pieces line up like this:
 
 - route: ``/about``
-- controller method: ``MainController.about()``
+- controller method: ``MainController().about()``
 - view: ``app/templates/about.html``
 
 A browser request for ``/about`` hits the route, the route calls the

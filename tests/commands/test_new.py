@@ -36,8 +36,7 @@ def _assert_common_project_scaffold(project_path, project_name):
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n"
     )
     assert (project_path / "app" / "controllers" / "main_controller.py").read_text(encoding="utf-8") == expected_main_controller
@@ -48,7 +47,7 @@ def _assert_common_project_scaffold(project_path, project_name):
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
     )
     assert (project_path / "app" / "routes" / "mains" / "routes.py").read_text(encoding="utf-8") == expected_main_routes
 

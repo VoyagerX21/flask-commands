@@ -238,15 +238,14 @@ parameter:
 
    @bp.route('/shopping-lists/<int:shopping_list_id>', methods=['GET'])
    def show(shopping_list_id: int):
-       return ShoppingListController.show(shopping_list_id)
+       return ShoppingListController().show(shopping_list_id)
 
 And the controller method receives that same two-word resource id:
 
 .. code-block:: python
 
    class ShoppingListController:
-       @staticmethod
-       def show(shopping_list_id: int) -> str:
+       def show(self, shopping_list_id: int) -> str:
            return render_template(
                "shopping_lists/show.html",
                shopping_list_id=shopping_list_id

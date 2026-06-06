@@ -52,8 +52,7 @@ def project(tmp_path, monkeypatch):
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n",
         encoding="utf-8",
     )
@@ -71,8 +70,7 @@ def project(tmp_path, monkeypatch):
         "from flask import render_template\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n",
         encoding="utf-8",
     )
@@ -83,7 +81,7 @@ def project(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n",
+        "    return MainController().index()\n",
         encoding="utf-8",
     )
 
@@ -102,7 +100,7 @@ def project(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/posts', methods=['GET'])\n"
         "def index():\n"
-        "    return PostController.index()\n",
+        "    return PostController().index()\n",
         encoding="utf-8",
     )
 
@@ -115,7 +113,7 @@ def project(tmp_path, monkeypatch):
         encoding="utf-8",
     )
 
-    
+
     (comments_routes_dir / "routes.py").write_text(
         "from app.controllers import CommentController\n"
         "from app.routes.comments import bp\n",
@@ -186,8 +184,7 @@ def test_wiring_generate_crud_result_controller_warning_status_propagates(projec
         "from flask import render_template\n"
         "\n"
         "class NotPostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n",
         encoding="utf-8",
     )
@@ -261,12 +258,10 @@ def test_wiring_generate_wiring_result_root_action_updates_mains_files(project):
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def landing() -> str:\n"
+        "    def landing(self) -> str:\n"
         "        return render_template('landing.html')"
     )
 
@@ -277,11 +272,11 @@ def test_wiring_generate_wiring_result_root_action_updates_mains_files(project):
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
         "\n"
         "@bp.route('/landing', methods=['GET'])\n"
         "def landing():\n"
-        "    return MainController.landing()\n"
+        "    return MainController().landing()\n"
     )
 
 
@@ -326,12 +321,10 @@ def test_generate_wiring_result_explicit_mains_relative_path_uses_mains_template
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def landing() -> str:\n"
+        "    def landing(self) -> str:\n"
         "        return render_template('mains/landing.html')"
     )
 
@@ -342,11 +335,11 @@ def test_generate_wiring_result_explicit_mains_relative_path_uses_mains_template
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
         "\n"
         "@bp.route('/landing', methods=['GET'])\n"
         "def landing():\n"
-        "    return MainController.landing()\n"
+        "    return MainController().landing()\n"
     )
 
     assert wiring_result.action_result.is_successful is True
@@ -382,12 +375,10 @@ def test_generate_wiring_result_root_action_keeps_root_template_when_mains_not_r
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def landing() -> str:\n"
+        "    def landing(self) -> str:\n"
         "        return render_template('landing.html')"
     )
 
@@ -398,11 +389,11 @@ def test_generate_wiring_result_root_action_keeps_root_template_when_mains_not_r
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
         "\n"
         "@bp.route('/landing', methods=['GET'])\n"
         "def landing():\n"
-        "    return MainController.landing()\n"
+        "    return MainController().landing()\n"
     )
 
     assert result.action_result.is_successful is True
@@ -438,12 +429,10 @@ def test_generate_wiring_result_get_with_existing_controller_and_route(project):
         "from flask import render_template\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def show(post_id: int) -> str:\n"
+        "    def show(self, post_id: int) -> str:\n"
         "        return render_template('posts/show.html')"
     )
 
@@ -454,11 +443,11 @@ def test_generate_wiring_result_get_with_existing_controller_and_route(project):
         "\n"
         "@bp.route('/posts', methods=['GET'])\n"
         "def index():\n"
-        "    return PostController.index()\n"
+        "    return PostController().index()\n"
         "\n"
         "@bp.route('/posts/<int:post_id>', methods=['GET'])\n"
         "def show(post_id: int):\n"
-        "    return PostController.show(post_id)\n"
+        "    return PostController().show(post_id)\n"
     )
 
     observed_controllers_init_content = controllers_init_file.read_text(encoding="utf-8")
@@ -503,12 +492,10 @@ def test_generate_wiring_result_post_skips_view(project):
         "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def store() -> ResponseReturnValue:\n"
+        "    def store(self) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.index'))"
     )
 
@@ -519,11 +506,11 @@ def test_generate_wiring_result_post_skips_view(project):
         "\n"
         "@bp.route('/posts', methods=['GET'])\n"
         "def index():\n"
-        "    return PostController.index()\n"
+        "    return PostController().index()\n"
         "\n"
         "@bp.route('/posts', methods=['POST'])\n"
         "def store():\n"
-        "    return PostController.store()\n"
+        "    return PostController().store()\n"
     )
 
     observed_controllers_init_content = controllers_init_file.read_text(encoding="utf-8")
@@ -567,8 +554,7 @@ def test_generate_wiring_result_uses_make_file_when_controller_missing(project):
         "from flask import render_template\n"
         "\n"
         "class CommentController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('comments/index.html')\n"
     )
 
@@ -579,7 +565,7 @@ def test_generate_wiring_result_uses_make_file_when_controller_missing(project):
         "\n"
         "@bp.route('/comments', methods=['GET'])\n"
         "def index():\n"
-        "    return CommentController.index()\n"
+        "    return CommentController().index()\n"
     )
 
     observed_controllers_init_content = controllers_init_file.read_text(encoding="utf-8")
@@ -628,12 +614,10 @@ def test_generate_wiring_result_route_exception_sets_failure(project, monkeypatc
         "from flask import render_template\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def show(post_id: int) -> str:\n"
+        "    def show(self, post_id: int) -> str:\n"
         "        return render_template('posts/show.html')"
     )
 
@@ -644,7 +628,7 @@ def test_generate_wiring_result_route_exception_sets_failure(project, monkeypatc
         "\n"
         "@bp.route('/posts', methods=['GET'])\n"
         "def index():\n"
-        "    return PostController.index()\n"
+        "    return PostController().index()\n"
     )
 
     assert result.action_result.is_successful is False
@@ -679,8 +663,7 @@ def test_generate_wiring_result_creates_route_directory_when_missing(project):
         "from flask import render_template\n"
         "\n"
         "class TagController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('tags/index.html')\n",
         encoding="utf-8",
     )
@@ -701,12 +684,10 @@ def test_generate_wiring_result_creates_route_directory_when_missing(project):
         "from flask import render_template\n"
         "\n"
         "class TagController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('tags/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def show(tag_id: int) -> str:\n"
+        "    def show(self, tag_id: int) -> str:\n"
         "        return render_template('tags/show.html')"
     )
 
@@ -726,7 +707,7 @@ def test_generate_wiring_result_creates_route_directory_when_missing(project):
         "\n"
         "@bp.route('/tags/<int:tag_id>', methods=['GET'])\n"
         "def show(tag_id: int):\n"
-        "    return TagController.show(tag_id)\n"
+        "    return TagController().show(tag_id)\n"
     )
 
     observed_app_init_content = app_init_file.read_text(encoding="utf-8")
@@ -793,7 +774,7 @@ def test_generate_wiring_result_existing_route_method_puts_message_in_warning_up
 
     observed_messages = "\n".join(
         wiring_result.success_messages + wiring_result.warning_messages)
-   
+
     assert wiring_result.action_result.is_successful is False
     assert wiring_result.action_result.route_status == ScaffoldStatus.WARNING
     assert wiring_result.controller_result is not None

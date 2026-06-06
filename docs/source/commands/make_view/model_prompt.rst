@@ -114,7 +114,7 @@ In other words:
 
    flask make:view recipes.index -r
 
-generates a route that returns ``MainController.index()`` which by default
+generates a route that returns ``MainController().index()`` which by default
 serves your landing page template from ``mains/index.html``.
 
 So throughout this section we will include the controller generator to avoid confusion:
@@ -125,7 +125,7 @@ So throughout this section we will include the controller generator to avoid con
 
 By using the controller generator flag Flask-Commands generates the
 resource-specific controller too, so the route now points to a new controller
-method ``RecipeController.index()`` instead.
+method ``RecipeController().index()`` instead.
 
 Let's stay focused on the real question in this chapter: whether the route
 should become ``/recipes`` or ``/recipes/index`` when the model does not

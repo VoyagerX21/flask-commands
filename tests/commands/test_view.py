@@ -47,8 +47,7 @@ def project(tmp_path, monkeypatch):
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n"
     )
 
@@ -70,7 +69,7 @@ def project(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n",
+        "    return MainController().index()\n",
         encoding="utf-8",
     )
 
@@ -178,8 +177,7 @@ def test_make_view_root_component_only_does_not_change_main_wiring(project):
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n"
     )
 
@@ -192,7 +190,7 @@ def test_make_view_root_component_only_does_not_change_main_wiring(project):
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
     )
 
     assert result.exit_code == 0, result.output
@@ -262,7 +260,7 @@ def test_make_view_with_generated_route_declines_model_prompt(project):
         "\n"
         "@bp.route('/posts/index', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
     )
 
     assert routes_text == expected_source
@@ -297,7 +295,7 @@ def test_make_view_with_generated_route_accepts_model_prompt(project):
         "\n"
         "@bp.route('/posts', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
     )
     assert routes_text == expected_source
 
@@ -313,7 +311,7 @@ def test_make_view_with_generated_route_add_method_decline_model_prompt(project)
         "\n"
         "@bp.route('/posts', methods=['GET'])\n"
         "def index():\n"
-        "    return PostController.index()"
+        "    return PostController().index()"
     )
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.show", "-r"], input="n\n")
@@ -326,11 +324,11 @@ def test_make_view_with_generated_route_add_method_decline_model_prompt(project)
         "\n"
         "@bp.route('/posts', methods=['GET'])\n"
         "def index():\n"
-        "    return PostController.index()\n"
+        "    return PostController().index()\n"
         "\n"
         "@bp.route('/posts/show', methods=['GET'])\n"
         "def show():\n"
-        "    return MainController.show()\n"
+        "    return MainController().show()\n"
     )
 
     assert routes_text == expected_source
@@ -346,7 +344,7 @@ def test_make_view_with_generated_route_add_method_accept_model_prompt(project):
         "\n"
         "@bp.route('/posts', methods=['GET'])\n"
         "def index():\n"
-        "    return PostController.index()"
+        "    return PostController().index()"
     )
     runner = CliRunner()
     result = runner.invoke(make_view, ["posts.show", "-r"], input="y\n")
@@ -359,11 +357,11 @@ def test_make_view_with_generated_route_add_method_accept_model_prompt(project):
         "\n"
         "@bp.route('/posts', methods=['GET'])\n"
         "def index():\n"
-        "    return PostController.index()\n"
+        "    return PostController().index()\n"
         "\n"
         "@bp.route('/posts/<int:post_id>', methods=['GET'])\n"
         "def show(post_id: int):\n"
-        "    return MainController.show(post_id)\n"
+        "    return MainController().show(post_id)\n"
     )
 
     assert routes_text == expected_source
@@ -420,8 +418,7 @@ def test_make_view_controller_exist(project):
         "from flask import render_template\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')"
     )
     runner = CliRunner()
@@ -443,12 +440,10 @@ def test_make_view_root_action_with_generated_wiring_without_using_mains_templat
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def landing() -> str:\n"
+        "    def landing(self) -> str:\n"
         "        return render_template('landing.html')"
     )
 
@@ -461,11 +456,11 @@ def test_make_view_root_action_with_generated_wiring_without_using_mains_templat
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
         "\n"
         "@bp.route('/landing', methods=['GET'])\n"
         "def landing():\n"
-        "    return MainController.landing()\n"
+        "    return MainController().landing()\n"
     )
 
     assert result.exit_code == 0, result.output
@@ -487,12 +482,10 @@ def test_make_view_explicit_mains_root_action_keeps_mains_out_of_url_but_in_main
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def landing() -> str:\n"
+        "    def landing(self) -> str:\n"
         "        return render_template('mains/landing.html')"
     )
 
@@ -505,11 +498,11 @@ def test_make_view_explicit_mains_root_action_keeps_mains_out_of_url_but_in_main
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
         "\n"
         "@bp.route('/landing', methods=['GET'])\n"
         "def landing():\n"
-        "    return MainController.landing()\n"
+        "    return MainController().landing()\n"
     )
 
     assert result.exit_code == 0, result.output
@@ -536,12 +529,10 @@ def test_make_view_root_action_with_explicit_wiring_keeps_root_template(project)
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def landing() -> str:\n"
+        "    def landing(self) -> str:\n"
         "        return render_template('landing.html')"
     )
 
@@ -554,11 +545,11 @@ def test_make_view_root_action_with_explicit_wiring_keeps_root_template(project)
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
         "\n"
         "@bp.route('/landing', methods=['GET'])\n"
         "def landing():\n"
-        "    return MainController.landing()\n"
+        "    return MainController().landing()\n"
     )
 
     assert result.exit_code == 0, result.output
@@ -613,7 +604,7 @@ def test_docs_make_view_the_basics_use_generator_flags_about_rc(project):
         project,
         "main_controller.py",
         [
-            "def about() -> str:",
+            "def about(self) -> str:",
             "return render_template('about.html')"
         ]
     )
@@ -630,7 +621,7 @@ def test_docs_make_view_the_basics_use_mains_intentionally_explicit_route(projec
         project,
         "main_controller.py",
         [
-            "def about() -> str:",
+            "def about(self) -> str:",
             "return render_template('mains/about.html')"
         ]
     )
@@ -645,7 +636,7 @@ def test_docs_make_view_the_basics_use_mains_intentionally_generated_route(proje
         project,
         "main_controller.py",
         [
-            "def about() -> str:",
+            "def about(self) -> str:",
             "return render_template('mains/about.html')"
         ]
     )
@@ -673,7 +664,7 @@ def test_docs_make_view_model_prompt_missing_model_accepts_restful_route(project
         "recipe_controller.py",
         [
             "class RecipeController:",
-            "def index() -> str:",
+            "def index(self) -> str:",
             "return render_template('recipes/index.html')"
         ]
     )
@@ -690,7 +681,7 @@ def test_docs_make_view_model_prompt_missing_model_declines_literal_route(projec
         "recipe_controller.py",
         [
             "class RecipeController:",
-            "def index() -> str:",
+            "def index(self) -> str:",
             "return render_template('recipes/index.html')"
         ]
     )
@@ -707,7 +698,7 @@ def test_docs_make_view_model_prompt_explicit_literal_route_avoids_prompt(projec
         "recipe_controller.py",
         [
             "class RecipeController:",
-            "def index() -> str:",
+            "def index(self) -> str:",
             "return render_template('recipes/index.html')"
         ],
     )
@@ -728,7 +719,7 @@ def test_docs_make_view_model_prompt_explicit_restful_route_with_model_recipe(pr
         "recipe_controller.py",
         [
             "class RecipeController:",
-            "def index() -> str:",
+            "def index(self) -> str:",
             "return render_template('recipes/index.html')"
         ]
     )
@@ -756,9 +747,9 @@ def test_docs_make_view_building_first_resource_recipes_index_and_show(project):
         project,
         "recipe_controller.py",
         [
-            "def index() -> str:",
+            "def index(self) -> str:",
             "return render_template('recipes/index.html')",
-            "def show(recipe_id: int) -> str:",
+            "def show(self, recipe_id: int) -> str:",
             "return render_template('recipes/show.html')"
         ]
     )
@@ -778,9 +769,9 @@ def test_docs_make_view_get_vs_post_create_generates_template_store_does_not(pro
         project,
         "recipe_controller.py",
         [
-            "def create() -> str:",
+            "def create(self) -> str:",
             "return render_template('recipes/create.html')",
-            "def store() -> ResponseReturnValue:",
+            "def store(self) -> ResponseReturnValue:",
             "return redirect(url_for('recipes.index'))"
         ]
     )
@@ -802,9 +793,9 @@ def test_docs_make_view_nested_resources_recipes_comments_index_and_show(project
         project,
         "recipe_comment_controller.py",
         [
-            "def index(recipe_id: int) -> str:",
+            "def index(self, recipe_id: int) -> str:",
             "return render_template('recipes/comments/index.html')",
-            "def show(recipe_id: int, comment_id: int) -> str:",
+            "def show(self, recipe_id: int, comment_id: int) -> str:",
             "return render_template('recipes/comments/show.html')"
         ]
     )
@@ -828,7 +819,7 @@ def test_docs_make_view_nested_resources_three_levels_deep_images(project):
         project,
         "recipe_comment_image_controller.py",
         [
-            "def index(recipe_id: int, comment_id: int) -> str:",
+            "def index(self, recipe_id: int, comment_id: int) -> str:",
             "return render_template('recipes/comments/images/index.html')"
         ]
     )

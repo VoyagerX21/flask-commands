@@ -26,12 +26,11 @@ def controller_add_method(
         route_name: str | None = None,
         view_directory: str | None = None) -> tuple[ControllerResult, str]:
     """
-    Add a static method to an existing controller class.
+    Add a method to an existing controller class.
 
     This function reads the target controller file, verifies that the requested
     method does not already exist, ensures the required Flask imports are
-    present, locates the controller class, and inserts a new `@staticmethod`
-    action method.
+    present, locates the controller class, and inserts a new method.
 
     Method body generation:
     - GET actions return `render_template(...)`
@@ -163,12 +162,13 @@ def controller_add_method(
                 controller_file_path,
                 status=ScaffoldStatus.WARNING), message
 
-        # 3. Build the new static method block
-        method_parameters = ""
+        # 3. Build the new method block
+        method_parameters = "self"
         parameters = []
         if route_name:
             parameters_with_types, parameters = \
                 route_parse_route_name_for_params_and_types(route_name)
+            parameters_with_types.insert(0, 'self')
             method_parameters = ", ".join(parameters_with_types)
         if is_redirect:
             if action != "store":
@@ -190,7 +190,6 @@ def controller_add_method(
 
         method_block = [
             "",
-            "    @staticmethod",
             f"    def {action}({method_parameters}) -> {return_type}:",
             return_line
         ]
@@ -202,7 +201,7 @@ def controller_add_method(
             lines = lines[:start_index + 1] + lines[insert_index:]
             insert_index = start_index + 1
 
-        # 4. Insert new static method block
+        # 4. Insert new method block
         for line in reversed(method_block):
             lines.insert(insert_index, line)
 
@@ -305,10 +304,10 @@ def controller_generate_relative_path_from_controller_name(controller_name: str)
         Output depends on registered models in ``app/models/__init__.py``
         because hierarchy detection is model-aware.
     """
-    
+
     namespaces, parent_models, child_model_name = \
         model_generate_hierarchy_from_controller_name(controller_name)
-    
+
     if not parent_models and not child_model_name:
         return "/".join(
             pluralize(camel_to_snake(segment))
@@ -316,16 +315,16 @@ def controller_generate_relative_path_from_controller_name(controller_name: str)
         )
     namespace_segment = "_".join(
         camel_to_snake(segment) for segment in filter_falsy(namespaces))
-    
+
     resource_segments = [
-        pluralize(camel_to_snake(segment)) 
+        pluralize(camel_to_snake(segment))
         for segment in filter_falsy(parent_models + [child_model_name])]
-    
+
     return '/'.join(filter_falsy([namespace_segment]) + resource_segments)
 
 def controller_make_file(
         relative_path: str | None,
-        action: str | None, # When you generate a controller calls and register it without any methods
+        action: str | None, # Used when generating and registering a controller without methods.
         controller_name: str,
         controller_file_path: str,
         route_name: str | None = None,
@@ -340,12 +339,12 @@ def controller_make_file(
     versa). With no `action`, the generated class body is `pass`.
 
     When `action` is provided, the generated controller includes:
-    - a static action method
+    - an action method
     - the required Flask imports
       - `render_template` for GET actions
       - `redirect, url_for` for POST actions
 
-    - the static method returns `render_template(...)` for GET actions or
+    - the method returns `render_template(...)` for GET actions or
       `redirect(url_for(...))` for POST actions
 
     Validation:
@@ -416,11 +415,12 @@ def controller_make_file(
             controller_file_path,
             status=ScaffoldStatus.ERROR), message
 
-    parameters_with_types_joined = ""
+    parameters_with_types_joined = "self"
     parameters = []
     if route_name:
         parameters_with_types, parameters = \
             route_parse_route_name_for_params_and_types(route_name)
+        parameters_with_types.insert(0, 'self')
         parameters_with_types_joined = ", ".join(parameters_with_types)
 
 
@@ -438,7 +438,6 @@ def controller_make_file(
     if action:
         return_type = "ResponseReturnValue" if is_redirect else "str"
         contents.extend([
-            f"    @staticmethod",
             f"    def {action}({parameters_with_types_joined}) -> {return_type}:",
         ])
         if is_redirect:

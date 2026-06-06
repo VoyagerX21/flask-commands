@@ -8,6 +8,14 @@ This project follows `Keep a Changelog <https://keepachangelog.com/>`_ and
 Unreleased
 ----------
 
+0.3.4 - 2026-06-06
+------------------
+Changed
+~~~~~~~
+- Generate controller action methods as instance methods instead of static methods.
+- Update generated route handlers to instantiate controllers before calling action methods.
+- Update the starter project scaffold, docs examples, and tests for instance-based controller wiring.
+
 0.3.3 - 2026-05-30
 ------------------
 Added

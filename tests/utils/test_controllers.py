@@ -40,8 +40,7 @@ def test_controller_add_method_already_exists(controller_project):
     controller_file = controller_project(
         "post_controller.py",
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index():\n"
+        "    def index(self):\n"
         "        posts = Post.query.all()\n"
         "        return render_template('posts/index.html', posts=posts)\n"
     )
@@ -102,8 +101,7 @@ def test_controller_add_method_success(controller_project):
         "post_controller.py",
         "class PostController:\n"
         "\n"
-        "    @staticmethod\n"
-        "    def create():\n"
+        "    def create(self):\n"
         "        pass\n"
         "\n"
         "def helper_function(input):\n"
@@ -125,13 +123,11 @@ def test_controller_add_method_success(controller_project):
         "\n"
         "class PostController:\n"
         "\n"
-        "    @staticmethod\n"
-        "    def create():\n"
+        "    def create(self):\n"
         "        pass\n"
         "\n"
         "\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n"
         "def helper_function(input):\n"
         "    pass"
@@ -155,8 +151,7 @@ def test_controller_add_method_success_with_relation(controller_project):
         "from flask import render_template\n"
         "\n"
         "class UserPostController:\n"
-        "    @staticmethod\n"
-        "    def index(user_id: int):\n"
+        "    def index(self, user_id: int):\n"
         "        return render_template('users/posts/index.html')\n"
     )
 
@@ -174,12 +169,10 @@ def test_controller_add_method_success_with_relation(controller_project):
         "from flask import render_template\n"
         "\n"
         "class UserPostController:\n"
-        "    @staticmethod\n"
-        "    def index(user_id: int):\n"
+        "    def index(self, user_id: int):\n"
         "        return render_template('users/posts/index.html')\n"
         "\n"
-        "    @staticmethod\n"
-        "    def show(user_id: int, post_id: int) -> str:\n"
+        "    def show(self, user_id: int, post_id: int) -> str:\n"
         "        return render_template('users/posts/show.html')"
     )
 
@@ -200,8 +193,7 @@ def test_controller_add_method_exception(controller_project, monkeypatch):
         "post_controller.py",
         "class PostController:\n"
         "\n"
-        "    @staticmethod\n"
-        "    def create():\n"
+        "    def create(self):\n"
         "        pass\n"
         "\n"
         "def helper_function(input):\n"
@@ -261,8 +253,7 @@ def test_controller_add_method_inserts_redirect_imports(controller_project):
         "\n"
         "class PostController:\n"
         "\n"
-        "    @staticmethod\n"
-        "    def store() -> ResponseReturnValue:\n"
+        "    def store(self) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.index'))"
     )
 
@@ -304,8 +295,7 @@ def test_controller_add_method_redirect_return_line_uses_nested_param_reference(
         "    def helper(self):\n"
         "        pass\n"
         "\n"
-        "    @staticmethod\n"
-        "    def update(post_id: int, comment_id: int) -> ResponseReturnValue:\n"
+        "    def update(self, post_id: int, comment_id: int) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.comments.index', post_id=post_id))"
     )
 
@@ -343,8 +333,7 @@ def test_controller_add_method_removes_pass_only_class_body(controller_project):
         "\n"
         "class UserController:\n"
         "\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('users/index.html')"
     )
 
@@ -387,8 +376,7 @@ def test_controller_make_file_success(controller_project):
         "from flask import render_template\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n"
     )
 
@@ -429,8 +417,7 @@ def test_controller_make_file_success_with_route_name(controller_project):
         "from flask import render_template\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n"
     )
 
@@ -577,8 +564,7 @@ def test_controller_make_file_init_missing(tmp_path, monkeypatch):
         "from flask import render_template\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n"
     )
 
@@ -618,8 +604,7 @@ def test_controller_make_file_init_exception(controller_project, monkeypatch):
         "from flask import render_template\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('posts/index.html')\n"
     )
 
@@ -689,8 +674,7 @@ def test_controller_make_file_with_a_post(controller_project):
         "from flask.typing import ResponseReturnValue\n"
         "\n"
         "class PostController:\n"
-        "    @staticmethod\n"
-        "    def store() -> ResponseReturnValue:\n"
+        "    def store(self) -> ResponseReturnValue:\n"
         "        return redirect(url_for('posts.index'))\n"
     )
 

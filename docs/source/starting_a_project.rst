@@ -197,6 +197,7 @@ environment active and run the application normally:
    flask run --debug
 
 This setup gives you a nice split:
+
 - one terminal tab for running the app
 - one terminal tab for generating files
 

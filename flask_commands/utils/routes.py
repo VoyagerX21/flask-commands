@@ -17,8 +17,8 @@ from flask_commands.utils.data_types import (
 )
 
 from .files import (
-    file_append_file, 
-    file_prepend_import_to_lines, 
+    file_append_file,
+    file_prepend_import_to_lines,
     file_write_file)
 
 from .naming import singularize
@@ -124,7 +124,7 @@ def route_add_method(
                 route_status=ScaffoldStatus.WARNING,
                 is_successful=False
             ), message
-        
+
         # 4) _append_route_method
         is_successful, message = _apply_step_result(
             updates,
@@ -723,7 +723,7 @@ def _append_route_method(action: str, route_file_path: str, route_content: list[
         ...         "",
         ...         "@bp.route('/posts', methods=['GET'])",
         ...         "def index():",
-        ...         "    return PostController.index()",
+        ...         "    return PostController().index()",
         ...     ],
         ... )
         >>> success
@@ -812,7 +812,7 @@ def _ensure_route_controller_import(route_file_path: str, controller_name: str |
     Existing route packages can be created before they receive concrete CRUD
     handlers, especially as parent packages for nested resources. In that case,
     `routes.py` may contain only the blueprint import. Before appending a new
-    route handler that calls `ControllerName.action(...)`, this helper checks
+    route handler that calls `ControllerName().action(...)`, this helper checks
     whether `ControllerName` is already imported from `app.controllers` and, if
     missing, inserts the import into the file's import block.
 
@@ -836,7 +836,7 @@ def _ensure_route_controller_import(route_file_path: str, controller_name: str |
 
     if using_controller_name in registered_controllers:
         return True, ""
-    
+
     try:
         with open(route_file_path, "r", encoding="utf-8") as file:
             source = file.read()
@@ -1051,7 +1051,7 @@ def _generate_route_content(
             '',
             "@bp.route('/posts/<int:post_id>', methods=['GET'])",
             'def show(post_id: int):',
-            '    return PostController.show(post_id)'
+            '    return PostController().show(post_id)'
         ]
 
         >>> _generate_route_content(
@@ -1063,7 +1063,7 @@ def _generate_route_content(
             '',
             "@bp.route('/posts', methods=['POST'])",
             'def store():',
-            '    return PostController.store()'
+            '    return PostController().store()'
         ]
 
     Notes:
@@ -1079,7 +1079,7 @@ def _generate_route_content(
         "",
         f"@bp.route('{route_name}', methods=['{method}'])",
         f"def {action}({', '.join(parameters_with_types)}):",
-        f"    return {controller_name}.{action}({', '.join(parameters)})"
+        f"    return {controller_name}().{action}({', '.join(parameters)})"
     ]
 
 def _generate_route_spec(dotted_path_with_action: str) -> RouteSpec:
@@ -1198,7 +1198,7 @@ def _get_registered_route_controllers(route_file_path: str) -> list[str]:
         tree = ast.parse(route_content, filename=route_file_path)
     except SyntaxError:
         return []
-    
+
     controllers: set[str] = set()
     for node in tree.body:
         if not isinstance(node, ast.ImportFrom):
@@ -1563,7 +1563,7 @@ def _write_routes_file(
         "",
         f"@bp.route('{route_name}', methods=['{method}'])",
         f"def {action}({', '.join(parameters_with_types)}):",
-        f"    return {using_controller_name}.{action}({', '.join(parameters)})"
+        f"    return {using_controller_name}().{action}({', '.join(parameters)})"
     ]
     try:
         file_write_file(route_file_path, route_content)

@@ -78,8 +78,7 @@ def project(tmp_path, monkeypatch):
         "from flask import render_template\n"
         "\n"
         "class MainController:\n"
-        "    @staticmethod\n"
-        "    def index() -> str:\n"
+        "    def index(self) -> str:\n"
         "        return render_template('mains/index.html')\n",
         encoding="utf-8",
     )
@@ -99,7 +98,7 @@ def project(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n",
+        "    return MainController().index()\n",
         encoding="utf-8",
     )
 
@@ -117,14 +116,14 @@ def test_route_add_method_success(tmp_path, monkeypatch):
     route_dir.mkdir(parents=True)
 
     route_file = route_dir / "routes.py"
-    
+
     route_file.write_text(
         "from app.controllers import UserController\n"
         "from app.routes.users import bp\n"
         "\n"
         "@bp.route('/users/<int:user_id>', methods=['GET'])\n"
         "def show(user_id: int):\n"
-        "    return UserController.show(user_id)\n"
+        "    return UserController().show(user_id)\n"
         , encoding="utf-8")
 
     monkeypatch.chdir(project_root)
@@ -135,7 +134,7 @@ def test_route_add_method_success(tmp_path, monkeypatch):
         route_directory_path='app/routes/users',
         route_name='/users',
         controller_name='UserController')
-    
+
     observed_content = route_file.read_text(encoding="utf-8")
     expected_content = (
         "from app.controllers import UserController\n"
@@ -143,11 +142,11 @@ def test_route_add_method_success(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/users/<int:user_id>', methods=['GET'])\n"
         "def show(user_id: int):\n"
-        "    return UserController.show(user_id)\n"
+        "    return UserController().show(user_id)\n"
         "\n"
         "@bp.route('/users', methods=['GET'])\n"
         "def index():\n"
-        "    return UserController.index()\n"
+        "    return UserController().index()\n"
     )
 
     assert action_result.is_successful is True
@@ -159,7 +158,7 @@ def test_route_add_method_success(tmp_path, monkeypatch):
     assert "/users" in action_result.visit_example
     assert action_result.view_file_path is None
     assert action_result.view_status == ScaffoldStatus.SKIPPED
-   
+
     assert observed_content == expected_content
     assert "Added Route To Existing Directory" in message
     assert "index" in message
@@ -179,7 +178,7 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/users', methods=['GET'])\n"
         "def index():\n"
-        "    return UserController.index()\n",
+        "    return UserController().index()\n",
         encoding="utf-8",
     )
 
@@ -202,7 +201,7 @@ def test_route_add_method_function_already_exists(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/users', methods=['GET'])\n"
         "def index():\n"
-        "    return UserController.index()\n"
+        "    return UserController().index()\n"
     )
 
     assert action_result.is_successful is False
@@ -275,7 +274,7 @@ def test_route_add_method_exception(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/users/<int:user_id>', methods=['GET'])\n"
         "def show(user_id: int):\n"
-        "    return UserController.show(user_id)\n",
+        "    return UserController().show(user_id)\n",
         encoding="utf-8",
     )
 
@@ -298,7 +297,7 @@ def test_route_add_method_exception(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/users/<int:user_id>', methods=['GET'])\n"
         "def show(user_id: int):\n"
-        "    return UserController.show(user_id)\n"
+        "    return UserController().show(user_id)\n"
     )
 
     assert action_result.is_successful is False
@@ -367,11 +366,11 @@ def test_route_add_method_root_relative_path_updates_mains_routes_file(project):
         "\n"
         "@bp.route('/', methods=['GET'])\n"
         "def index():\n"
-        "    return MainController.index()\n"
+        "    return MainController().index()\n"
         "\n"
         "@bp.route('/landing', methods=['GET'])\n"
         "def landing():\n"
-        "    return MainController.landing()\n"
+        "    return MainController().landing()\n"
     )
 
     assert action_result.is_successful is True
@@ -420,7 +419,7 @@ def test_route_add_method_adds_missing_controller_import(tmp_path, monkeypatch):
         "\n"
         "@bp.route('/recipes', methods=['GET'])\n"
         "def index():\n"
-        "    return RecipeController.index()\n"
+        "    return RecipeController().index()\n"
     )
     assert "Imported RecipeController in app/routes/recipes/routes.py" in message
 
@@ -672,7 +671,7 @@ def test_route_write_directory_and_register_blueprint_success(project):
         "\n"
         "@bp.route('/users', methods=['GET'])\n"
         "def index():\n"
-        "    return UserController.index()\n"
+        "    return UserController().index()\n"
     )
 
     observed_app_init_content = app_init_file.read_text(encoding="utf-8")
@@ -771,7 +770,7 @@ def test_route_write_directory_and_register_blueprint_success_nested_routes(proj
         "\n"
         "@bp.route('/recipes/<int:recipe_id>/comments', methods=['GET'])\n"
         "def index(recipe_id: int):\n"
-        "    return RecipeCommentController.index(recipe_id)\n"
+        "    return RecipeCommentController().index(recipe_id)\n"
     )
 
     observed_recipes_init_content = recipes_init_file.read_text(encoding="utf-8")
@@ -891,7 +890,7 @@ def test_route_write_directory_and_register_blueprint_app_init_missing_return(tm
         "\n"
         "@bp.route('/users', methods=['GET'])\n"
         "def index():\n"
-        "    return UserController.index()\n"
+        "    return UserController().index()\n"
     )
 
     observed_app_init_content = app_init_file.read_text(encoding="utf-8")
