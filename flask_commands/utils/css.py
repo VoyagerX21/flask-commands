@@ -4,6 +4,29 @@ import click
 import shutil
 import subprocess
 
+
+def _is_windows():
+    return os.name == "nt"
+
+
+def _run_npm(args, cwd):
+    if _is_windows():
+        return subprocess.run(
+            ["cmd", "/d", "/c", "npm", *args],
+            check=True,
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+        )
+
+    return subprocess.run(
+        ["npm", *args],
+        check=True,
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+    )
+
 def install_tailwind(project_path):
     """Installs Tailwind CSS via npm for the given project path.  If npm is
     missing, prints guidance and returns without installing.  On success,
@@ -26,13 +49,7 @@ def install_tailwind(project_path):
         return
     try:
         click.secho("Installing Tailwind CSS (tailwindcss @tailwindcss/cli) via npm...", bold=True)
-        subprocess.run(
-            ["npm", "install", "tailwindcss", "@tailwindcss/cli"],
-            check=True,
-            cwd=project_path,
-            capture_output=True,
-            text=True,
-        )
+        _run_npm(["install", "tailwindcss", "@tailwindcss/cli"], project_path)
         _append_tailwind_scripts(project_path)
         click.secho("    - ✅ Success: Tailwind installed", fg="green")
     except subprocess.CalledProcessError as exc:
