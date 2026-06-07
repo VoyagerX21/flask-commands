@@ -8,6 +8,12 @@ This project follows `Keep a Changelog <https://keepachangelog.com/>`_ and
 Unreleased
 ----------
 
+0.3.5 - 2026-06-07
+------------------
+Fixed
+~~~~~
+- Resolve Windows virtual environment executable paths during ``flask new`` dependency installation and database setup.
+
 0.3.4 - 2026-06-06
 ------------------
 Changed

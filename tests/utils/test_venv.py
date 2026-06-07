@@ -2,6 +2,7 @@ import os
 import flask_commands.utils.venv as venv_module
 from flask_commands.utils.venv import (
     create_venv,
+    venv_executable,
     _pip_install_in_venv,
     _write_requirements_from_venv
 )
@@ -52,6 +53,25 @@ def test_create_venv_installs_packages_and_freezes(tmp_path, monkeypatch):
 
     assert called["pip"] == (venv_path, ["flask", "click"])
     assert called["freeze"] == (venv_path, str(project_path))
+
+def test_venv_executable_uses_bin_on_posix(monkeypatch):
+    monkeypatch.setattr(venv_module, "_is_windows", lambda: False)
+
+    assert venv_executable("/tmp/myapp/venv", "pip") == os.path.join(
+        "/tmp/myapp/venv",
+        "bin",
+        "pip",
+    )
+
+
+def test_venv_executable_uses_scripts_and_exe_on_windows(monkeypatch):
+    monkeypatch.setattr(venv_module, "_is_windows", lambda: True)
+
+    assert venv_executable(r"C:\Users\me\app\venv", "pip") == os.path.join(
+        r"C:\Users\me\app\venv",
+        "Scripts",
+        "pip.exe",
+    )
 
 def test__pip_install_in_venv_runs_pip(monkeypatch):
     calls = []

@@ -2,6 +2,7 @@ import os
 import click
 import shutil
 import subprocess
+from flask_commands.utils.venv import venv_executable
 
 def install_sqlitedb(project_path):
     """Initializes the sqlite database for a project by running the Flask
@@ -10,7 +11,9 @@ def install_sqlitedb(project_path):
     """
     click.secho("Setting up sqlite database for development...", bold=True)
 
-    venv_flask = os.path.join(project_path, "venv", "bin", "flask")
+    venv_dir = os.path.join(project_path, "venv")
+    venv_flask = venv_executable(venv_dir, "flask")
+
 
     if not os.path.exists(venv_flask):
         raise click.ClickException("venv/bin/flask not found")

@@ -37,6 +37,30 @@ def create_venv(project_path: str, packages: Optional[Iterable[str]] = None, fre
 
     return venv_dir
 
+
+def venv_executable(venv_dir: str, name: str) -> str:
+    """
+    Return the path to an executable inside a virtual environment.
+
+    Virtual environments store command-line executables in different
+    directories depending on the operating system. On Windows they live in
+    the ``Scripts`` directory and usually use an ``.exe`` suffix. On POSIX
+    systems such as macOS and Linux they live in the ``bin`` directory.
+
+    Args:
+        venv_dir: Path to the virtual environment directory.
+        name: Executable name without any platform-specific suffix.
+
+    Returns:
+        The platform-specific path to the requested virtualenv executable.
+    """
+    scripts_dir = "Scripts" if _is_windows() else "bin"
+    executable = f"{name}.exe" if _is_windows() else name
+    return os.path.join(venv_dir, scripts_dir, executable)
+
+def _is_windows() -> bool:
+    return os.name == "nt"
+
 def _pip_install_in_venv(venv_dir: str, packages):
     """
     Install packages into an existing virtual environment using its pip.
@@ -53,7 +77,7 @@ def _pip_install_in_venv(venv_dir: str, packages):
         None
     """
     click.secho("Installing Python Dependencies...", bold=True)
-    pip_path = os.path.join(venv_dir, "bin", "pip")
+    pip_path = venv_executable(venv_dir, "pip")
     subprocess.run([pip_path, "install", *packages], check=True, capture_output=True, text=True)
     click.secho("    - ✅ Success: Python Dependencies Installed", fg="green")
 
@@ -73,7 +97,7 @@ def _write_requirements_from_venv(venv_dir: str, project_path: str):
         >>> _write_requirements_from_venv("/tmp/myapp/venv", "/tmp/myapp")
         None
     """
-    pip_path = os.path.join(venv_dir, "bin", "pip")
+    pip_path = venv_executable(venv_dir, "pip")
 
     # Capture pip freeze output
     requirements_content = \
@@ -82,4 +106,3 @@ def _write_requirements_from_venv(venv_dir: str, project_path: str):
     requirements_path = os.path.join(project_path, "requirements.txt")
 
     file_write_file(requirements_path, requirements_content)
-

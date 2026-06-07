@@ -1,6 +1,6 @@
 [project]
 name = "flask-commands"
-version = "0.3.4"
+version = "0.3.5"
 description = "A set of command line tools that help you scaffold out your flask application quickly."
 authors = [
     {name = "Drew Butcher",email = "drewlbutcher@gmail.com"}
@@ -50,6 +50,7 @@ dev = [
 
 [tool.coverage.run]
 source = ["flask_commands"]
+branch = true
 
 [tool.coverage.report]
 show_missing = true
